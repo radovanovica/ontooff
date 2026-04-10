@@ -14,7 +14,7 @@ import { Google as GoogleIcon } from '@mui/icons-material';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,6 +29,19 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function SignInPage() {
+  return (
+    <Suspense fallback={(
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    )}
+    >
+      <SignInPageContent />
+    </Suspense>
+  );
+}
+
+function SignInPageContent() {
   const { t } = useTranslation('auth');
   const router = useRouter();
   const searchParams = useSearchParams();

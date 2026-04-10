@@ -3,11 +3,24 @@
 import { Box, Button, CircularProgress, Paper, Typography } from '@mui/material';
 import { CheckCircle, Error as ErrorIcon } from '@mui/icons-material';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslation } from '@/i18n/client';
 
 export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={(
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    )}
+    >
+      <VerifyEmailPageContent />
+    </Suspense>
+  );
+}
+
+function VerifyEmailPageContent() {
   const { t } = useTranslation('auth');
   const searchParams = useSearchParams();
   const token = searchParams.get('token');

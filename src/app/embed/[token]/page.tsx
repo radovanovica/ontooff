@@ -4,6 +4,7 @@ import { validateEmbedToken } from '@/lib/utils';
 import { prisma } from '@/lib/prisma';
 import RegistrationStepper from '@/components/registration/RegistrationStepper';
 import type { Metadata } from 'next';
+import { SpotStatus } from '@prisma/client';
 
 interface Props {
   params: Promise<{ token: string }>;
@@ -26,7 +27,7 @@ export default async function EmbedPage({ params }: Props) {
   const includeConfig = {
     activityType: true,
     place: { select: { id: true, name: true } },
-    spots: { where: { status: 'AVAILABLE' }, orderBy: { sortOrder: 'asc' as const } },
+    spots: { where: { status: SpotStatus.AVAILABLE }, orderBy: { sortOrder: 'asc' as const } },
   };
 
   const locationId = embedToken.activityLocationId;

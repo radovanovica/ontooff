@@ -1,25 +1,29 @@
-import { AgeGroupType, GuestCounts, PaymentBreakdownItem, PricingCalculation, PricingRule, PricingTier, PricingType, PaymentMethod } from '@/types';
+import { AgeGroupType, GuestCounts, PaymentBreakdownItem, PricingCalculation, PricingRule, PricingTier, PaymentMethod } from '@/types';
 
 type BuiltInGuestCountKey = 'adults' | 'children' | 'seniors' | 'infants' | 'families' | 'groups';
 
-const DEFAULT_GUEST_KEY_BY_AGE_GROUP: Record<Exclude<AgeGroupType, AgeGroupType.CUSTOM>, BuiltInGuestCountKey> = {
-  [AgeGroupType.ADULT]: 'adults',
-  [AgeGroupType.CHILD]: 'children',
-  [AgeGroupType.SENIOR]: 'seniors',
-  [AgeGroupType.INFANT]: 'infants',
-  [AgeGroupType.FAMILY]: 'families',
-  [AgeGroupType.GROUP]: 'groups',
+type PricingTypeLike = PricingRule['pricingType'] | 'PER_ACTIVITY' | 'PER_PERSON' | 'PER_PERSON_PER_DAY' | 'PER_DAY';
+type PaymentMethodLike = PricingRule['paymentMethod'] | 'CASH' | 'CARD' | 'BOTH';
+type AgeGroupLike = PricingTier['ageGroup'] | 'ADULT' | 'CHILD' | 'SENIOR' | 'INFANT' | 'FAMILY' | 'GROUP' | 'CUSTOM';
+
+const DEFAULT_GUEST_KEY_BY_AGE_GROUP: Record<'ADULT' | 'CHILD' | 'SENIOR' | 'INFANT' | 'FAMILY' | 'GROUP', BuiltInGuestCountKey> = {
+  ADULT: 'adults',
+  CHILD: 'children',
+  SENIOR: 'seniors',
+  INFANT: 'infants',
+  FAMILY: 'families',
+  GROUP: 'groups',
 };
 
-export function getPricingTierGuestKey(tier: Pick<PricingTier, 'ageGroup' | 'id'>, fallbackIndex = 0): string {
-  if (String(tier.ageGroup) === AgeGroupType.CUSTOM) {
+export function getPricingTierGuestKey(tier: Pick<PricingTier, 'id'> & { ageGroup: AgeGroupLike }, fallbackIndex = 0): string {
+  if (String(tier.ageGroup) === 'CUSTOM') {
     return tier.id ? `custom:${tier.id}` : `custom:${fallbackIndex}`;
   }
-  return DEFAULT_GUEST_KEY_BY_AGE_GROUP[tier.ageGroup as Exclude<AgeGroupType, AgeGroupType.CUSTOM>];
+  return DEFAULT_GUEST_KEY_BY_AGE_GROUP[String(tier.ageGroup) as keyof typeof DEFAULT_GUEST_KEY_BY_AGE_GROUP] ?? 'adults';
 }
 
 function getTierCount(
-  tier: Pick<PricingTier, 'id' | 'ageGroup'>,
+  tier: Pick<PricingTier, 'id'> & { ageGroup: AgeGroupLike },
   guestCounts: GuestCounts,
   index: number
 ): number {
@@ -32,8 +36,10 @@ function getTierCount(
  * Calculate total price for a registration based on pricing rule and guest counts
  */
 export function calculatePricing(
-  pricingRule: Pick<PricingRule, 'pricingType' | 'currency' | 'requiresPayment' | 'paymentMethod'> & {
-    pricingTiers: Array<Pick<PricingTier, 'id' | 'ageGroup' | 'label' | 'pricePerUnit'>>;
+  pricingRule: Pick<PricingRule, 'currency' | 'requiresPayment'> & {
+    pricingType: PricingTypeLike;
+    paymentMethod: PaymentMethodLike;
+    pricingTiers: Array<Pick<PricingTier, 'id' | 'label' | 'pricePerUnit'> & { ageGroup: AgeGroupLike }>;
   },
   guestCounts: GuestCounts,
   numberOfDays: number
@@ -43,15 +49,15 @@ export function calculatePricing(
 
   const tiers = pricingRule.pricingTiers;
 
-  switch (pricingRule.pricingType) {
-    case PricingType.PER_ACTIVITY: {
+  switch (String(pricingRule.pricingType)) {
+    case 'PER_ACTIVITY': {
       // Flat fee regardless of people/days
       const tier = tiers[0];
       if (tier) {
         const price = Number(tier.pricePerUnit);
         breakdown.push({
           label: 'Activity fee',
-          ageGroup: tier.ageGroup,
+          ageGroup: tier.ageGroup as AgeGroupType,
           quantity: 1,
           unitPrice: price,
           totalPrice: price,
@@ -61,7 +67,7 @@ export function calculatePricing(
       break;
     }
 
-    case PricingType.PER_DAY: {
+    case 'PER_DAY': {
       // Flat fee per day
       const tier = tiers[0];
       if (tier) {
@@ -69,7 +75,7 @@ export function calculatePricing(
         const total = price * numberOfDays;
         breakdown.push({
           label: 'Daily fee',
-          ageGroup: tier.ageGroup,
+          ageGroup: tier.ageGroup as AgeGroupType,
           quantity: numberOfDays,
           unitPrice: price,
           totalPrice: total,
@@ -79,7 +85,7 @@ export function calculatePricing(
       break;
     }
 
-    case PricingType.PER_PERSON: {
+    case 'PER_PERSON': {
       // Per person flat fee
       for (const [index, tier] of tiers.entries()) {
         const count = getTierCount(tier, guestCounts, index);
@@ -88,7 +94,7 @@ export function calculatePricing(
         const total = unitPrice * count;
         breakdown.push({
           label: `${tier.label} × ${count}`,
-          ageGroup: tier.ageGroup,
+          ageGroup: tier.ageGroup as AgeGroupType,
           quantity: count,
           unitPrice,
           totalPrice: total,
@@ -98,7 +104,7 @@ export function calculatePricing(
       break;
     }
 
-    case PricingType.PER_PERSON_PER_DAY: {
+    case 'PER_PERSON_PER_DAY': {
       // Per person per day
       for (const [index, tier] of tiers.entries()) {
         const count = getTierCount(tier, guestCounts, index);
@@ -107,7 +113,7 @@ export function calculatePricing(
         const total = unitPrice * count * numberOfDays;
         breakdown.push({
           label: `${tier.label} (per day)`,
-          ageGroup: tier.ageGroup,
+          ageGroup: tier.ageGroup as AgeGroupType,
           quantity: count * numberOfDays,
           unitPrice,
           totalPrice: total,
@@ -123,7 +129,7 @@ export function calculatePricing(
     totalAmount,
     currency: pricingRule.currency,
     requiresPayment: pricingRule.requiresPayment,
-    paymentMethod: pricingRule.paymentMethod,
+    paymentMethod: pricingRule.paymentMethod as PaymentMethod,
   };
 }
 

@@ -819,7 +819,7 @@ export default function MapEditor({
                 onChange={(e) => setEditingSpot((p) => ({ ...p, maxPeople: Number(e.target.value) }))}
                 fullWidth
                 size="small"
-                inputProps={{ min: 1 }}
+                slotProps={{ htmlInput: { min: 1 } }}
               />
             </Grid>
             <Grid size={{ xs: 6 }}>

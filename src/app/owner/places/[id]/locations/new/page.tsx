@@ -36,6 +36,8 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
+type FormInputValues = z.input<typeof schema>;
+type FormOutputValues = z.output<typeof schema>;
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -88,7 +90,7 @@ export default function NewLocationPage() {
   const [pickingMode, setPickingMode] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<FormInputValues, unknown, FormOutputValues>({
     resolver: zodResolver(schema),
     defaultValues: { requiresSpot: true, sortOrder: 0 },
   });
@@ -139,7 +141,7 @@ export default function NewLocationPage() {
 
   // ── Submit ─────────────────────────────────────────────────────────────
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: FormOutputValues) => {
     setSaving(true);
     setError(null);
     try {
@@ -208,7 +210,7 @@ export default function NewLocationPage() {
         }
       />
 
-      <Grid container spacing={3} alignItems="flex-start">
+      <Grid container spacing={3} sx={{ alignItems: 'flex-start' }}>
         {/* ── Left: form ───────────────────────────────────────────────── */}
         <Grid size={{ xs: 12, md: 5 }}>
           <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>

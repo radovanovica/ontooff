@@ -81,12 +81,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
   });
 
   // Enrich spots with availability if dates provided
-  let spots = location.spots;
-  if (startDate && endDate) {
-    const available = await getAvailableSpots(locationId, new Date(startDate), new Date(endDate));
-    const availMap = new Map(available.map((s: { id: string; isAvailable: boolean }) => [s.id, s.isAvailable]));
-    spots = location.spots.map((spot: { id: string; [key: string]: unknown }) => ({ ...spot, isAvailable: availMap.get(spot.id) ?? true }));
-  }
+  const availabilityMap = startDate && endDate
+    ? new Map(
+        (await getAvailableSpots(locationId, new Date(startDate), new Date(endDate))).map(
+          (spot) => [spot.id, spot.isAvailable] as const,
+        ),
+      )
+    : null;
+
+  const spots = location.spots.map((spot) => ({
+    ...spot,
+    isAvailable: availabilityMap ? (availabilityMap.get(spot.id) ?? true) : true,
+  }));
 
   return NextResponse.json({
     success: true,

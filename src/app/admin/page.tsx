@@ -29,7 +29,7 @@ async function getStats() {
     totalPlaces,
     totalRegistrations,
     pendingRegistrations,
-    totalRevenue: revenue._sum.totalAmount ?? 0,
+    totalRevenue: Number(revenue._sum.totalAmount ?? 0),
   };
 }
 
@@ -64,9 +64,7 @@ export default async function AdminDashboardPage() {
                       {t(`dashboard.stats.${key}`)}
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                      {key === 'totalRevenue'
-                        ? `€${Number(stats[key as keyof typeof stats]).toLocaleString()}`
-                        : stats[key as keyof typeof stats]}
+                      {stats[key]}
                     </Typography>
                   </Box>
                   <Box

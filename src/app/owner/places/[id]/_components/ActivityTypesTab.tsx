@@ -426,7 +426,6 @@ export default function ActivityTypesTab({ placeId }: Props) {
                       <Box key={rule.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Chip
                           size="small"
-                          label={`${rule.name} • ${rule.currency} • ${rule.pricingTiers.length} tier${rule.pricingTiers.length === 1 ? '' : 's'}`}
                           label={`${rule.name} • ${rule.currency} • ${t('activityTypes.tiersCount', { count: rule.pricingTiers.length })}`}
                           variant="outlined"
                           sx={{ maxWidth: '100%' }}

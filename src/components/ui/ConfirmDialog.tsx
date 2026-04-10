@@ -37,17 +37,17 @@ export default function ConfirmDialog({
   const c = colors[severity];
 
   return (
-    <Dialog open={open} onClose={onCancel} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+    <Dialog open={open} onClose={onCancel} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
       <DialogTitle sx={{ pb: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Box sx={{ bgcolor: c.bg, borderRadius: '50%', p: 1, display: 'flex' }}>
             <WarningAmberRoundedIcon sx={{ color: c.icon, fontSize: 24 }} />
           </Box>
-          <Typography variant="h6" fontWeight={600}>{title}</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>{title}</Typography>
         </Box>
       </DialogTitle>
       <DialogContent>
-        <Typography color="text.secondary" lineHeight={1.6}>{message}</Typography>
+        <Typography color="text.secondary" sx={{ lineHeight: 1.6 }}>{message}</Typography>
       </DialogContent>
       <DialogActions sx={{ p: 2.5, pt: 1 }}>
         <Button onClick={onCancel} disabled={loading} variant="outlined" color="inherit" sx={{ borderColor: 'divider' }}>

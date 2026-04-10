@@ -100,7 +100,7 @@ export const theme = createTheme({
           boxShadow: 'none',
           '&:hover': { boxShadow: '0 4px 12px rgba(45,90,39,0.25)' },
         },
-        containedPrimary: {
+        contained: {
           background: 'linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%)',
           '&:hover': {
             background: 'linear-gradient(135deg, #1a3a18 0%, #2d5a27 100%)',

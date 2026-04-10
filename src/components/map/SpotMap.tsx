@@ -59,9 +59,8 @@ const STATUS_COLORS: Record<string, string> = {
 
 function getSpotColor(spot: SpotMapItem, isSelected: boolean): string {
   if (isSelected) return STATUS_COLORS.selected;
-  if (spot.status === SpotStatus.MAINTENANCE) return STATUS_COLORS.maintenance;
+  if (spot.status === SpotStatus.MAINTENANCE || spot.status === SpotStatus.DISABLED) return STATUS_COLORS.maintenance;
   if (!spot.isAvailable || spot.status === SpotStatus.OCCUPIED) return STATUS_COLORS.occupied;
-  if (spot.status === SpotStatus.RESERVED) return STATUS_COLORS.reserved;
   return STATUS_COLORS.available;
 }
 

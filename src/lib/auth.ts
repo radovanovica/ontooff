@@ -69,7 +69,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           image: user.image,
-          role: user.role,
+          role: user.role as unknown as UserRole,
         };
       },
     }),
