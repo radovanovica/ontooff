@@ -1,14 +1,15 @@
 'use client';
 
 import { IconButton, Menu, MenuItem, Tooltip, Typography, Box } from '@mui/material';
-import { Language as LanguageIcon } from '@mui/icons-material';
+import { KeyboardArrowDown } from '@mui/icons-material';
 import { useState } from 'react';
+import Image from 'next/image';
 import { useLocale, changeLanguage } from '@/i18n/client';
 import type { Locale } from '@/i18n/config';
 
 const LANGUAGES = [
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'sr', label: 'Srpski', flag: '🇷🇸' },
+  { code: 'en', label: 'English', flag: '/assets/images/en.jpg' },
+  { code: 'sr', label: 'Srpski',  flag: '/assets/images/srb.png' },
 ] as const;
 
 export default function LanguageSwitcher() {
@@ -41,14 +42,40 @@ export default function LanguageSwitcher() {
           aria-controls={open ? 'language-menu' : undefined}
           aria-haspopup="true"
           aria-expanded={open ? 'true' : undefined}
-          sx={{ color: 'inherit', gap: 0.5 }}
+          sx={{
+            color: 'inherit',
+            gap: 0.5,
+            px: 1,
+            borderRadius: 1.5,
+            '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' },
+          }}
         >
-          <LanguageIcon fontSize="small" />
-          <Typography variant="caption" sx={{ fontWeight: 600, lineHeight: 1 }}>
+          <Box
+            sx={{
+              width: 22,
+              height: 16,
+              borderRadius: '3px',
+              overflow: 'hidden',
+              flexShrink: 0,
+              position: 'relative',
+              boxShadow: '0 0 0 1px rgba(0,0,0,0.15)',
+            }}
+          >
+            <Image
+              src={current.flag}
+              alt={current.label}
+              fill
+              unoptimized
+              style={{ objectFit: 'cover' }}
+            />
+          </Box>
+          <Typography variant="caption" sx={{ fontWeight: 600, lineHeight: 1, letterSpacing: 0.3 }}>
             {current.code.toUpperCase()}
           </Typography>
+          <KeyboardArrowDown sx={{ fontSize: 14, opacity: 0.7 }} />
         </IconButton>
       </Tooltip>
+
       <Menu
         id="language-menu"
         anchorEl={anchorEl}
@@ -56,18 +83,42 @@ export default function LanguageSwitcher() {
         onClose={handleClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{ paper: { elevation: 3, sx: { mt: 0.5, minWidth: 150, borderRadius: 2 } } }}
       >
         {LANGUAGES.map((lang) => (
           <MenuItem
             key={lang.code}
             onClick={() => handleSelect(lang.code as Locale)}
             selected={lang.code === locale}
-            sx={{ gap: 1, minWidth: 130 }}
+            sx={{
+              gap: 1.5,
+              px: 2,
+              py: 1,
+              '&.Mui-selected': { bgcolor: 'action.selected', fontWeight: 700 },
+            }}
           >
-            <Box component="span" sx={{ fontSize: '1.1rem' }}>
-              {lang.flag}
+            <Box
+              sx={{
+                width: 26,
+                height: 18,
+                borderRadius: '3px',
+                overflow: 'hidden',
+                flexShrink: 0,
+                position: 'relative',
+                boxShadow: '0 0 0 1px rgba(0,0,0,0.12)',
+              }}
+            >
+              <Image
+                src={lang.flag}
+                alt={lang.label}
+                fill
+                unoptimized
+                style={{ objectFit: 'cover' }}
+              />
             </Box>
-            <Typography variant="body2">{lang.label}</Typography>
+            <Typography variant="body2" sx={{ fontWeight: lang.code === locale ? 700 : 400 }}>
+              {lang.label}
+            </Typography>
           </MenuItem>
         ))}
       </Menu>

@@ -22,17 +22,35 @@
     "language": "Jezik"
   },
   "home": {
-    "heroTitle": "Rezervišite Savršeno Iskustvo u Prirodi",
-    "heroSubtitle": "Otkrijte mesta za kampovanje, ribolov, kajaking i još mnogo toga. Jednostavna rezervacija sa interaktivnim mapama.",
-    "getStarted": "Počni",
+    "heroTitle": "Vaš Bijeg u Prirodu Počinje Ovde",
+    "heroSubtitle": "Pronađite i rezervišite mesta za kampovanje, ribolov, kajaking i još mnogo toga — sve na jednom mestu.",
+    "getStarted": "Počnite",
+    "exploreLocations": "Istražite lokacije",
+    "statsTitle": "Kojim veruju ljubitelji prirode širom regiona",
+    "stats": {
+      "locations": "Lokacija u prirodi",
+      "bookings": "Rezervacija napravljenih",
+      "activities": "Vrsta aktivnosti",
+      "rating": "Prosečna ocena"
+    },
+    "howItWorksTitle": "Kako funkcioniše",
+    "howItWorksSubtitle": "Rezervišite savršeno mesto u tri jednostavna koraka.",
+    "steps": {
+      "find": { "title": "Pronađite lokaciju", "desc": "Pregledajte našu listu outdoor prostora — kampovi, ribolovna jezera, reke za kajaking i još mnogo toga." },
+      "pick": { "title": "Odaberite mesto", "desc": "Koristite interaktivnu mapu da odaberete tačno mesto — bez iznenađenja po dolasku." },
+      "book": { "title": "Rezervišite i uživajte", "desc": "Završite rezervaciju za nekoliko minuta. Dobijte potvrdu emailom i krenite u prirodu." }
+    },
+    "galleryTitle": "Priroda Vas Čeka",
+    "gallerySubtitle": "Od mirnih kampova pored jezera do uzbudljivih rečnih avantura — imamo sve.",
     "featuresTitle": "Sve Što Vam Treba",
     "featuresSubtitle": "Kompletna platforma za rezervisanje i upravljanje mestima za aktivnosti u prirodi.",
-    "ctaTitle": "Spremni za Avanturu?",
-    "ctaSubtitle": "Pridružite se hiljadama ljubitelja prirode i rezervišite sledeće iskustvo danas.",
+    "ctaTitle": "Spremni za Sledeću Avanturu?",
+    "ctaSubtitle": "Pridružite se ljubiteljima prirode i rezervišite outdoor iskustvo danas. Registracija je besplatna.",
+    "ctaButton": "Kreiraj Besplatan Nalog",
     "features": {
       "map": {
         "title": "Interaktivne Mape",
-        "desc": "Odaberite tačno mesto na interaktivnoj SVG mapi pre rezervacije."
+        "desc": "Odaberite tačno mesto na interaktivnoj mapi pre rezervacije."
       },
       "booking": {
         "title": "Jednostavna Rezervacija",

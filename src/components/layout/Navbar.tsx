@@ -317,7 +317,7 @@ export default function Navbar() {
                 <Divider />
                 <MenuItem onClick={handleSignOut} sx={{ color: 'error.main' }}>
                   <ListItemIcon><Logout fontSize="small" sx={{ color: 'error.main' }} /></ListItemIcon>
-                  {t('auth.signOut')}
+                  {t('nav.signOut')}
                 </MenuItem>
               </Menu>
             </>
@@ -336,7 +336,7 @@ export default function Navbar() {
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
                 }}
               >
-                {t('auth.signIn')}
+                {t('nav.signIn')}
               </Box>
               <Box
                 component={Link}
@@ -353,7 +353,7 @@ export default function Navbar() {
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
                 }}
               >
-                {t('auth.signUp')}
+                {t('nav.signUp')}
               </Box>
             </Box>
           )}

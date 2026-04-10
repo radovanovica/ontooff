@@ -22,17 +22,35 @@
     "language": "Language"
   },
   "home": {
-    "heroTitle": "Book Your Perfect Outdoor Experience",
-    "heroSubtitle": "Discover camping spots, fishing locations, kayaking routes and more. Easy booking with interactive maps.",
+    "heroTitle": "Your Nature Escape Starts Here",
+    "heroSubtitle": "Find and book camping spots, fishing lakes, kayaking trails and more — all in one place.",
     "getStarted": "Get Started",
+    "exploreLocations": "Explore Locations",
+    "statsTitle": "Trusted by nature lovers across the region",
+    "stats": {
+      "locations": "Outdoor Locations",
+      "bookings": "Bookings Made",
+      "activities": "Activity Types",
+      "rating": "Average Rating"
+    },
+    "howItWorksTitle": "How It Works",
+    "howItWorksSubtitle": "Book your perfect outdoor spot in three simple steps.",
+    "steps": {
+      "find": { "title": "Find a Location", "desc": "Browse our curated list of outdoor venues — camping grounds, fishing lakes, kayaking rivers and more." },
+      "pick": { "title": "Pick Your Spot", "desc": "Use our interactive map to select exactly the spot you want — no surprises when you arrive." },
+      "book": { "title": "Book & Enjoy", "desc": "Complete your booking in minutes. Get an email confirmation and head out to nature." }
+    },
+    "galleryTitle": "The Great Outdoors Awaits",
+    "gallerySubtitle": "From peaceful lakeside camps to thrilling river adventures — we have it all.",
     "featuresTitle": "Everything You Need",
     "featuresSubtitle": "A complete platform for booking and managing outdoor activity spots.",
-    "ctaTitle": "Ready to Start Your Adventure?",
-    "ctaSubtitle": "Join thousands of nature lovers and book your next outdoor experience today.",
+    "ctaTitle": "Ready for Your Next Adventure?",
+    "ctaSubtitle": "Join nature lovers and book your outdoor experience today. Registration is free.",
+    "ctaButton": "Create Free Account",
     "features": {
       "map": {
         "title": "Interactive Maps",
-        "desc": "Select your exact spot on an interactive SVG map before booking."
+        "desc": "Select your exact spot on an interactive map before booking."
       },
       "booking": {
         "title": "Easy Booking",
