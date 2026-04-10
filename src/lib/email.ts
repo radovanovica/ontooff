@@ -10,9 +10,9 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const FROM = process.env.EMAIL_FROM ?? 'ActivityTracker <no-reply@localhost>';
+const FROM = process.env.EMAIL_FROM ?? 'ontooff <no-reply@localhost>';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
-const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? 'ActivityTracker';
+const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? 'ontooff';
 
 function baseTemplate(content: string): string {
   return `

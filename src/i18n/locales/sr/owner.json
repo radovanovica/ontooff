@@ -36,7 +36,7 @@
     "form": {
       "name": "Naziv mesta",
       "slug": "URL slug",
-      "slugHint": "Koristi se u URL-u: activitytracker.com/places/{{slug}}",
+      "slugHint": "Koristi se u URL-u: ontooff.com/places/{{slug}}",
       "description": "Opis",
       "address": "Ulica i broj",
       "city": "Grad",

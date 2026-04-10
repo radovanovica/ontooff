@@ -36,7 +36,7 @@
     "form": {
       "name": "Place name",
       "slug": "URL slug",
-      "slugHint": "Used in the URL: activitytracker.com/places/{{slug}}",
+      "slugHint": "Used in the URL: ontooff.com/places/{{slug}}",
       "description": "Description",
       "address": "Street address",
       "city": "City",

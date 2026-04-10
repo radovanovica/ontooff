@@ -13,6 +13,7 @@ import {
 import { Google as GoogleIcon } from '@mui/icons-material';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -100,9 +101,12 @@ export default function SignUpPage() {
       }}
     >
       <Paper elevation={3} sx={{ p: { xs: 3, sm: 5 }, width: '100%', maxWidth: 440, borderRadius: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, textAlign: 'center', mb: 0.5 }}>
-          🏕️ ActivityTracker
-        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 0.5 }}>
+          <Image src="/assets/images/logo.svg" alt="ontooff" width={40} height={40} />
+          <Typography variant="h5" sx={{ fontWeight: 700, textAlign: 'center' }}>
+            ontooff
+          </Typography>
+        </Box>
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mb: 4 }}>
           {t('signUp.subtitle')}
         </Typography>

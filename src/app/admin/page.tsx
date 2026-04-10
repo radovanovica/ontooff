@@ -10,7 +10,7 @@ import { authOptions } from '@/lib/auth';
 import { getTranslation } from '@/i18n/server';
 import { prisma } from '@/lib/prisma';
 
-export const metadata = { title: 'Admin Dashboard — ActivityTracker' };
+export const metadata = { title: 'Admin Dashboard — ontooff' };
 
 async function getStats() {
   const [totalUsers, totalPlaces, totalRegistrations, pendingRegistrations, revenue] =

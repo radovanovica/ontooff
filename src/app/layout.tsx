@@ -7,15 +7,20 @@ const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export const metadata: Metadata = {
   title: {
-    default: 'ActivityTracker – Book Nature Activities',
-    template: '%s | ActivityTracker',
+    default: 'ontooff – Book Nature Activities',
+    template: '%s | ontooff',
   },
   description: 'Discover and book fishing spots, camping sites, and outdoor activities. Register in advance and manage your reservations.',
   keywords: ['camping', 'fishing', 'outdoor activities', 'booking', 'reservation'],
   openGraph: {
-    title: 'ActivityTracker',
+    title: 'ontooff',
     description: 'Book outdoor activities and camping spots.',
     type: 'website',
+  },
+  icons: {
+    icon: '/assets/images/logo.svg',
+    shortcut: '/assets/images/logo.svg',
+    apple: '/assets/images/logo.svg',
   },
 };
 

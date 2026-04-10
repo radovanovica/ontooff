@@ -1,4 +1,4 @@
-# ActivityTracker
+# ontooff
 
 A production-ready platform for booking and managing outdoor activities — camping, fishing, kayaking, hiking and more. Features interactive SVG maps, multi-step booking, embeddable widgets, owner/admin panels, and full i18n (English + Serbian).
 
@@ -34,7 +34,7 @@ A production-ready platform for booking and managing outdoor activities — camp
 
 ```bash
 git clone <repo-url>
-cd ActivityTracking
+cd ontooff
 npm install --legacy-peer-deps
 ```
 
@@ -64,11 +64,11 @@ SMTP_PORT="587"
 SMTP_SECURE="false"
 SMTP_USER="your-email@gmail.com"
 SMTP_PASSWORD="your-app-password"
-EMAIL_FROM="ActivityTracker <no-reply@yourdomain.com>"
+EMAIL_FROM="ontooff <no-reply@yourdomain.com>"
 
 # Public app URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
-NEXT_PUBLIC_APP_NAME="ActivityTracker"
+NEXT_PUBLIC_APP_NAME="ontooff"
 ```
 
 > **Tip:** To spin up PostgreSQL instantly with Docker:
@@ -93,7 +93,7 @@ The seed creates:
 
 | Role | Email | Password |
 |---|---|---|
-| Super Admin | `admin@activitytracker.com` | `Admin123!` |
+| Super Admin | `admin@ontooff.com` | `Admin123!` |
 | Place Owner | `owner@greenvalley.com` | `Owner123!` |
 
 It also creates a sample place (Green Valley Resort) with locations, spots, pricing rules, an embed token, and a sample booking.
@@ -283,8 +283,8 @@ const nextConfig = {
 ```
 
 ```bash
-docker build -t activitytracker .
-docker run -p 3000:3000 --env-file .env activitytracker
+docker build -t ontooff .
+docker run -p 3000:3000 --env-file .env ontooff
 ```
 
 #### 2. With Docker Compose
@@ -325,8 +325,8 @@ docker compose up -d
 
 ```bash
 # On your server
-git clone <repo-url> /var/www/activitytracker
-cd /var/www/activitytracker
+git clone <repo-url> /var/www/ontooff
+cd /var/www/ontooff
 npm ci --legacy-peer-deps
 npx prisma generate
 npx prisma migrate deploy
@@ -336,7 +336,7 @@ npm run build
 npm install -g pm2
 
 # Start with PM2
-pm2 start npm --name activitytracker -- start
+pm2 start npm --name ontooff -- start
 pm2 save
 pm2 startup
 ```

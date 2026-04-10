@@ -6,7 +6,7 @@ import { getTranslation } from '@/i18n/server';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 
-export const metadata = { title: 'Owner Dashboard — ActivityTracker' };
+export const metadata = { title: 'Owner Dashboard — ontooff' };
 
 async function getOwnerStats(ownerId: string) {
   const places = await prisma.place.findMany({

@@ -22,7 +22,7 @@ export default function DeactivatedPage() {
         <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
           Your account has been deactivated. Please contact support if you believe this is a mistake.
         </Typography>
-        <Link href="mailto:support@activitytracker.com" style={{ textDecoration: 'none', display: 'block' }}>
+        <Link href="mailto:support@ontooff.com" style={{ textDecoration: 'none', display: 'block' }}>
           <Button variant="contained" fullWidth>
             Contact Support
           </Button>

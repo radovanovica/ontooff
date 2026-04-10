@@ -13,7 +13,7 @@ import Navbar from '@/components/layout/Navbar';
 import { getTranslation } from '@/i18n/server';
 
 export const metadata = {
-  title: 'ActivityTracker — Book Outdoor Activities',
+  title: 'ontooff — Book Outdoor Activities',
   description: 'Find and book camping, fishing, kayaking and more outdoor activities.',
 };
 

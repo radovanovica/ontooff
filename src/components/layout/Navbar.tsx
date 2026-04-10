@@ -32,6 +32,7 @@ import {
   ManageAccounts,
 } from '@mui/icons-material';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
@@ -140,9 +141,12 @@ export default function Navbar() {
           color: 'white',
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>
-          🏕️ ActivityTracker
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Image src="/assets/images/logo.svg" alt="ontooff" width={26} height={26} />
+          <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>
+            ontooff
+          </Typography>
+        </Box>
         {session?.user && (
           <Typography variant="body2" sx={{ opacity: 0.85, mt: 0.5 }}>
             {session.user.name ?? session.user.email}
@@ -198,11 +202,13 @@ export default function Navbar() {
           )}
 
           {/* Logo */}
-          <Typography
+          <Box
             component={Link}
             href="/"
-            variant="h6"
             sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
               fontWeight: 700,
               color: 'inherit',
               textDecoration: 'none',
@@ -210,8 +216,11 @@ export default function Navbar() {
               flexShrink: 0,
             }}
           >
-            🏕️ ActivityTracker
-          </Typography>
+            <Image src="/assets/images/logo.svg" alt="ontooff" width={26} height={26} />
+            <Typography component="span" variant="h6" sx={{ fontWeight: 700, color: 'inherit' }}>
+              ontooff
+            </Typography>
+          </Box>
 
           {/* Desktop nav */}
           {!isMobile && (

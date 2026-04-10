@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const embedToken = await validateEmbedToken(token);
   if (!embedToken) return { title: 'Not Found' };
   const place = await prisma.place.findUnique({ where: { id: embedToken.placeId }, select: { name: true } });
-  return { title: `Book — ${place?.name ?? 'ActivityTracker'}` };
+  return { title: `Book — ${place?.name ?? 'ontooff'}` };
 }
 
 export default async function EmbedPage({ params }: Props) {
