@@ -1,0 +1,425 @@
+// Activity Tracking Platform - Prisma Schema
+// Supports: places, activity types, locations, spots, registrations, pricing, payments, embed tokens
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────
+
+enum UserRole {
+  SUPER_ADMIN
+  PLACE_OWNER
+  USER
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum SpotStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  DISABLED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  BOTH
+}
+
+enum PricingType {
+  PER_ACTIVITY
+  PER_PERSON
+  PER_PERSON_PER_DAY
+  PER_DAY
+}
+
+enum AgeGroupType {
+  ADULT
+  CHILD
+  SENIOR
+  INFANT
+  FAMILY
+  GROUP
+  CUSTOM
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  REFUNDED
+  WAIVED
+}
+
+// ─────────────────────────────────────────
+// AUTH ENTITIES (NextAuth compatible)
+// ─────────────────────────────────────────
+
+model User {
+  id                String    @id @default(cuid())
+  name              String?
+  email             String    @unique
+  emailVerified     DateTime?
+  emailVerifyToken  String?   @unique
+  image             String?
+  password          String?
+  role              UserRole  @default(USER)
+  isActive          Boolean   @default(true)
+  phone             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  places        Place[]
+  registrations Registration[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─────────────────────────────────────────
+// PLACE & ACTIVITY CORE
+// ─────────────────────────────────────────
+
+model Place {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  slug        String   @unique
+  ownerId     String
+  address     String?
+  city        String?
+  country     String?
+  latitude    Float?
+  longitude   Float?
+  phone       String?
+  email       String?
+  website     String?
+  logoUrl     String?
+  coverUrl    String?
+  mapImageUrl String?  @db.Text
+  mapWidth    Int?
+  mapHeight   Int?
+  isActive    Boolean  @default(true)
+  timezone    String   @default("UTC")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner             User               @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  activityTypes     ActivityType[]
+  activityLocations ActivityLocation[]
+  embedTokens       EmbedToken[]
+
+  @@index([ownerId])
+  @@index([slug])
+  @@index([isActive])
+  @@map("places")
+}
+
+model ActivityType {
+  id          String   @id @default(cuid())
+  placeId     String
+  name        String
+  description String?  @db.Text
+  icon        String?
+  color       String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  place             Place              @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  activityLocations ActivityLocation[]
+  pricingRules      PricingRule[]
+
+  @@index([placeId])
+  @@index([isActive])
+  @@map("activity_types")
+}
+
+model ActivityLocation {
+  id             String   @id @default(cuid())
+  placeId        String
+  activityTypeId String
+  name           String
+  description    String?  @db.Text
+  svgMapData     String?  @db.Text
+  mapImageUrl    String?  @db.Text
+  mapWidth       Int?
+  mapHeight      Int?
+  maxCapacity    Int?
+  requiresSpot   Boolean  @default(true)
+  isActive       Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  place        Place        @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  activityType ActivityType @relation(fields: [activityTypeId], references: [id], onDelete: Cascade)
+  spots        Spot[]
+  registrations Registration[]
+  pricingRules PricingRule[]
+  embedTokens  EmbedToken[]
+
+  @@index([placeId])
+  @@index([activityTypeId])
+  @@index([isActive])
+  @@map("activity_locations")
+}
+
+// ─────────────────────────────────────────
+// SPOTS
+// ─────────────────────────────────────────
+
+model Spot {
+  id                 String     @id @default(cuid())
+  activityLocationId String
+  name               String
+  description        String?    @db.Text
+  code               String?
+  svgShapeData       String?    @db.Text
+  maxPeople          Int        @default(1)
+  amenities          String[]
+  imageUrl           String?
+  status             SpotStatus @default(AVAILABLE)
+  sortOrder          Int        @default(0)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  activityLocation  ActivityLocation   @relation(fields: [activityLocationId], references: [id], onDelete: Cascade)
+  registrationSpots RegistrationSpot[]
+
+  @@index([activityLocationId])
+  @@index([status])
+  @@map("spots")
+}
+
+// ─────────────────────────────────────────
+// PRICING
+// ─────────────────────────────────────────
+
+model PricingRule {
+  id                 String        @id @default(cuid())
+  placeId            String?
+  activityTypeId     String?
+  activityLocationId String?
+  name               String
+  description        String?
+  pricingType        PricingType
+  paymentMethod      PaymentMethod @default(BOTH)
+  requiresPayment    Boolean       @default(true)
+  currency           String        @default("EUR")
+  isActive           Boolean       @default(true)
+  validFrom          DateTime?
+  validTo            DateTime?
+  minDays            Int?
+  maxDays            Int?
+  minPeople          Int?
+  maxPeople          Int?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  activityType     ActivityType?     @relation(fields: [activityTypeId], references: [id], onDelete: SetNull)
+  activityLocation ActivityLocation? @relation(fields: [activityLocationId], references: [id], onDelete: SetNull)
+  pricingTiers     PricingTier[]
+  registrations    Registration[]
+
+  @@index([activityTypeId])
+  @@index([activityLocationId])
+  @@index([isActive])
+  @@map("pricing_rules")
+}
+
+model PricingTier {
+  id            String       @id @default(cuid())
+  pricingRuleId String
+  ageGroup      AgeGroupType
+  label         String
+  minAge        Int?
+  maxAge        Int?
+  pricePerUnit  Decimal      @db.Decimal(10, 2)
+  sortOrder     Int          @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  pricingRule PricingRule @relation(fields: [pricingRuleId], references: [id], onDelete: Cascade)
+
+  @@index([pricingRuleId])
+  @@map("pricing_tiers")
+}
+
+// ─────────────────────────────────────────
+// REGISTRATIONS
+// ─────────────────────────────────────────
+
+model Registration {
+  id                 String             @id @default(cuid())
+  registrationNumber String             @unique
+  activityLocationId String
+  userId             String?
+  pricingRuleId      String?
+
+  firstName          String
+  lastName           String
+  email              String
+  phone              String?
+  address            String?
+
+  startDate          DateTime
+  endDate            DateTime
+  numberOfDays       Int
+  notes              String?            @db.Text
+  status             RegistrationStatus @default(PENDING)
+
+  guestCounts        Json               @default("{}")
+
+  totalAmount        Decimal?           @db.Decimal(10, 2)
+  paymentStatus      PaymentStatus      @default(UNPAID)
+  paymentMethod      PaymentMethod?
+  paymentNotes       String?
+  paidAt             DateTime?
+
+  editToken          String             @unique @default(cuid())
+  editTokenExpiresAt DateTime?
+
+  ipAddress          String?
+  userAgent          String?
+  source             String?            @default("web")
+  embedTokenId       String?
+
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  activityLocation  ActivityLocation     @relation(fields: [activityLocationId], references: [id], onDelete: Restrict)
+  user              User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  pricingRule       PricingRule?         @relation(fields: [pricingRuleId], references: [id], onDelete: SetNull)
+  registrationSpots RegistrationSpot[]
+  embedToken        EmbedToken?          @relation(fields: [embedTokenId], references: [id], onDelete: SetNull)
+  paymentBreakdown  PaymentBreakdownItem[]
+
+  @@index([activityLocationId])
+  @@index([userId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@index([email])
+  @@index([editToken])
+  @@index([registrationNumber])
+  @@map("registrations")
+}
+
+model RegistrationSpot {
+  id             String   @id @default(cuid())
+  registrationId String
+  spotId         String
+  createdAt      DateTime @default(now())
+
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  spot         Spot         @relation(fields: [spotId], references: [id], onDelete: Restrict)
+
+  @@unique([registrationId, spotId])
+  @@index([registrationId])
+  @@index([spotId])
+  @@map("registration_spots")
+}
+
+model PaymentBreakdownItem {
+  id             String        @id @default(cuid())
+  registrationId String
+  label          String
+  ageGroup       AgeGroupType?
+  quantity       Int
+  unitPrice      Decimal       @db.Decimal(10, 2)
+  totalPrice     Decimal       @db.Decimal(10, 2)
+  sortOrder      Int           @default(0)
+
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@index([registrationId])
+  @@map("payment_breakdown_items")
+}
+
+// ─────────────────────────────────────────
+// EMBED TOKENS
+// ─────────────────────────────────────────
+
+model EmbedToken {
+  id                 String    @id @default(cuid())
+  token              String    @unique @default(cuid())
+  placeId            String
+  activityLocationId String?
+  label              String
+  isActive           Boolean   @default(true)
+  allowedOrigins     String[]
+  expiresAt          DateTime?
+  lastUsedAt         DateTime?
+  useCount           Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  place            Place             @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  activityLocation ActivityLocation? @relation(fields: [activityLocationId], references: [id], onDelete: SetNull)
+  registrations    Registration[]
+
+  @@index([token])
+  @@index([placeId])
+  @@map("embed_tokens")
+}

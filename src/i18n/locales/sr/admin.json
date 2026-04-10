@@ -1,0 +1,132 @@
+{
+  "common": {
+    "save": "Sačuvaj",
+    "cancel": "Otkaži",
+    "actions": "Akcije",
+    "noData": "Nema podataka",
+    "all": "Sve"
+  },
+  "dashboard": {
+    "title": "Admin kontrolna tabla",
+    "subtitle": "Pregled platforme",
+    "stats": {
+      "totalUsers": "Ukupno korisnika",
+      "totalPlaces": "Aktivna mesta",
+      "totalRegistrations": "Ukupno rezervacija",
+      "pendingRegistrations": "Na čekanju",
+      "confirmedRegistrations": "Potvrđene",
+      "totalRevenue": "Ukupan prihod"
+    },
+    "recentBookings": "Nedavne rezervacije",
+    "quickLinks": "Brze veze"
+  },
+  "users": {
+    "title": "Upravljanje korisnicima",
+    "subtitle": "Upravljajte svim korisnicima platforme",
+    "table": {
+      "name": "Ime",
+      "email": "Email",
+      "role": "Uloga",
+      "status": "Status",
+      "bookings": "Rezervacije",
+      "places": "Mesta",
+      "joined": "Registrovan",
+      "actions": "Akcije"
+    },
+    "columns": {
+      "name": "Ime",
+      "email": "Email",
+      "role": "Uloga",
+      "status": "Status",
+      "joined": "Registrovan",
+      "registrations": "Rezervacije",
+      "actions": "Akcije"
+    },
+    "searchPlaceholder": "Pretraži po imenu ili emailu…",
+    "roleFilter": "Uloga",
+    "active": "Aktivan",
+    "inactive": "Neaktivan",
+    "activate": "Aktiviraj",
+    "deactivate": "Deaktiviraj",
+    "roles": {
+      "SUPER_ADMIN": "Super administrator",
+      "PLACE_OWNER": "Vlasnik mesta",
+      "USER": "Korisnik"
+    },
+    "actions": {
+      "activate": "Aktiviraj",
+      "deactivate": "Deaktiviraj",
+      "changeRole": "Promeni ulogu",
+      "viewBookings": "Prikaži rezervacije"
+    },
+    "filters": {
+      "allRoles": "Sve uloge",
+      "searchPlaceholder": "Pretraži po imenu ili emailu…"
+    },
+    "confirmDeactivate": "Deaktivirati ovog korisnika? Neće moći da se prijavi.",
+    "confirmActivate": "Ponovo aktivirati ovog korisnika?",
+    "confirmRoleChange": "Promeniti ulogu na {{role}}?"
+  },
+  "places": {
+    "title": "Sva mesta",
+    "subtitle": "Upravljajte svim registrovanim mestima",
+    "table": {
+      "name": "Naziv mesta",
+      "owner": "Vlasnik",
+      "city": "Grad",
+      "locations": "Lokacije",
+      "status": "Status",
+      "created": "Kreirano"
+    },
+    "columns": {
+      "name": "Naziv mesta",
+      "location": "Lokacija",
+      "owner": "Vlasnik",
+      "locations": "Lokacije",
+      "registrations": "Rezervacije",
+      "status": "Status",
+      "created": "Kreirano"
+    },
+    "confirmDelete": "Obrisati ovo mesto? Svi povezani podaci biće trajno uklonjeni."
+  },
+  "registrations": {
+    "title": "Sve rezervacije",
+    "subtitle": "Pregled i upravljanje svim rezervacijama",
+    "searchPlaceholder": "Pretra\u017ei po imenu, emailu ili broju\u2026",
+    "table": {
+      "number": "Ref #",
+      "guest": "Gost",
+      "activity": "Aktivnost",
+      "place": "Mesto",
+      "dates": "Datumi",
+      "guests": "Gosti",
+      "total": "Ukupno",
+      "payment": "Pla\u0107anje",
+      "status": "Status",
+      "created": "Rezervisano"
+    },
+    "columns": {
+      "number": "Ref #",
+      "guest": "Gost",
+      "location": "Lokacija",
+      "dates": "Datumi",
+      "status": "Status",
+      "payment": "Pla\u0107anje",
+      "amount": "Iznos"
+    },
+    "filters": {
+      "allStatuses": "Svi statusi",
+      "searchPlaceholder": "Pretraži po imenu, emailu ili broju…"
+    },
+    "actions": {
+      "confirm": "Potvrdi",
+      "cancel": "Otkaži",
+      "markPaid": "Označi kao plaćeno",
+      "viewDetails": "Prikaži detalje",
+      "sendEmail": "Ponovo pošalji email"
+    },
+    "confirmCancel": "Otkazati ovu rezervaciju? Gost će dobiti email obaveštenje.",
+    "confirmConfirm": "Potvrditi ovu rezervaciju? Gost će biti obavešten.",
+    "confirmMarkPaid": "Označiti ovu rezervaciju kao potpuno plaćenu?"
+  }
+}

@@ -1,0 +1,341 @@
+{
+  "common": {
+    "save": "Save",
+    "saving": "Saving…",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "create": "Create",
+    "manage": "Manage",
+    "back": "Back",
+    "clear": "Clear",
+    "active": "Active",
+    "error": "Error",
+    "all": "All",
+    "noData": "No data available",
+    "actions": "Actions"
+  },
+  "dashboard": {
+    "title": "My Dashboard",
+    "subtitle": "Manage your places and bookings",
+    "stats": {
+      "totalPlaces": "My Places",
+      "totalLocations": "Locations",
+      "pendingBookings": "Pending Bookings",
+      "totalRevenue": "Revenue"
+    },
+    "recentBookings": "Recent Bookings",
+    "myPlaces": "My Places",
+    "noPlaces": "You haven't added any places yet.",
+    "addFirstPlace": "Add Your First Place"
+  },
+  "places": {
+    "title": "My Places",
+    "addNew": "Add New Place",
+    "editPlace": "Edit Place",
+    "form": {
+      "name": "Place name",
+      "slug": "URL slug",
+      "slugHint": "Used in the URL: activitytracker.com/places/{{slug}}",
+      "description": "Description",
+      "address": "Street address",
+      "city": "City",
+      "country": "Country",
+      "phone": "Phone",
+      "email": "Contact email",
+      "website": "Website",
+      "timezone": "Timezone",
+      "logo": "Logo URL",
+      "cover": "Cover image URL"
+    },
+    "deleteConfirm": "Delete this place? All locations, spots and bookings will be permanently removed.",
+    "created": "Place created successfully!",
+    "updated": "Place updated.",
+    "deleted": "Place deleted.",
+    "steps": {
+      "details": "Place Details",
+      "mapSetup": "Map Setup"
+    },
+    "actions": {
+      "continueToMap": "Continue to Map Setup",
+      "replaceImage": "Replace image",
+      "uploadImage": "Upload image",
+      "removeImage": "Remove"
+    },
+    "mapSetupSuccess": "Place created! Now set up a map background — this will be used as the base map for all location zones at your place. You can also skip and do this later.",
+    "mapBackground": "Map Background",
+    "mapBackgroundHint": "Upload an aerial photo, floor plan or illustrated map of your entire place. Location zones will be marked on top of this image.",
+    "imageRequirements": "JPG, PNG or GIF · max 5 MB · stored in database",
+    "defaults": {
+      "mapWidth": "Default: 1200",
+      "mapHeight": "Default: 800"
+    },
+    "errors": {
+      "createFailed": "Failed to create place",
+      "loadFailed": "Failed to load place",
+      "notFound": "Place not found",
+      "mapSaveFailed": "Failed to save map",
+      "imageSaveFailed": "Failed to save image",
+      "uploadFailed": "Upload failed",
+      "imageSizeExceeded": "Image must be under 5 MB",
+      "fileReadFailed": "Failed to read file"
+    }
+  },
+  "activityTypes": {
+    "title": "Activity Types",
+    "addNew": "Add Activity Type",
+    "editTitle": "Edit Activity Type",
+    "empty": "No activity types yet. Add one to get started.",
+    "inactive": "Inactive",
+    "order": "Order",
+    "locationsCount": "{{count}} location",
+    "locationsCount_plural": "{{count}} locations",
+    "tiersCount": "{{count}} tier",
+    "tiersCount_plural": "{{count}} tiers",
+    "singleEmoji": "Single emoji",
+    "optionalShortDescription": "Optional short description",
+    "colorHint": "Used for map markers and labels",
+    "sortOrder": "Sort order",
+    "deleteTitle": "Delete Activity Type?",
+    "deleteConfirm": "Are you sure you want to delete {{name}}?",
+    "deleteWithLocationsWarning": "This type has {{count}} associated location(s). Deleting it may affect those locations.",
+    "deleting": "Deleting…",
+    "pricingLoading": "Loading pricing…",
+    "pricingEmpty": "No pricing rules",
+    "deletePricingRuleConfirm": "Delete this pricing rule?",
+    "errors": {
+      "loadFailed": "Failed to load activity types",
+      "pricingLoadFailed": "Failed to load pricing rules",
+      "nameRequired": "Name is required",
+      "saveFailed": "Save failed",
+      "deleteFailed": "Delete failed",
+      "ruleNameRequired": "Rule name is required",
+      "oneTierRequired": "At least one tier is required",
+      "uniqueNonCustomTier": "Each non-custom age group can only be added once per rule",
+      "pricingCreateFailed": "Failed to create pricing rule",
+      "pricingDeleteFailed": "Failed to delete pricing rule"
+    },
+    "form": {
+      "name": "Activity name",
+      "description": "Description",
+      "icon": "Icon (emoji)",
+      "color": "Color"
+    },
+    "examples": "e.g. Fishing, Camping, Hiking, Kayaking…"
+  },
+  "locations": {
+    "title": "Locations",
+    "addNew": "Add Location",
+    "editLocation": "Edit Location",
+    "form": {
+      "name": "Location name",
+      "description": "Description",
+      "activityType": "Activity type",
+      "maxCapacity": "Max capacity",
+      "requiresSpot": "Guests must select a specific spot",
+      "mapWidth": "Map width (px)",
+      "mapHeight": "Map height (px)"
+    },
+    "mapEditor": "Map Editor",
+    "mapEditorHint": "Draw spot shapes on the SVG canvas below",
+    "created": "Location created.",
+    "updated": "Location updated.",
+    "deleted": "Location deleted.",
+    "detailsTitle": "Location Details",
+    "selectPlaceholder": "— select —",
+    "positionOnMap": "Position on place map",
+    "pickOnMapHint": "Click \"Pick on map →\" to mark this location's position",
+    "noPlaceMapHint": "No place map configured yet — you can set one in place settings",
+    "create": "Create Location",
+    "placeMapPickerTitle": "Place Map — Mark Location Zone",
+    "clickMapToPlace": "Click map to place…",
+    "reposition": "Reposition",
+    "pickOnMap": "Pick on map →",
+    "noMapBackgroundHint": "No map background has been set for this place yet. Go to Place Settings → Map to add a background image, then come back to mark location zones.",
+    "clickToMarkPosition": "Click to mark location position",
+    "mapManagedHint": "Map image is managed at Place level. This location is positioned on the place map, and spot shapes are edited in the Spots → Map Editor tab.",
+    "noActivityTypes": "No activity types configured yet. Add activity types from the place settings first.",
+    "errors": {
+      "saveFailed": "Save failed"
+    }
+  },
+  "spots": {
+    "title": "Spots",
+    "addNew": "Add Spot",
+    "editSpot": "Edit Spot",
+    "form": {
+      "name": "Spot name",
+      "code": "Short code (e.g. A1)",
+      "description": "Description",
+      "maxPeople": "Max people",
+      "amenities": "Amenities",
+      "status": "Status"
+    },
+    "amenitiesOptions": {
+      "electricity": "Electricity",
+      "water": "Running water",
+      "toilet": "Toilet nearby",
+      "firepit": "Fire pit",
+      "shade": "Shade",
+      "parking": "Parking"
+    },
+    "bulkAdd": "Bulk add spots",
+    "empty": "No spots yet. Add your first spot for this location.",
+    "listHint": "Spots are managed as a list under this location.",
+    "maxPeopleLabel": "Max {{count}} person",
+    "maxPeopleLabel_plural": "Max {{count}} people",
+    "deleteConfirm": "Delete this spot?",
+    "status": {
+      "AVAILABLE": "AVAILABLE",
+      "OCCUPIED": "OCCUPIED",
+      "MAINTENANCE": "MAINTENANCE",
+      "DISABLED": "DISABLED"
+    },
+    "errors": {
+      "saveFailed": "Save failed",
+      "createFailed": "Create failed"
+    }
+  },
+  "pricing": {
+    "title": "Pricing Rules",
+    "addNew": "Add Pricing Rule",
+    "editPricing": "Edit Pricing",
+    "form": {
+      "name": "Rule name",
+      "description": "Description",
+      "pricingType": "Pricing type",
+      "pricingTypes": {
+        "PER_ACTIVITY": "Per activity (flat fee)",
+        "PER_PERSON": "Per person",
+        "PER_PERSON_PER_DAY": "Per person per day",
+        "PER_DAY": "Per day (flat)"
+      },
+      "paymentMethod": "Accepted payment",
+      "paymentMethods": {
+        "CASH": "Cash only",
+        "CARD": "Card only",
+        "BOTH": "Cash or Card"
+      },
+      "requiresPayment": "Payment required",
+      "currency": "Currency",
+      "validFrom": "Valid from",
+      "validTo": "Valid until",
+      "minDays": "Min days",
+      "maxDays": "Max days",
+      "minPeople": "Min people",
+      "maxPeople": "Max people"
+    },
+    "tiers": {
+      "heading": "Price Tiers",
+      "addTier": "Add Tier",
+      "ageGroup": "Group",
+      "label": "Label",
+      "minAge": "Min age",
+      "maxAge": "Max age",
+      "price": "Price",
+      "ageGroups": {
+        "ADULT": "Adult",
+        "CHILD": "Child",
+        "SENIOR": "Senior",
+        "INFANT": "Infant",
+        "FAMILY": "Family",
+        "GROUP": "Group",
+        "CUSTOM": "Custom"
+      },
+      "exampleLabel": "e.g. Adult (18+), Child (3-12), Family (2+2)"
+    },
+    "noPaymentNote": "This activity is free. Guests will not be asked for payment.",
+    "created": "Pricing rule created.",
+    "updated": "Pricing updated.",
+    "deleted": "Pricing rule deleted."
+  },
+  "embedTokens": {
+    "title": "Embed Tokens",
+    "subtitle": "Generate links to embed booking widgets on external websites",
+    "addNew": "Generate Token",
+    "form": {
+      "label": "Token label",
+      "location": "Specific location (optional)",
+      "allowedOrigins": "Allowed origins",
+      "originsHint": "Comma-separated domains, e.g. mysite.com, shop.example.com",
+      "expiresAt": "Expiry date (optional)"
+    },
+    "embedCode": "Embed code",
+    "embedUrl": "Direct link",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "usageCount": "Used {{count}} time(s)",
+    "lastUsed": "Last used: {{date}}",
+    "table": {
+      "token": "Token",
+      "expires": "Expires"
+    },
+    "empty": "No embed tokens yet",
+    "errors": {
+      "loadFailed": "Failed to load tokens",
+      "createFailed": "Failed to create embed token",
+      "deleteFailed": "Failed to delete token"
+    },
+    "never": "Never",
+    "deleteConfirm": "Delete this embed token? Any embedded widgets using it will stop working.",
+    "created": "Embed token created.",
+    "deleted": "Token deleted."
+  },
+  "bookings": {
+    "title": "Bookings",
+    "subtitle": "Manage reservations for your places",
+    "empty": "No bookings yet",
+    "filters": {
+      "allLocations": "All locations",
+      "allStatuses": "All statuses"
+    },
+    "table": {
+      "bookingNumber": "Booking #",
+      "guest": "Guest",
+      "location": "Location",
+      "dates": "Dates",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "amount": "Amount",
+      "status": "Status",
+      "created": "Created",
+      "currency": "RSD",
+      "empty": "—"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "CONFIRMED": "Confirmed",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled",
+      "NO_SHOW": "No Show"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "view": "View",
+      "confirm": "Confirm",
+      "confirmed": "Confirmed",
+      "reject": "Reject",
+      "rejected": "Rejected",
+      "backToBookings": "Back to bookings"
+    },
+    "details": {
+      "titleWithNumber": "Booking {{number}}",
+      "sectionDetails": "Booking Details",
+      "guest": "Guest",
+      "numberOfDays": "{{count}} day(s)",
+      "activity": "Activity",
+      "spots": "Spots",
+      "noSpotSelected": "No spot selected",
+      "guestCounts": "Guest Counts",
+      "notes": "Notes",
+      "paymentSummary": "Payment Summary",
+      "noBreakdown": "No breakdown available",
+      "total": "Total"
+    },
+    "errors": {
+      "fetchFailed": "Failed to fetch bookings",
+      "loadFailed": "Failed to load bookings.",
+      "updateStatusFailed": "Failed to update status."
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "required": "{{field}} is required",
+  "minLength": "{{field}} must be at least {{min}} characters",
+  "maxLength": "{{field}} cannot exceed {{max}} characters",
+  "email": "Please enter a valid email address",
+  "url": "Please enter a valid URL",
+  "number": "Must be a number",
+  "positiveNumber": "Must be a positive number",
+  "passwordMismatch": "Passwords do not match",
+  "passwordStrength": "Password must be at least 8 characters with an uppercase letter and a number",
+  "dateRange": "End date must be after start date",
+  "minDate": "Date cannot be in the past",
+  "atLeastOne": "Please select at least one {{item}}",
+  "maxPeople": "Maximum {{count}} people allowed for this spot"
+}

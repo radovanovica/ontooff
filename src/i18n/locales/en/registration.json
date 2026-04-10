@@ -1,0 +1,179 @@
+{
+  "title": "Book an Activity",
+  "embedTitle": "Reserve Your Spot",
+  "steps": {
+    "selectActivity": "Select Activity",
+    "selectSpot": "Dates & Spot",
+    "guests": "Guests & Payment",
+    "contact": "Your Details",
+    "confirm": "Confirmation",
+    "location": "Location",
+    "dates": "Dates & Spot",
+    "spotSelection": "Select a Spot"
+  },
+  "fields": {
+    "startDate": "Arrival date",
+    "endDate": "Departure date",
+    "numberOfDays": "Duration",
+    "nights": "night(s)",
+    "guestCounts": "Number of Guests",
+    "pricingRule": "Pricing plan",
+    "paymentMethod": "Payment method",
+    "notes": "Special requests or notes",
+    "notesPlaceholder": "Any special requirements, accessibility needs, etc.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email address",
+    "phone": "Phone number",
+    "address": "Address (optional)",
+    "dates": "Dates",
+    "selectedSpots": "Selected spot(s)",
+    "guests": "Guests",
+    "contact": "Contact"
+  },
+  "actions": {
+    "continue": "Continue",
+    "back": "Back",
+    "confirm": "Confirm Booking",
+    "submitting": "Confirming…"
+  },
+  "guestTypes": {
+    "adults": "Adults",
+    "children": "Children",
+    "seniors": "Seniors",
+    "infants": "Infants (0-3)",
+    "families": "Family packages",
+    "groups": "Group packages"
+  },
+  "paymentMethods": {
+    "cash": "Cash",
+    "card": "Card",
+    "both": "Cash or Card"
+  },
+  "pricing": {
+    "breakdown": "Price summary",
+    "total": "Total"
+  },
+  "confirm": {
+    "summaryTitle": "Booking Summary"
+  },
+  "step1": {
+    "heading": "Choose an Activity",
+    "subheading": "Select the activity and location you'd like to book",
+    "activityLabel": "Activity Type",
+    "locationLabel": "Location",
+    "selectActivity": "Select activity…",
+    "selectLocation": "Select location…",
+    "noLocations": "No locations available for this activity.",
+    "maxCapacity": "Max capacity: {{count}} people",
+    "spotsAvailable": "{{count}} spot(s) available"
+  },
+  "step2": {
+    "heading": "Select Dates & Spot",
+    "subheading": "Choose your arrival and departure dates, then pick a spot on the map",
+    "startDateLabel": "Arrival date",
+    "endDateLabel": "Departure date",
+    "numberOfDays": "{{count}} night(s)",
+    "mapHeading": "Select a spot",
+    "mapLegend": {
+      "available": "Available",
+      "booked": "Booked",
+      "selected": "Selected",
+      "maintenance": "Maintenance"
+    },
+    "noSpotRequired": "No specific spot required for this activity.",
+    "spotSelected": "{{name}} selected",
+    "spotsRequired": "Please select at least one spot"
+  },
+  "step3": {
+    "heading": "Guests & Payment",
+    "subheading": "Tell us how many guests are coming",
+    "guestsLabel": "Number of guests",
+    "adults": "Adults",
+    "children": "Children",
+    "seniors": "Seniors",
+    "infants": "Infants (0-3)",
+    "families": "Family packages",
+    "groups": "Group packages",
+    "pricingHeading": "Price summary",
+    "noPricing": "This activity is free of charge.",
+    "paymentMethodLabel": "Payment method",
+    "paymentMethods": {
+      "CASH": "Cash",
+      "CARD": "Card",
+      "BOTH": "Cash or Card"
+    },
+    "paymentNote": "Payment is collected on-site.",
+    "totalLabel": "Total",
+    "perPerson": "per person",
+    "perDay": "per day",
+    "perPersonPerDay": "per person / per day",
+    "perActivity": "flat fee",
+    "atLeastOneGuest": "Please add at least one guest"
+  },
+  "step4": {
+    "heading": "Your Details",
+    "subheading": "We'll send your booking confirmation to your email",
+    "firstNameLabel": "First name",
+    "lastNameLabel": "Last name",
+    "emailLabel": "Email address",
+    "phoneLabel": "Phone number",
+    "addressLabel": "Address (optional)",
+    "notesLabel": "Special requests or notes",
+    "notesPlaceholder": "Any special requirements, accessibility needs, etc."
+  },
+  "step5": {
+    "heading": "Booking Summary",
+    "subheading": "Review your booking before confirming",
+    "activity": "Activity",
+    "location": "Location",
+    "dates": "Dates",
+    "nights": "{{count}} night(s)",
+    "spots": "Spot(s)",
+    "guests": "Guests",
+    "contact": "Contact",
+    "payment": "Payment",
+    "paymentMethod": "Payment method",
+    "totalDue": "Total due",
+    "freeBadge": "Free",
+    "termsText": "By confirming, you agree to our",
+    "termsLink": "terms and conditions",
+    "submitButton": "Confirm Booking",
+    "submitting": "Confirming…"
+  },
+  "success": {
+    "title": "Booking Confirmed! 🎉",
+    "subtitle": "Your booking has been received successfully.",
+    "message": "Your reservation <strong>#{{number}}</strong> has been submitted.",
+    "emailSent": "A confirmation has been sent to <strong>{{email}}</strong>.",
+    "editLink": "You can edit your booking using the link in the email.",
+    "newBooking": "Make another booking",
+    "viewBooking": "View my bookings"
+  },
+  "edit": {
+    "title": "Edit Reservation",
+    "subtitle": "Reservation #{{number}}",
+    "contactSection": "Contact Information",
+    "notesSection": "Notes & Requests",
+    "bookingDetails": "Booking Details",
+    "paymentSection": "Payment Information",
+    "saveButton": "Save Changes",
+    "saving": "Saving…",
+    "savedSuccess": "Changes saved successfully.",
+    "cancelButton": "Cancel Reservation",
+    "cancelConfirmTitle": "Cancel this reservation?",
+    "cancelConfirmMessage": "This action cannot be undone. You will receive a cancellation email.",
+    "cancelled": "Reservation cancelled.",
+    "expired": "This edit link has expired or is invalid."
+  },
+  "errors": {
+    "spotsNotAvailable": "One or more selected spots are not available for the chosen dates.",
+    "dateRange": "End date must be after start date.",
+    "submitFailed": "Booking failed. Please try again.",
+    "loadFailed": "Could not load booking data.",
+    "minDays": "Minimum booking is {{count}} day(s).",
+    "maxDays": "Maximum booking is {{count}} day(s).",
+    "maxPeople": "Maximum {{count}} people allowed.",
+    "minPeople": "Minimum {{count}} people required."
+  }
+}

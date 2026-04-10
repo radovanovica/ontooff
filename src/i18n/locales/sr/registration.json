@@ -1,0 +1,179 @@
+{
+  "title": "Rezervišite aktivnost",
+  "embedTitle": "Rezervišite mesto",
+  "steps": {
+    "selectActivity": "Odaberite aktivnost",
+    "selectSpot": "Datumi i mesto",
+    "guests": "Gosti i plaćanje",
+    "contact": "Vaši podaci",
+    "confirm": "Potvrda",
+    "location": "Lokacija",
+    "dates": "Datumi i mesto",
+    "spotSelection": "Izaberite mesto"
+  },
+  "fields": {
+    "startDate": "Datum dolaska",
+    "endDate": "Datum odlaska",
+    "numberOfDays": "Trajanje",
+    "nights": "noć/noći",
+    "guestCounts": "Broj gostiju",
+    "pricingRule": "Cenovnik",
+    "paymentMethod": "Način plaćanja",
+    "notes": "Posebni zahtevi ili napomene",
+    "notesPlaceholder": "Posebni zahtevi, pristupačnost, itd.",
+    "firstName": "Ime",
+    "lastName": "Prezime",
+    "email": "Email adresa",
+    "phone": "Broj telefona",
+    "address": "Adresa (opciono)",
+    "dates": "Datumi",
+    "selectedSpots": "Izabrano mesto/mesta",
+    "guests": "Gosti",
+    "contact": "Kontakt"
+  },
+  "actions": {
+    "continue": "Nastavi",
+    "back": "Nazad",
+    "confirm": "Potvrdi rezervaciju",
+    "submitting": "Potvrđivanje…"
+  },
+  "guestTypes": {
+    "adults": "Odrasli",
+    "children": "Deca",
+    "seniors": "Seniori",
+    "infants": "Bebe (0-3)",
+    "families": "Porodični paketi",
+    "groups": "Grupni paketi"
+  },
+  "paymentMethods": {
+    "cash": "Gotovina",
+    "card": "Kartica",
+    "both": "Gotovina ili kartica"
+  },
+  "pricing": {
+    "breakdown": "Pregled cene",
+    "total": "Ukupno"
+  },
+  "confirm": {
+    "summaryTitle": "Pregled rezervacije"
+  },
+  "step1": {
+    "heading": "Odaberite aktivnost",
+    "subheading": "Izaberite aktivnost i lokaciju koju želite da rezervišete",
+    "activityLabel": "Tip aktivnosti",
+    "locationLabel": "Lokacija",
+    "selectActivity": "Izaberite aktivnost…",
+    "selectLocation": "Izaberite lokaciju…",
+    "noLocations": "Nema dostupnih lokacija za ovu aktivnost.",
+    "maxCapacity": "Maksimalni kapacitet: {{count}} osoba",
+    "spotsAvailable": "Dostupno {{count}} mesto/mesta"
+  },
+  "step2": {
+    "heading": "Odaberite datume i mesto",
+    "subheading": "Izaberite datume dolaska i odlaska, zatim izaberite mesto na mapi",
+    "startDateLabel": "Datum dolaska",
+    "endDateLabel": "Datum odlaska",
+    "numberOfDays": "{{count}} noć/noći",
+    "mapHeading": "Izaberite mesto",
+    "mapLegend": {
+      "available": "Slobodno",
+      "booked": "Zauzeto",
+      "selected": "Izabrano",
+      "maintenance": "Održavanje"
+    },
+    "noSpotRequired": "Za ovu aktivnost nije potrebno specifično mesto.",
+    "spotSelected": "{{name}} izabrano",
+    "spotsRequired": "Molimo izaberite bar jedno mesto"
+  },
+  "step3": {
+    "heading": "Gosti i plaćanje",
+    "subheading": "Recite nam koliko gostiju dolazi",
+    "guestsLabel": "Broj gostiju",
+    "adults": "Odrasli",
+    "children": "Deca",
+    "seniors": "Seniori",
+    "infants": "Bebe (0-3)",
+    "families": "Porodični paketi",
+    "groups": "Grupni paketi",
+    "pricingHeading": "Pregled cene",
+    "noPricing": "Ova aktivnost je besplatna.",
+    "paymentMethodLabel": "Način plaćanja",
+    "paymentMethods": {
+      "CASH": "Gotovina",
+      "CARD": "Kartica",
+      "BOTH": "Gotovina ili kartica"
+    },
+    "paymentNote": "Plaćanje se vrši na licu mesta.",
+    "totalLabel": "Ukupno",
+    "perPerson": "po osobi",
+    "perDay": "po danu",
+    "perPersonPerDay": "po osobi / po danu",
+    "perActivity": "paušalna naknada",
+    "atLeastOneGuest": "Molimo dodajte bar jednog gosta"
+  },
+  "step4": {
+    "heading": "Vaši podaci",
+    "subheading": "Poslaćemo potvrdu rezervacije na vašu email adresu",
+    "firstNameLabel": "Ime",
+    "lastNameLabel": "Prezime",
+    "emailLabel": "Email adresa",
+    "phoneLabel": "Broj telefona",
+    "addressLabel": "Adresa (opciono)",
+    "notesLabel": "Posebni zahtevi ili napomene",
+    "notesPlaceholder": "Posebni zahtevi, pristupačnost, itd."
+  },
+  "step5": {
+    "heading": "Pregled rezervacije",
+    "subheading": "Pregledajte rezervaciju pre potvrde",
+    "activity": "Aktivnost",
+    "location": "Lokacija",
+    "dates": "Datumi",
+    "nights": "{{count}} noć/noći",
+    "spots": "Mesto/mesta",
+    "guests": "Gosti",
+    "contact": "Kontakt",
+    "payment": "Plaćanje",
+    "paymentMethod": "Način plaćanja",
+    "totalDue": "Ukupno za platiti",
+    "freeBadge": "Besplatno",
+    "termsText": "Potvrdom prihvatate naše",
+    "termsLink": "uslove korišćenja",
+    "submitButton": "Potvrdi rezervaciju",
+    "submitting": "Potvrđivanje…"
+  },
+  "success": {
+    "title": "Rezervacija potvrđena! 🎉",
+    "subtitle": "Vaša rezervacija je uspešno primljena.",
+    "message": "Vaša rezervacija <strong>#{{number}}</strong> je primljena.",
+    "emailSent": "Potvrda je poslata na <strong>{{email}}</strong>.",
+    "editLink": "Rezervaciju možete izmeniti putem linka u emailu.",
+    "newBooking": "Nova rezervacija",
+    "viewBooking": "Moje rezervacije"
+  },
+  "edit": {
+    "title": "Izmena rezervacije",
+    "subtitle": "Rezervacija #{{number}}",
+    "contactSection": "Kontakt informacije",
+    "notesSection": "Napomene i zahtevi",
+    "bookingDetails": "Detalji rezervacije",
+    "paymentSection": "Informacije o plaćanju",
+    "saveButton": "Sačuvaj izmene",
+    "saving": "Čuvanje…",
+    "savedSuccess": "Izmene su sačuvane.",
+    "cancelButton": "Otkaži rezervaciju",
+    "cancelConfirmTitle": "Otkazati ovu rezervaciju?",
+    "cancelConfirmMessage": "Ova akcija se ne može poništiti. Dobićete email o otkazivanju.",
+    "cancelled": "Rezervacija otkazana.",
+    "expired": "Ovaj link je istekao ili je nevažeći."
+  },
+  "errors": {
+    "spotsNotAvailable": "Jedno ili više izabranih mesta nije dostupno za odabrane datume.",
+    "dateRange": "Datum odlaska mora biti posle datuma dolaska.",
+    "submitFailed": "Rezervacija nije uspela. Pokušajte ponovo.",
+    "loadFailed": "Nije moguće učitati podatke o rezervaciji.",
+    "minDays": "Minimalna rezervacija je {{count}} dan/dana.",
+    "maxDays": "Maksimalna rezervacija je {{count}} dan/dana.",
+    "maxPeople": "Dozvoljeno je maksimalno {{count}} osoba.",
+    "minPeople": "Potrebno je minimum {{count}} osoba."
+  }
+}

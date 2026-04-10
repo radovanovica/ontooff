@@ -1,0 +1,339 @@
+{
+  "common": {
+    "save": "Sačuvaj",
+    "saving": "Čuvanje…",
+    "edit": "Izmeni",
+    "delete": "Obriši",
+    "cancel": "Otkaži",
+    "create": "Kreiraj",
+    "manage": "Upravljaj",
+    "back": "Nazad",
+    "clear": "Obriši",
+    "active": "Aktivno",
+    "error": "Greška",
+    "all": "Sve",
+    "noData": "Nema podataka",
+    "actions": "Akcije"
+  },
+  "dashboard": {
+    "title": "Moja kontrolna tabla",
+    "subtitle": "Upravljajte vašim mestima i rezervacijama",
+    "stats": {
+      "totalPlaces": "Moja mesta",
+      "totalLocations": "Lokacije",
+      "pendingBookings": "Rezervacije na čekanju",
+      "totalRevenue": "Prihod"
+    },
+    "recentBookings": "Nedavne rezervacije",
+    "myPlaces": "Moja mesta",
+    "noPlaces": "Još niste dodali nijedno mesto.",
+    "addFirstPlace": "Dodajte prvo mesto"
+  },
+  "places": {
+    "title": "Moja mesta",
+    "addNew": "Dodaj novo mesto",
+    "editPlace": "Izmeni mesto",
+    "form": {
+      "name": "Naziv mesta",
+      "slug": "URL slug",
+      "slugHint": "Koristi se u URL-u: activitytracker.com/places/{{slug}}",
+      "description": "Opis",
+      "address": "Ulica i broj",
+      "city": "Grad",
+      "country": "Država",
+      "phone": "Telefon",
+      "email": "Kontakt email",
+      "website": "Veb sajt",
+      "timezone": "Vremenska zona",
+      "logo": "URL logotipa",
+      "cover": "URL naslovne slike"
+    },
+    "deleteConfirm": "Obrisati ovo mesto? Sve lokacije, mesta i rezervacije biće trajno uklonjene.",
+    "created": "Mesto uspešno kreirano!",
+    "updated": "Mesto ažurirano.",
+    "deleted": "Mesto obrisano.",
+    "steps": {
+      "details": "Detalji mesta",
+      "mapSetup": "Podešavanje mape"
+    },
+    "actions": {
+      "continueToMap": "Nastavi na podešavanje mape",
+      "replaceImage": "Zameni sliku",
+      "uploadImage": "Otpremi sliku",
+      "removeImage": "Ukloni"
+    },
+    "mapSetupSuccess": "Mesto je kreirano! Sada podesite pozadinu mape — koristiće se kao osnovna mapa za sve zone lokacija. Ovo možete i kasnije.",
+    "mapBackground": "Pozadina mape",
+    "mapBackgroundHint": "Otpremite fotografiju iz vazduha, plan objekta ili ilustrovanu mapu celog mesta. Zone lokacija će biti označene preko ove slike.",
+    "imageRequirements": "JPG, PNG ili GIF · max 5 MB · čuva se u bazi",
+    "defaults": {
+      "mapWidth": "Podrazumevano: 1200",
+      "mapHeight": "Podrazumevano: 800"
+    },
+    "errors": {
+      "createFailed": "Neuspešno kreiranje mesta",
+      "loadFailed": "Neuspešno učitavanje mesta",
+      "notFound": "Mesto nije pronađeno",
+      "mapSaveFailed": "Neuspešno čuvanje mape",
+      "imageSaveFailed": "Neuspešno čuvanje slike",
+      "uploadFailed": "Otpremanje nije uspelo",
+      "imageSizeExceeded": "Slika mora biti manja od 5 MB",
+      "fileReadFailed": "Neuspešno čitanje fajla"
+    }
+  },
+  "activityTypes": {
+    "title": "Tipovi aktivnosti",
+    "addNew": "Dodaj tip aktivnosti",
+    "editTitle": "Izmeni tip aktivnosti",
+    "empty": "Još nema tipova aktivnosti. Dodajte prvi da biste počeli.",
+    "inactive": "Neaktivno",
+    "order": "Redosled",
+    "locationsCount": "{{count}} lokacija",
+    "tiersCount": "{{count}} nivo",
+    "tiersCount_plural": "{{count}} nivoa",
+    "singleEmoji": "Jedan emoji",
+    "optionalShortDescription": "Opcioni kratak opis",
+    "colorHint": "Koristi se za markere i oznake na mapi",
+    "sortOrder": "Redosled",
+    "deleteTitle": "Obrisati tip aktivnosti?",
+    "deleteConfirm": "Da li ste sigurni da želite da obrišete {{name}}?",
+    "deleteWithLocationsWarning": "Ovaj tip ima {{count}} povezanu/ih lokaciju/a. Brisanje može uticati na te lokacije.",
+    "deleting": "Brisanje…",
+    "pricingLoading": "Učitavanje cenovnika…",
+    "pricingEmpty": "Nema pravila cenovnika",
+    "deletePricingRuleConfirm": "Obrisati ovo pravilo cenovnika?",
+    "errors": {
+      "loadFailed": "Neuspešno učitavanje tipova aktivnosti",
+      "pricingLoadFailed": "Neuspešno učitavanje pravila cenovnika",
+      "nameRequired": "Naziv je obavezan",
+      "saveFailed": "Čuvanje nije uspelo",
+      "deleteFailed": "Brisanje nije uspelo",
+      "ruleNameRequired": "Naziv pravila je obavezan",
+      "oneTierRequired": "Potreban je bar jedan nivo",
+      "uniqueNonCustomTier": "Svaka ne-prilagođena grupa može biti dodata samo jednom po pravilu",
+      "pricingCreateFailed": "Neuspešno kreiranje pravila cenovnika",
+      "pricingDeleteFailed": "Neuspešno brisanje pravila cenovnika"
+    },
+    "form": {
+      "name": "Naziv aktivnosti",
+      "description": "Opis",
+      "icon": "Ikona (emoji)",
+      "color": "Boja"
+    },
+    "examples": "npr. Ribolov, Kampovanje, Planinarenje, Kajak…"
+  },
+  "locations": {
+    "title": "Lokacije",
+    "addNew": "Dodaj lokaciju",
+    "editLocation": "Izmeni lokaciju",
+    "form": {
+      "name": "Naziv lokacije",
+      "description": "Opis",
+      "activityType": "Tip aktivnosti",
+      "maxCapacity": "Maksimalni kapacitet",
+      "requiresSpot": "Gosti moraju izabrati specifično mesto",
+      "mapWidth": "Širina mape (px)",
+      "mapHeight": "Visina mape (px)"
+    },
+    "mapEditor": "Uređivač mape",
+    "mapEditorHint": "Crtajte oblike mesta na SVG platnu ispod",
+    "created": "Lokacija kreirana.",
+    "updated": "Lokacija ažurirana.",
+    "deleted": "Lokacija obrisana.",
+    "detailsTitle": "Detalji lokacije",
+    "selectPlaceholder": "— izaberite —",
+    "positionOnMap": "Pozicija na mapi mesta",
+    "pickOnMapHint": "Kliknite \"Označi na mapi →\" da označite poziciju ove lokacije",
+    "noPlaceMapHint": "Mapa mesta još nije podešena — možete je dodati u podešavanjima mesta",
+    "create": "Kreiraj lokaciju",
+    "placeMapPickerTitle": "Mapa mesta — označi zonu lokacije",
+    "clickMapToPlace": "Klikni na mapu za postavljanje…",
+    "reposition": "Promeni poziciju",
+    "pickOnMap": "Označi na mapi →",
+    "noMapBackgroundHint": "Pozadina mape još nije podešena za ovo mesto. Idite na Podešavanja mesta → Mapa da dodate pozadinsku sliku, pa se vratite da označite zone lokacija.",
+    "clickToMarkPosition": "Kliknite da označite poziciju lokacije",
+    "mapManagedHint": "Slika mape se upravlja na nivou mesta. Ova lokacija se pozicionira na mapi mesta, a oblici mesta uređuju se u kartici Mesta → Uređivač mape.",
+    "noActivityTypes": "Još nema podešenih tipova aktivnosti. Prvo dodajte tipove aktivnosti u podešavanjima mesta.",
+    "errors": {
+      "saveFailed": "Čuvanje nije uspelo"
+    }
+  },
+  "spots": {
+    "title": "Mesta",
+    "addNew": "Dodaj mesto",
+    "editSpot": "Izmeni mesto",
+    "form": {
+      "name": "Naziv mesta",
+      "code": "Kratka oznaka (npr. A1)",
+      "description": "Opis",
+      "maxPeople": "Maks. osoba",
+      "amenities": "Sadržaj",
+      "status": "Status"
+    },
+    "amenitiesOptions": {
+      "electricity": "Struja",
+      "water": "Tekuća voda",
+      "toilet": "WC u blizini",
+      "firepit": "Ognjište",
+      "shade": "Hladovina",
+      "parking": "Parking"
+    },
+    "bulkAdd": "Masovno dodaj mesta",
+    "empty": "Još nema mesta. Dodajte prvo mesto za ovu lokaciju.",
+    "listHint": "Mesta se vode kao lista u okviru ove lokacije.",
+    "maxPeopleLabel": "Maks {{count}} osoba",
+    "deleteConfirm": "Obrisati ovo mesto?",
+    "status": {
+      "AVAILABLE": "DOSTUPNO",
+      "OCCUPIED": "ZAUZETO",
+      "MAINTENANCE": "ODRŽAVANJE",
+      "DISABLED": "ONEMOGUĆENO"
+    },
+    "errors": {
+      "saveFailed": "Čuvanje nije uspelo",
+      "createFailed": "Kreiranje nije uspelo"
+    }
+  },
+  "pricing": {
+    "title": "Pravila cenovnika",
+    "addNew": "Dodaj pravilo cenovnika",
+    "editPricing": "Izmeni cenovnik",
+    "form": {
+      "name": "Naziv pravila",
+      "description": "Opis",
+      "pricingType": "Tip cenovnika",
+      "pricingTypes": {
+        "PER_ACTIVITY": "Po aktivnosti (paušal)",
+        "PER_PERSON": "Po osobi",
+        "PER_PERSON_PER_DAY": "Po osobi po danu",
+        "PER_DAY": "Po danu (paušal)"
+      },
+      "paymentMethod": "Prihvaćeno plaćanje",
+      "paymentMethods": {
+        "CASH": "Samo gotovina",
+        "CARD": "Samo kartica",
+        "BOTH": "Gotovina ili kartica"
+      },
+      "requiresPayment": "Plaćanje obavezno",
+      "currency": "Valuta",
+      "validFrom": "Važi od",
+      "validTo": "Važi do",
+      "minDays": "Min. dana",
+      "maxDays": "Maks. dana",
+      "minPeople": "Min. osoba",
+      "maxPeople": "Maks. osoba"
+    },
+    "tiers": {
+      "heading": "Nivoi cena",
+      "addTier": "Dodaj nivo",
+      "ageGroup": "Grupa",
+      "label": "Naziv",
+      "minAge": "Min. godine",
+      "maxAge": "Maks. godine",
+      "price": "Cena",
+      "ageGroups": {
+        "ADULT": "Odrasli",
+        "CHILD": "Deca",
+        "SENIOR": "Seniori",
+        "INFANT": "Bebe",
+        "FAMILY": "Porodica",
+        "GROUP": "Grupa",
+        "CUSTOM": "Prilagođeno"
+      },
+      "exampleLabel": "npr. Odrasli (18+), Dete (3-12), Porodica (2+2)"
+    },
+    "noPaymentNote": "Ova aktivnost je besplatna. Od gostiju se neće tražiti plaćanje.",
+    "created": "Pravilo cenovnika kreirano.",
+    "updated": "Cenovnik ažuriran.",
+    "deleted": "Pravilo cenovnika obrisano."
+  },
+  "embedTokens": {
+    "title": "Embed tokeni",
+    "subtitle": "Generišite linkove za ugradnju widgeta za rezervacije na spoljne veb sajtove",
+    "addNew": "Generiši token",
+    "form": {
+      "label": "Naziv tokena",
+      "location": "Specifična lokacija (opciono)",
+      "allowedOrigins": "Dozvoljeni domeni",
+      "originsHint": "Domeni odvojeni zarezom, npr. mojsajt.rs, prodavnica.primer.rs",
+      "expiresAt": "Datum isteka (opciono)"
+    },
+    "embedCode": "Kod za ugradnju",
+    "embedUrl": "Direktni link",
+    "copy": "Kopiraj",
+    "copied": "Kopirano!",
+    "usageCount": "Korišćeno {{count}} puta",
+    "lastUsed": "Poslednje korišćeno: {{date}}",
+    "table": {
+      "token": "Token",
+      "expires": "Ističe"
+    },
+    "empty": "Još nema embed tokena",
+    "errors": {
+      "loadFailed": "Neuspešno učitavanje tokena",
+      "createFailed": "Neuspešno kreiranje embed tokena",
+      "deleteFailed": "Neuspešno brisanje tokena"
+    },
+    "never": "Nikad",
+    "deleteConfirm": "Obrisati ovaj token? Svi ugradnjeni widgeti koji ga koriste prestaće da rade.",
+    "created": "Embed token kreiran.",
+    "deleted": "Token obrisan."
+  },
+  "bookings": {
+    "title": "Rezervacije",
+    "subtitle": "Upravljajte rezervacijama za vaša mesta",
+    "empty": "Još nema rezervacija",
+    "filters": {
+      "allLocations": "Sve lokacije",
+      "allStatuses": "Svi statusi"
+    },
+    "table": {
+      "bookingNumber": "Broj rezervacije",
+      "guest": "Gost",
+      "location": "Lokacija",
+      "dates": "Datumi",
+      "checkIn": "Dolazak",
+      "checkOut": "Odlazak",
+      "amount": "Iznos",
+      "status": "Status",
+      "created": "Kreirano",
+      "currency": "RSD",
+      "empty": "—"
+    },
+    "status": {
+      "PENDING": "Na čekanju",
+      "CONFIRMED": "Potvrđeno",
+      "COMPLETED": "Završeno",
+      "CANCELLED": "Otkazano",
+      "NO_SHOW": "Nije došao"
+    },
+    "actions": {
+      "refresh": "Osveži",
+      "view": "Prikaži",
+      "confirm": "Potvrdi",
+      "confirmed": "Potvrđeno",
+      "reject": "Odbij",
+      "rejected": "Odbijeno",
+      "backToBookings": "Nazad na rezervacije"
+    },
+    "details": {
+      "titleWithNumber": "Rezervacija {{number}}",
+      "sectionDetails": "Detalji rezervacije",
+      "guest": "Gost",
+      "numberOfDays": "{{count}} dan(a)",
+      "activity": "Aktivnost",
+      "spots": "Mesta",
+      "noSpotSelected": "Nije izabrano mesto",
+      "guestCounts": "Broj gostiju",
+      "notes": "Napomene",
+      "paymentSummary": "Sažetak plaćanja",
+      "noBreakdown": "Nema razrade stavki",
+      "total": "Ukupno"
+    },
+    "errors": {
+      "fetchFailed": "Neuspešno preuzimanje rezervacija",
+      "loadFailed": "Neuspešno učitavanje rezervacija.",
+      "updateStatusFailed": "Neuspešno ažuriranje statusa."
+    }
+  }
+}

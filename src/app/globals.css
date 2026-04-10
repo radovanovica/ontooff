@@ -1,0 +1,42 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f7f3ee;
+  color: #2c2416;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f0ebe4;
+}
+::-webkit-scrollbar-thumb {
+  background: #b0a090;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8b7355;
+}
+
+/* Smooth transitions */
+a {
+  transition: color 0.2s ease;
+}
+
+/* Print styles */
+@media print {
+  .no-print { display: none !important; }
+}

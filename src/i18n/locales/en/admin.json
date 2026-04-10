@@ -1,0 +1,132 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "actions": "Actions",
+    "noData": "No data available",
+    "all": "All"
+  },
+  "dashboard": {
+    "title": "Admin Dashboard",
+    "subtitle": "Platform overview",
+    "stats": {
+      "totalUsers": "Total Users",
+      "totalPlaces": "Active Places",
+      "totalRegistrations": "Total Bookings",
+      "pendingRegistrations": "Pending",
+      "confirmedRegistrations": "Confirmed",
+      "totalRevenue": "Total Revenue"
+    },
+    "recentBookings": "Recent Bookings",
+    "quickLinks": "Quick Links"
+  },
+  "users": {
+    "title": "User Management",
+    "subtitle": "Manage all platform users",
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "bookings": "Bookings",
+      "places": "Places",
+      "joined": "Joined",
+      "actions": "Actions"
+    },
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "joined": "Joined",
+      "registrations": "Bookings",
+      "actions": "Actions"
+    },
+    "searchPlaceholder": "Search by name or email…",
+    "roleFilter": "Role",
+    "active": "Active",
+    "inactive": "Inactive",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "roles": {
+      "SUPER_ADMIN": "Super Admin",
+      "PLACE_OWNER": "Place Owner",
+      "USER": "User"
+    },
+    "actions": {
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "changeRole": "Change Role",
+      "viewBookings": "View Bookings"
+    },
+    "filters": {
+      "allRoles": "All roles",
+      "searchPlaceholder": "Search by name or email…"
+    },
+    "confirmDeactivate": "Deactivate this user? They will not be able to sign in.",
+    "confirmActivate": "Re-activate this user?",
+    "confirmRoleChange": "Change role to {{role}}?"
+  },
+  "places": {
+    "title": "All Places",
+    "subtitle": "Manage all registered places",
+    "table": {
+      "name": "Place Name",
+      "owner": "Owner",
+      "city": "City",
+      "locations": "Locations",
+      "status": "Status",
+      "created": "Created"
+    },
+    "columns": {
+      "name": "Place Name",
+      "location": "Location",
+      "owner": "Owner",
+      "locations": "Locations",
+      "registrations": "Bookings",
+      "status": "Status",
+      "created": "Created"
+    },
+    "confirmDelete": "Delete this place? All associated data will be permanently removed."
+  },
+  "registrations": {
+    "title": "All Bookings",
+    "subtitle": "View and manage all registrations",
+    "searchPlaceholder": "Search by name, email or ref\u2026",
+    "table": {
+      "number": "Ref #",
+      "guest": "Guest",
+      "activity": "Activity",
+      "place": "Place",
+      "dates": "Dates",
+      "guests": "Guests",
+      "total": "Total",
+      "payment": "Payment",
+      "status": "Status",
+      "created": "Booked"
+    },
+    "columns": {
+      "number": "Ref #",
+      "guest": "Guest",
+      "location": "Location",
+      "dates": "Dates",
+      "status": "Status",
+      "payment": "Payment",
+      "amount": "Amount"
+    },
+    "filters": {
+      "allStatuses": "All statuses",
+      "searchPlaceholder": "Search by name, email or ref…"
+    },
+    "actions": {
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "markPaid": "Mark as Paid",
+      "viewDetails": "View Details",
+      "sendEmail": "Resend Email"
+    },
+    "confirmCancel": "Cancel this booking? The guest will receive an email notification.",
+    "confirmConfirm": "Confirm this booking? The guest will be notified.",
+    "confirmMarkPaid": "Mark this booking as fully paid?"
+  }
+}

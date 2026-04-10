@@ -1,0 +1,55 @@
+{
+  "required": "Ovo polje je obavezno",
+  "email": "Unesite ispravnu email adresu",
+  "minLength": "Minimalno {{min}} karaktera",
+  "maxLength": "Maksimalno {{max}} karaktera",
+  "min": "Minimalna vrednost je {{min}}",
+  "max": "Maksimalna vrednost je {{max}}",
+  "url": "Unesite ispravan URL",
+  "phone": "Unesite ispravan broj telefona",
+  "positiveNumber": "Mora biti pozitivan broj",
+  "integer": "Mora biti ceo broj",
+  "passwordMatch": "Lozinke se ne poklapaju",
+  "passwordStrength": "Lozinka mora imati najmanje 8 karaktera, jedno veliko slovo i jedan broj",
+  "dateRange": "Datum završetka mora biti posle datuma početka",
+  "pastDate": "Datum ne može biti u prošlosti",
+  "invalidDate": "Neispravan datum",
+  "selectOption": "Izaberite opciju",
+  "atLeastOne": "Izaberite bar jednu opciju",
+  "guestCount": "Ukupan broj gostiju mora biti bar 1",
+  "slugFormat": "Slug sme sadržati samo mala slova, brojeve i crtice",
+  "colorFormat": "Unesite ispravnu hex boju (npr. #2d5a27)",
+  "unique": "Ova vrednost je već zauzeta",
+  "auth": {
+    "invalidCredentials": "Pogrešan email ili lozinka",
+    "emailNotVerified": "Molimo potvrdite email adresu pre prijave",
+    "accountDeactivated": "Vaš nalog je deaktiviran. Kontaktirajte podršku.",
+    "emailExists": "Nalog s ovom email adresom već postoji",
+    "tokenExpired": "Ovaj link je istekao. Zatražite novi.",
+    "tokenInvalid": "Nevažeći link. Proverite email za ispravan link.",
+    "notAuthenticated": "Morate biti prijavljeni da biste pristupili ovoj stranici",
+    "notAuthorized": "Nemate dozvolu za ovu radnju"
+  },
+  "registration": {
+    "spotUnavailable": "Izabrano mesto nije dostupno u odabranom terminu",
+    "spotsUnavailable": "Neka od izabranih mesta nisu dostupna: {{names}}",
+    "invalidDates": "Neispravan opseg datuma",
+    "maxSpotsExceeded": "Prekoračen maksimalni broj mesta za ovu lokaciju",
+    "guestCountExceedsCapacity": "Broj gostiju premašuje kapacitet mesta",
+    "paymentMethodRequired": "Izaberite način plaćanja"
+  },
+  "place": {
+    "nameRequired": "Naziv mesta je obavezan",
+    "slugRequired": "URL slug je obavezan",
+    "slugTaken": "Ovaj slug je već zauzet"
+  },
+  "pricing": {
+    "priceRequired": "Cena je obavezna",
+    "tierRequired": "Dodajte bar jedan nivo cene",
+    "duplicateAgeGroup": "Ovaj tip grupe već postoji u cenovniku"
+  },
+  "file": {
+    "tooLarge": "Fajl je prevelik (maks. {{size}})",
+    "invalidType": "Neispravni tip fajla. Dozvoljeni: {{types}}"
+  }
+}
