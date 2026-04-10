@@ -3,11 +3,19 @@ import nodemailer from 'nodemailer';
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT ?? 587),
-  secure: process.env.SMTP_SECURE === 'true',
+  secure: process.env.SMTP_SECURE === 'true',       // false → STARTTLS on 587
+  requireTLS: process.env.SMTP_REQUIRE_TLS !== 'false', // default true
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD,
   },
+  tls: {
+    ciphers: 'SSLv3',
+    rejectUnauthorized: process.env.SMTP_TLS_REJECT_UNAUTHORIZED !== 'false', // false → trust self-signed
+  },
+  connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT ?? 5000),
+  greetingTimeout:   Number(process.env.SMTP_GREETING_TIMEOUT   ?? 3000),
+  socketTimeout:     Number(process.env.SMTP_SOCKET_TIMEOUT     ?? 5000),
 });
 
 const FROM = process.env.EMAIL_FROM ?? 'ontooff <no-reply@localhost>';
