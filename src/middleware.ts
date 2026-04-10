@@ -42,6 +42,7 @@ export default withAuth(
           '/api/embed/',
           '/_next/',
           '/favicon',
+          '/assets/',
         ];
         if (publicPaths.some((p) => pathname.startsWith(p))) return true;
         if (pathname === '/') return true;
@@ -55,6 +56,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|public/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|assets/).*)',
   ],
 };
