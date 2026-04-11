@@ -249,21 +249,27 @@ export async function sendRegistrationStatusUpdate(
 // PASSWORD RESET
 // ─────────────────────────────────────────
 
-export async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
+export async function sendPasswordResetEmail(email: string, token: string, name = 'there'): Promise<void> {
   const url = `${APP_URL}/auth/reset-password?token=${token}`;
   const html = baseTemplate(`
-    <h2 style="color:#2d5a27;margin:0 0 16px;">Password Reset Request</h2>
+    <h2 style="color:#2d5a27;margin:0 0 16px;">Reset your password 🔑</h2>
     <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      We received a request to reset your password. Click below to choose a new password.
+      Hi <strong>${name}</strong>,<br/><br/>
+      We received a request to reset the password for your <strong>${APP_NAME}</strong> account.
+      Click the button below to choose a new password.
     </p>
     <div style="text-align:center;">
       <a href="${url}" style="${btnStyle()}">Reset Password</a>
     </div>
+    <p style="color:#8b7355;font-size:13px;text-align:center;margin-top:8px;">
+      If this link doesn't work, copy and paste the following URL into your browser:<br/>
+      <span style="color:#4a7c59;word-break:break-all;">${url}</span>
+    </p>
     <p style="color:#8b7355;font-size:13px;text-align:center;">
-      This link expires in 1 hour. If you did not request a password reset, you can safely ignore this email.
+      This link expires in <strong>1 hour</strong>. If you did not request a password reset, you can safely ignore this email.
     </p>
   `);
-  await transporter.sendMail({ from: FROM, to: email, subject: `Reset your password – ${APP_NAME}`, html });
+  await transporter.sendMail({ from: FROM, to: email, subject: `Reset your ${APP_NAME} password`, html });
 }
 
 // ─────────────────────────────────────────
