@@ -231,7 +231,7 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           {!isMobile && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, ml: 3 }}>
               {navItems.map((item) => {
                 const isActive = item.href === '/'
                   ? pathname === '/'
@@ -244,18 +244,16 @@ export default function Navbar() {
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 0.5,
                       px: 1.5,
-                      py: 0.75,
-                      borderRadius: 1,
+                      py: 0.5,
                       color: 'inherit',
                       textDecoration: 'none',
                       fontSize: '0.875rem',
                       fontWeight: isActive ? 700 : 400,
-                      bgcolor: isActive ? 'rgba(255,255,255,0.18)' : 'transparent',
-                      borderBottom: isActive ? '2px solid white' : '2px solid transparent',
-                      transition: 'background-color 0.15s, border-color 0.15s',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
+                      opacity: isActive ? 1 : 0.82,
+                      borderBottom: isActive ? '2px solid rgba(255,255,255,0.9)' : '2px solid transparent',
+                      transition: 'opacity 0.15s, border-color 0.15s',
+                      '&:hover': { opacity: 1, borderBottomColor: 'rgba(255,255,255,0.5)' },
                     }}
                   >
                     {item.label}
@@ -340,28 +338,34 @@ export default function Navbar() {
                   color: 'inherit',
                   textDecoration: 'none',
                   fontSize: '0.875rem',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
+                  fontWeight: 600,
+                  bgcolor: 'rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
                 }}
               >
                 {t('nav.signIn')}
               </Box>
-              <Box
-                component={Link}
-                href="/auth/signup"
-                sx={{
-                  px: 2,
-                  py: 0.75,
-                  borderRadius: 1,
-                  bgcolor: 'rgba(255,255,255,0.2)',
-                  color: 'inherit',
-                  textDecoration: 'none',
-                  fontSize: '0.875rem',
-                  fontWeight: 600,
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
-                }}
-              >
-                {t('nav.signUp')}
-              </Box>
+              {/* Sign Up only shown on desktop */}
+              {!isMobile && (
+                <Box
+                  component={Link}
+                  href="/auth/signup"
+                  sx={{
+                    px: 2,
+                    py: 0.75,
+                    borderRadius: 1,
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    color: 'inherit',
+                    textDecoration: 'none',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
+                  }}
+                >
+                  {t('nav.signUp')}
+                </Box>
+              )}
             </Box>
           )}
         </Toolbar>

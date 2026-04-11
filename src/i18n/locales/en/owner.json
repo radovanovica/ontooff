@@ -65,6 +65,9 @@
     "mapSetupSuccess": "Place created! Now set up a map background — this will be used as the base map for all location zones at your place. You can also skip and do this later.",
     "mapBackground": "Map Background",
     "mapBackgroundHint": "Upload an aerial photo, floor plan or illustrated map of your entire place. Location zones will be marked on top of this image.",
+    "replaceMap": "Replace image",
+    "uploadMapHint": "Click to upload a map image (JPG, PNG — max 5 MB)",
+    "mapSaved": "Map image saved",
     "imageRequirements": "JPG, PNG or GIF · max 5 MB · stored in database",
     "defaults": {
       "mapWidth": "Default: 1200",

@@ -162,16 +162,23 @@ function SignInPageContent() {
           </Button>
         </Box>
 
-        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
-          <Typography variant="body2">
-            {t('signIn.noAccount')}{' '}
-            <Link href="/auth/signup" style={{ color: 'inherit', fontWeight: 600 }}>
-              {t('signUp.link')}
-            </Link>
-          </Typography>
-          <Typography variant="body2">
-            <Link href="/auth/forgot-password" style={{ color: 'inherit' }}>
-              {t('signIn.forgotPassword')}
+        <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+            <Typography variant="body2">
+              {t('signIn.noAccount')}{' '}
+              <Link href="/auth/signup" style={{ color: 'inherit', fontWeight: 600 }}>
+                {t('signUp.link')}
+              </Link>
+            </Typography>
+            <Typography variant="body2">
+              <Link href="/auth/forgot-password" style={{ color: 'inherit' }}>
+                {t('signIn.forgotPassword')}
+              </Link>
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', pt: 0.5 }}>
+            <Link href="/auth/register-org" style={{ color: 'inherit' }}>
+              {t('registerOrg.ctaLink', 'Offer outdoor activities? Register your organization →')}
             </Link>
           </Typography>
         </Box>

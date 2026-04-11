@@ -65,6 +65,9 @@
     "mapSetupSuccess": "Mesto je kreirano! Sada podesite pozadinu mape — koristiće se kao osnovna mapa za sve zone lokacija. Ovo možete i kasnije.",
     "mapBackground": "Pozadina mape",
     "mapBackgroundHint": "Otpremite fotografiju iz vazduha, plan objekta ili ilustrovanu mapu celog mesta. Zone lokacija će biti označene preko ove slike.",
+    "replaceMap": "Zameni sliku",
+    "uploadMapHint": "Kliknite da otpremite sliku mape (JPG, PNG — max 5 MB)",
+    "mapSaved": "Slika mape sačuvana",
     "imageRequirements": "JPG, PNG ili GIF · max 5 MB · čuva se u bazi",
     "defaults": {
       "mapWidth": "Podrazumevano: 1200",
