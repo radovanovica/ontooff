@@ -45,6 +45,8 @@ export default withAuth(
           '/api/search',
           '/api/places/by-slug/',
           '/api/registrations/by-token/',
+          '/api/spots/availability',
+          '/api/registrations',
           '/_next/',
           '/favicon',
           '/assets/',
