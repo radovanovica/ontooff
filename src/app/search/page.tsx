@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import {
   Box,
   Button,
@@ -60,7 +61,7 @@ interface SearchPlace {
   availableLocations?: { id: string; name: string }[];
 }
 
-export default function SearchPage() {
+function SearchContent() {
   const { t } = useTranslation('common');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -402,5 +403,19 @@ export default function SearchPage() {
         )}
       </Container>
     </>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+          <CircularProgress size={48} />
+        </Box>
+      }
+    >
+      <SearchContent />
+    </Suspense>
   );
 }
