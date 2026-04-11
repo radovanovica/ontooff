@@ -147,7 +147,10 @@
       "addPhotos": "Add Photos",
       "hint": "{{count}} / {{max}} photos",
       "empty": "No photos yet. Click \"Add Photos\" to upload images of this location.",
-      "fileTooLarge": "File too large. Maximum size is 2 MB."
+      "fileTooLarge": "File too large. Maximum size is 2 MB.",
+      "setCover": "Set as cover",
+      "coverBadge": "Cover",
+      "coverHint": "The cover image is shown as header background during booking."
     },
     "mapEditor": "Map Editor",
     "mapEditorHint": "Draw spot shapes on the SVG canvas below",

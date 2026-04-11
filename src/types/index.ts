@@ -216,8 +216,9 @@ export interface ActivityLocation {
   requiresSpot: boolean;
   isActive: boolean;
   sortOrder: number;
-  gallery: string | null;      // JSON: string[] of base64 data-URIs
-  instructions: string | null; // How to find the location
+  gallery: string | null;           // JSON: string[] of base64 data-URIs
+  coverImageIndex: number | null;   // index of the primary/cover gallery image
+  instructions: string | null;      // How to find the location
   createdAt: Date;
   updatedAt: Date;
   place?: Place;

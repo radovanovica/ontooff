@@ -17,8 +17,9 @@ const updateSchema = z.object({
   svgMapData: z.string().optional(),
   mapImageUrl: z.string().optional(),
   isActive: z.boolean().optional(),
-  gallery: z.string().optional(),       // JSON: string[] of base64 data-URIs
-  instructions: z.string().optional(),  // How to find this location
+  gallery: z.string().optional(),         // JSON: string[] of base64 data-URIs
+  coverImageIndex: z.number().int().min(0).nullable().optional(), // index of primary gallery image
+  instructions: z.string().optional(),    // How to find this location
 });
 
 async function getLocationWithAccess(id: string, userId: string, role: UserRole) {

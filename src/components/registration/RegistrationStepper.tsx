@@ -450,6 +450,21 @@ export default function RegistrationStepper({
     );
   }
 
+  // Compute the cover image URL for the currently selected location
+  const getCoverImageUrl = (loc: LocationWithDetails | null): string | null => {
+    if (!loc?.gallery) return null;
+    try {
+      const imgs = JSON.parse(loc.gallery) as string[];
+      const idx = loc.coverImageIndex ?? null;
+      if (idx !== null && idx >= 0 && idx < imgs.length) return imgs[idx];
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const coverImageUrl = getCoverImageUrl(selectedLocation);
+
   return (
     <Box>
       <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
@@ -459,6 +474,39 @@ export default function RegistrationStepper({
           </Step>
         ))}
       </Stepper>
+
+      {/* Cover image header — shown when a location with a cover photo is selected */}
+      {coverImageUrl && (
+        <Box
+          sx={{
+            mb: 3,
+            borderRadius: 2,
+            overflow: 'hidden',
+            height: { xs: 160, sm: 220 },
+            backgroundImage: `url(${coverImageUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            position: 'relative',
+          }}
+        >
+          {/* Gradient overlay with location name */}
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(to top, rgba(0,0,0,0.55) 40%, transparent 100%)',
+              display: 'flex',
+              alignItems: 'flex-end',
+              px: 2,
+              pb: 1.5,
+            }}
+          >
+            <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+              {selectedLocation?.activityType?.name && `${selectedLocation.activityType.name} — `}{selectedLocation?.name}
+            </Typography>
+          </Box>
+        </Box>
+      )}
 
       {activeStep === 0 && (
         <Box component="form" onSubmit={handleSubmit1(onStep1Submit)}>

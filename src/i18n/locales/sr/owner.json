@@ -146,7 +146,10 @@
       "addPhotos": "Dodaj fotografije",
       "hint": "{{count}} / {{max}} fotografija",
       "empty": "Još nema fotografija. Kliknite \"Dodaj fotografije\" da dodate slike ove lokacije.",
-      "fileTooLarge": "Fajl je prevelik. Maksimalna veličina je 2 MB."
+      "fileTooLarge": "Fajl je prevelik. Maksimalna veličina je 2 MB.",
+      "setCover": "Postavi kao naslovnu",
+      "coverBadge": "Naslovna",
+      "coverHint": "Naslovna slika se prikazuje kao pozadina zaglavlja tokom rezervacije."
     },
     "mapEditor": "Uređivač mape",
     "mapEditorHint": "Crtajte oblike mesta na SVG platnu ispod",

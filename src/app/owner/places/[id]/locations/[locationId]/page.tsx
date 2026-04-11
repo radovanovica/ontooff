@@ -24,7 +24,7 @@ import {
   DialogActions,
   MenuItem,
 } from '@mui/material';
-import { ArrowBack, Add, Delete, Edit, CloudUpload, Collections } from '@mui/icons-material';
+import { ArrowBack, Add, Delete, Edit, CloudUpload, Collections, Star, StarBorder } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -47,8 +47,9 @@ interface LocationData {
   mapHeight: number | null;
   mapImageUrl: string | null;
   sortOrder: number;
-  gallery: string | null;      // JSON: string[]
-  instructions: string | null; // How to find the place
+  gallery: string | null;           // JSON: string[]
+  coverImageIndex: number | null;    // index of primary gallery image
+  instructions: string | null;       // How to find the place
   activityType: { id: string; name: string; icon: string | null };
   place: { id: string; name: string };
   spots: SpotData[];
@@ -425,26 +426,40 @@ function GalleryTab({ location, locationId, onUpdated }: { location: LocationDat
   };
 
   const [images, setImages] = useState<string[]>(parseGallery);
+  const [coverIdx, setCoverIdx] = useState<number | null>(location.coverImageIndex ?? null);
 
   // Sync when location changes (after save)
-  useEffect(() => { setImages(parseGallery()); }, [location.gallery]);
+  useEffect(() => {
+    setImages(parseGallery());
+    setCoverIdx(location.coverImageIndex ?? null);
+  }, [location.gallery, location.coverImageIndex]);
 
-  const saveGallery = async (imgs: string[]) => {
+  const saveGallery = async (imgs: string[], newCoverIdx?: number | null) => {
     setSaving(true);
     setError(null);
+    const coverToSave = newCoverIdx !== undefined ? newCoverIdx : coverIdx;
+    // Clamp cover index if images were removed
+    const validCover = coverToSave !== null && coverToSave < imgs.length ? coverToSave : null;
     try {
       const res = await fetch(`/api/activity-locations/${locationId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gallery: JSON.stringify(imgs) }),
+        body: JSON.stringify({ gallery: JSON.stringify(imgs), coverImageIndex: validCover }),
       });
       if (!res.ok) throw new Error(t('locations.errors.saveFailed'));
+      setCoverIdx(validCover);
       onUpdated();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSetCover = (idx: number) => {
+    const newCover = coverIdx === idx ? null : idx;
+    setCoverIdx(newCover);
+    saveGallery(images, newCover);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -484,16 +499,21 @@ function GalleryTab({ location, locationId, onUpdated }: { location: LocationDat
 
   const handleDelete = (idx: number) => {
     const updated = images.filter((_, i) => i !== idx);
+    // Adjust cover index after deletion
+    let newCover: number | null = coverIdx;
+    if (coverIdx === idx) newCover = null;
+    else if (coverIdx !== null && coverIdx > idx) newCover = coverIdx - 1;
     setImages(updated);
-    saveGallery(updated);
+    setCoverIdx(newCover);
+    saveGallery(updated, newCover);
   };
 
   return (
     <Box>
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      {/* Upload button */}
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+      {/* Upload button + hint */}
+      <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
         <Button
           component="label"
           variant="contained"
@@ -507,6 +527,12 @@ function GalleryTab({ location, locationId, onUpdated }: { location: LocationDat
           {t('locations.gallery.hint', { count: images.length, max: 10 })}
         </Typography>
       </Box>
+
+      {images.length > 0 && (
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+          {t('locations.gallery.coverHint')}
+        </Typography>
+      )}
 
       {/* Image grid */}
       {images.length === 0 ? (
@@ -531,45 +557,99 @@ function GalleryTab({ location, locationId, onUpdated }: { location: LocationDat
             gap: 1.5,
           }}
         >
-          {images.map((src, idx) => (
-            <Box
-              key={idx}
-              sx={{
-                position: 'relative',
-                borderRadius: 1.5,
-                overflow: 'hidden',
-                aspectRatio: '4/3',
-                border: '1px solid',
-                borderColor: 'divider',
-                bgcolor: 'action.hover',
-                '&:hover .del-btn': { opacity: 1 },
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={src}
-                alt={`Gallery image ${idx + 1}`}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              />
-              <IconButton
-                className="del-btn"
-                size="small"
-                color="error"
-                onClick={() => handleDelete(idx)}
+          {images.map((src, idx) => {
+            const isCover = coverIdx === idx;
+            return (
+              <Box
+                key={idx}
                 sx={{
-                  position: 'absolute',
-                  top: 4,
-                  right: 4,
-                  opacity: 0,
-                  transition: 'opacity 0.2s',
-                  bgcolor: 'rgba(255,255,255,0.9)',
-                  '&:hover': { bgcolor: 'white' },
+                  position: 'relative',
+                  borderRadius: 1.5,
+                  overflow: 'hidden',
+                  aspectRatio: '4/3',
+                  border: '2px solid',
+                  borderColor: isCover ? 'warning.main' : 'divider',
+                  bgcolor: 'action.hover',
+                  '&:hover .del-btn': { opacity: 1 },
+                  '&:hover .cover-btn': { opacity: 1 },
+                  boxShadow: isCover ? '0 0 0 2px rgba(237,108,2,0.3)' : 'none',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
                 }}
               >
-                <Delete fontSize="small" />
-              </IconButton>
-            </Box>
-          ))}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={src}
+                  alt={`Gallery image ${idx + 1}`}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+
+                {/* Cover badge */}
+                {isCover && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      bgcolor: 'rgba(237,108,2,0.85)',
+                      color: 'white',
+                      fontSize: '0.65rem',
+                      fontWeight: 700,
+                      textAlign: 'center',
+                      py: 0.25,
+                      letterSpacing: 0.5,
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {t('locations.gallery.coverBadge')}
+                  </Box>
+                )}
+
+                {/* Set as cover button (star icon) */}
+                <IconButton
+                  className="cover-btn"
+                  size="small"
+                  onClick={() => handleSetCover(idx)}
+                  title={t('locations.gallery.setCover')}
+                  sx={{
+                    position: 'absolute',
+                    top: 4,
+                    left: 4,
+                    opacity: isCover ? 1 : 0,
+                    transition: 'opacity 0.2s',
+                    bgcolor: isCover ? 'warning.main' : 'rgba(255,255,255,0.9)',
+                    color: isCover ? 'white' : 'warning.main',
+                    '&:hover': {
+                      bgcolor: isCover ? 'warning.dark' : 'white',
+                    },
+                    width: 26,
+                    height: 26,
+                  }}
+                >
+                  {isCover ? <Star sx={{ fontSize: 15 }} /> : <StarBorder sx={{ fontSize: 15 }} />}
+                </IconButton>
+
+                {/* Delete button */}
+                <IconButton
+                  className="del-btn"
+                  size="small"
+                  color="error"
+                  onClick={() => handleDelete(idx)}
+                  sx={{
+                    position: 'absolute',
+                    top: 4,
+                    right: 4,
+                    opacity: 0,
+                    transition: 'opacity 0.2s',
+                    bgcolor: 'rgba(255,255,255,0.9)',
+                    '&:hover': { bgcolor: 'white' },
+                  }}
+                >
+                  <Delete fontSize="small" />
+                </IconButton>
+              </Box>
+            );
+          })}
         </Box>
       )}
     </Box>
