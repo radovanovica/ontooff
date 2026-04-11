@@ -54,6 +54,13 @@ export enum PaymentStatus {
   WAIVED = 'WAIVED',
 }
 
+export enum OrgStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  SUSPENDED = 'SUSPENDED',
+}
+
 // ─────────────────────────────────────────
 // USER
 // ─────────────────────────────────────────
@@ -80,6 +87,43 @@ export interface UserSession {
 }
 
 // ─────────────────────────────────────────
+// ORGANIZATION
+// ─────────────────────────────────────────
+
+export interface Organization {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  website: string | null;
+  description: string | null;
+  status: OrgStatus;
+  approvedAt: Date | null;
+  approvedBy: string | null;
+  ownerId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  places?: Place[];
+}
+
+// ─────────────────────────────────────────
+// ACTIVITY TAG
+// ─────────────────────────────────────────
+
+export interface ActivityTag {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string | null;
+  color: string | null;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+// ─────────────────────────────────────────
 // PLACE
 // ─────────────────────────────────────────
 
@@ -89,6 +133,7 @@ export interface Place {
   description: string | null;
   slug: string;
   ownerId: string;
+  organizationId: string | null;
   address: string | null;
   city: string | null;
   country: string | null;
@@ -104,6 +149,7 @@ export interface Place {
   createdAt: Date;
   updatedAt: Date;
   owner?: User;
+  organization?: Organization;
   activityTypes?: ActivityType[];
   activityLocations?: ActivityLocation[];
 }
@@ -133,6 +179,7 @@ export interface ActivityType {
   updatedAt: Date;
   place?: Place;
   activityLocations?: ActivityLocation[];
+  tags?: ActivityTag[];
 }
 
 // ─────────────────────────────────────────

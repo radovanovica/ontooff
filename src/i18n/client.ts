@@ -30,7 +30,7 @@ i18next
   )
   .init({
     ...i18nConfig,
-    lng: getSavedLocale(),
+    lng: defaultLocale, // Always start with default to prevent SSR/client hydration mismatch
     preload: runsOnServerSide ? ['en', 'sr'] : [],
   });
 

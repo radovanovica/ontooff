@@ -1,5 +1,5 @@
-import { Box, Card, CardContent, Grid, Typography, Button } from '@mui/material';
-import { Place, EventNote, Pending, AttachMoney } from '@mui/icons-material';
+import { Box, Card, CardContent, Grid, Typography, Button, Alert } from '@mui/material';
+import { Place, Pending, AttachMoney, HourglassTop, Business, EventNote } from '@mui/icons-material';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getTranslation } from '@/i18n/server';
@@ -41,10 +41,22 @@ async function getOwnerStats(ownerId: string) {
   };
 }
 
+async function getOwnerOrg(ownerId: string) {
+  return prisma.organization.findFirst({
+    where: { ownerId },
+    select: { id: true, name: true, status: true },
+  });
+}
+
 export default async function OwnerDashboardPage() {
   const session = await getServerSession(authOptions);
   const { t } = await getTranslation('en', 'owner');
-  const stats = await getOwnerStats(session!.user.id);
+  const [stats, org] = await Promise.all([
+    getOwnerStats(session!.user.id),
+    getOwnerOrg(session!.user.id),
+  ]);
+
+  const orgPending = !org || org.status !== 'APPROVED';
 
   const cards = [
     { label: t('dashboard.stats.totalPlaces'), value: stats.totalPlaces, icon: Place, color: '#2d5a27' },
@@ -70,6 +82,26 @@ export default async function OwnerDashboardPage() {
           </Button>
         </Link>
       </Box>
+
+      {/* Organization status banner */}
+      {orgPending && (
+        <Alert
+          severity={!org ? 'warning' : org.status === 'PENDING' ? 'info' : 'error'}
+          icon={!org || org.status === 'PENDING' ? <HourglassTop /> : <Business />}
+          sx={{ mb: 3 }}
+        >
+          {!org
+            ? 'Your account is not linked to an organization. Please contact support.'
+            : org.status === 'PENDING'
+            ? `Your organization "${org.name}" is pending admin approval. You will be able to create places once approved.`
+            : `Your organization "${org.name}" is ${org.status.toLowerCase()}. Please contact support.`}
+        </Alert>
+      )}
+      {org && org.status === 'APPROVED' && (
+        <Alert severity="success" icon={<Business />} sx={{ mb: 3 }}>
+          Organization: <strong>{org.name}</strong> — Approved ✓
+        </Alert>
+      )}
 
       <Grid container spacing={3} sx={{ mb: 5 }}>
         {cards.map((card) => (

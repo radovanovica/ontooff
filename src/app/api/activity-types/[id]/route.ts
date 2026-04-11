@@ -12,6 +12,7 @@ const updateSchema = z.object({
   color: z.string().optional(),
   sortOrder: z.number().int().optional(),
   isActive: z.boolean().optional(),
+  tagIds: z.array(z.string()).optional(),
 });
 
 async function getTypeAndCheckAccess(id: string, userId: string, role: UserRole) {
@@ -48,7 +49,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, { status: 422 });
   }
 
-  const updated = await prisma.activityType.update({ where: { id }, data: result.data });
+  const { tagIds, ...updateData } = result.data;
+
+  // Update in a transaction if tags are being changed
+  const updated = await prisma.$transaction(async (tx) => {
+    const record = await tx.activityType.update({ where: { id }, data: updateData });
+    if (tagIds !== undefined) {
+      // Replace all tags
+      await tx.activityTypeTag.deleteMany({ where: { activityTypeId: id } });
+      if (tagIds.length > 0) {
+        await tx.activityTypeTag.createMany({
+          data: tagIds.map((tagId) => ({ activityTypeId: id, tagId })),
+        });
+      }
+    }
+    return tx.activityType.findUnique({
+      where: { id },
+      include: { tags: { include: { tag: true } } },
+    });
+  });
+
   return NextResponse.json({ success: true, data: updated });
 }
 

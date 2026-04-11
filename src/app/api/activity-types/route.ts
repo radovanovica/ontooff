@@ -12,6 +12,7 @@ const schema = z.object({
   icon: z.string().optional(),
   color: z.string().optional(),
   sortOrder: z.number().default(0),
+  tagIds: z.array(z.string()).optional(),
 });
 
 async function canAccessPlace(placeId: string, userId: string, role: UserRole) {
@@ -23,12 +24,16 @@ async function canAccessPlace(placeId: string, userId: string, role: UserRole) {
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const placeId = searchParams.get('placeId');
+  const includeTags = searchParams.get('includeTags') === '1';
   if (!placeId) return NextResponse.json({ success: false, error: 'placeId required' }, { status: 400 });
 
   const activityTypes = await prisma.activityType.findMany({
     where: { placeId, isActive: true },
     orderBy: { sortOrder: 'asc' },
-    include: { _count: { select: { activityLocations: true } } },
+    include: {
+      _count: { select: { activityLocations: true } },
+      ...(includeTags ? { tags: { include: { tag: true } } } : {}),
+    },
   });
 
   return NextResponse.json({ success: true, data: activityTypes });
@@ -44,10 +49,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, { status: 422 });
   }
 
-  if (!(await canAccessPlace(result.data.placeId, session.user.id, session.user.role))) {
+  const { tagIds, ...data } = result.data;
+
+  if (!(await canAccessPlace(data.placeId, session.user.id, session.user.role))) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
 
-  const activityType = await prisma.activityType.create({ data: result.data });
+  const activityType = await prisma.activityType.create({
+    data: {
+      ...data,
+      ...(tagIds?.length
+        ? { tags: { create: tagIds.map((tagId) => ({ tagId })) } }
+        : {}),
+    },
+    include: { tags: { include: { tag: true } } },
+  });
   return NextResponse.json({ success: true, data: activityType }, { status: 201 });
 }

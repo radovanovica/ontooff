@@ -66,6 +66,13 @@ enum PaymentStatus {
   WAIVED
 }
 
+enum OrgStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
 // ─────────────────────────────────────────
 // AUTH ENTITIES (NextAuth compatible)
 // ─────────────────────────────────────────
@@ -141,35 +148,38 @@ model VerificationToken {
 // ─────────────────────────────────────────
 
 model Place {
-  id          String   @id @default(cuid())
-  name        String
-  description String?  @db.Text
-  slug        String   @unique
-  ownerId     String
-  address     String?
-  city        String?
-  country     String?
-  latitude    Float?
-  longitude   Float?
-  phone       String?
-  email       String?
-  website     String?
-  logoUrl     String?
-  coverUrl    String?
-  mapImageUrl String?  @db.Text
-  mapWidth    Int?
-  mapHeight   Int?
-  isActive    Boolean  @default(true)
-  timezone    String   @default("UTC")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  description    String?  @db.Text
+  slug           String   @unique
+  ownerId        String
+  organizationId String?
+  address        String?
+  city           String?
+  country        String?
+  latitude       Float?
+  longitude      Float?
+  phone          String?
+  email          String?
+  website        String?
+  logoUrl        String?
+  coverUrl       String?
+  mapImageUrl    String?  @db.Text
+  mapWidth       Int?
+  mapHeight      Int?
+  isActive       Boolean  @default(true)
+  timezone       String   @default("UTC")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   owner             User               @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  organization      Organization?      @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   activityTypes     ActivityType[]
   activityLocations ActivityLocation[]
   embedTokens       EmbedToken[]
 
   @@index([ownerId])
+  @@index([organizationId])
   @@index([slug])
   @@index([isActive])
   @@map("places")
@@ -190,6 +200,7 @@ model ActivityType {
   place             Place              @relation(fields: [placeId], references: [id], onDelete: Cascade)
   activityLocations ActivityLocation[]
   pricingRules      PricingRule[]
+  tags              ActivityTypeTag[]
 
   @@index([placeId])
   @@index([isActive])
@@ -422,4 +433,63 @@ model EmbedToken {
   @@index([token])
   @@index([placeId])
   @@map("embed_tokens")
+}
+
+// ─────────────────────────────────────────
+// ORGANIZATIONS
+// ─────────────────────────────────────────
+
+model Organization {
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  phone       String?
+  address     String?
+  city        String?
+  country     String?
+  website     String?
+  description String?   @db.Text
+  status      OrgStatus @default(PENDING)
+  approvedAt  DateTime?
+  approvedBy  String?
+  ownerId     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  places Place[]
+
+  @@index([status])
+  @@index([email])
+  @@map("organizations")
+}
+
+// ─────────────────────────────────────────
+// ACTIVITY TAGS
+// ─────────────────────────────────────────
+
+model ActivityTag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  icon      String?
+  color     String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  activityTypes ActivityTypeTag[]
+
+  @@index([isActive])
+  @@map("activity_tags")
+}
+
+model ActivityTypeTag {
+  activityTypeId String
+  tagId          String
+
+  activityType ActivityType @relation(fields: [activityTypeId], references: [id], onDelete: Cascade)
+  tag          ActivityTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([activityTypeId, tagId])
+  @@map("activity_type_tags")
 }

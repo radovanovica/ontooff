@@ -11,6 +11,7 @@ import {
   Paper,
   Grid,
   Chip,
+  Stack,
   Tooltip,
   Dialog,
   DialogTitle,
@@ -21,9 +22,17 @@ import {
   FormControlLabel,
   Checkbox,
 } from '@mui/material';
-import { Add, Edit, Delete } from '@mui/icons-material';
+import { Add, Edit, Delete, LocalOffer } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/i18n/client';
+
+interface ActivityTag {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string | null;
+  color: string | null;
+}
 
 interface ActivityType {
   id: string;
@@ -33,6 +42,7 @@ interface ActivityType {
   color: string | null;
   sortOrder: number;
   isActive: boolean;
+  tags?: { tag: ActivityTag }[];
   _count?: { activityLocations: number };
 }
 
@@ -42,6 +52,7 @@ interface FormState {
   icon: string;
   color: string;
   sortOrder: string;
+  tagIds: string[];
 }
 
 interface PricingRule {
@@ -58,7 +69,7 @@ interface PricingTierDraft {
   pricePerUnit: string;
 }
 
-const EMPTY_FORM: FormState = { name: '', description: '', icon: '', color: '#1976d2', sortOrder: '0' };
+const EMPTY_FORM: FormState = { name: '', description: '', icon: '', color: '#1976d2', sortOrder: '0', tagIds: [] };
 
 interface Props {
   placeId: string;
@@ -67,6 +78,7 @@ interface Props {
 export default function ActivityTypesTab({ placeId }: Props) {
   const { t } = useTranslation('owner');
   const [types, setTypes] = useState<ActivityType[]>([]);
+  const [allTags, setAllTags] = useState<ActivityTag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -99,12 +111,21 @@ export default function ActivityTypesTab({ placeId }: Props) {
 
   const load = () => {
     setLoading(true);
-    fetch(`/api/activity-types?placeId=${placeId}`)
+    fetch(`/api/activity-types?placeId=${placeId}&includeTags=1`)
       .then((r) => r.json())
       .then((d) => setTypes(d.data ?? []))
         .catch(() => setError(t('activityTypes.errors.loadFailed')))
       .finally(() => setLoading(false));
   };
+
+  useEffect(() => {
+    // Load all available tags
+    fetch('/api/tags')
+      .then((r) => r.json())
+      .then((d) => setAllTags(d.data ?? []))
+      .catch(() => {});
+    load();
+  }, [placeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadPricing = (activityTypeIds: string[]) => {
     setPricingLoading(true);
@@ -151,6 +172,7 @@ export default function ActivityTypesTab({ placeId }: Props) {
       icon: at.icon ?? '',
       color: at.color ?? '#1976d2',
       sortOrder: String(at.sortOrder),
+      tagIds: at.tags?.map((tt) => tt.tag.id) ?? [],
     });
     setFormError(null);
     setDialogOpen(true);
@@ -168,6 +190,7 @@ export default function ActivityTypesTab({ placeId }: Props) {
         color: form.color || undefined,
         sortOrder: parseInt(form.sortOrder) || 0,
         placeId,
+        tagIds: form.tagIds,
       };
 
       let res: Response;
@@ -406,6 +429,25 @@ export default function ActivityTypesTab({ placeId }: Props) {
                   </Typography>
                 </Box>
 
+                {/* Tags */}
+                {at.tags && at.tags.length > 0 && (
+                  <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                    {at.tags.map(({ tag }) => (
+                      <Chip
+                        key={tag.id}
+                        label={`${tag.icon ?? ''} ${tag.name}`}
+                        size="small"
+                        sx={{
+                          bgcolor: (tag.color ?? '#2d5a27') + '18',
+                          color: tag.color ?? '#2d5a27',
+                          fontSize: '0.68rem',
+                          height: 20,
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                )}
+
                 <Divider sx={{ my: 1 }} />
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
@@ -500,6 +542,41 @@ export default function ActivityTypesTab({ placeId }: Props) {
                 type="number"
               />
             </Grid>
+
+            {/* Tag selector */}
+            {allTags.length > 0 && (
+              <Grid size={{ xs: 12 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5, mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <LocalOffer sx={{ fontSize: 14 }} />
+                  {t('activityTypes.form.tags', 'Tags')}
+                </Typography>
+                <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75 }}>
+                  {allTags.map((tag) => {
+                    const selected = form.tagIds.includes(tag.id);
+                    return (
+                      <Chip
+                        key={tag.id}
+                        label={`${tag.icon ?? ''} ${tag.name}`}
+                        size="small"
+                        onClick={() => setForm((f) => ({
+                          ...f,
+                          tagIds: selected
+                            ? f.tagIds.filter((id) => id !== tag.id)
+                            : [...f.tagIds, tag.id],
+                        }))}
+                        sx={{
+                          cursor: 'pointer',
+                          fontWeight: 500,
+                          bgcolor: selected ? (tag.color ?? '#2d5a27') : 'transparent',
+                          color: selected ? 'white' : 'text.primary',
+                          border: `1.5px solid ${selected ? (tag.color ?? '#2d5a27') : '#ddd'}`,
+                        }}
+                      />
+                    );
+                  })}
+                </Stack>
+              </Grid>
+            )}
           </Grid>
         </DialogContent>
         <DialogActions>

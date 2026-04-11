@@ -40,12 +40,15 @@ export default withAuth(
           '/registration/edit/',
           '/api/auth/',
           '/api/embed/',
+          '/api/tags',
+          '/api/search',
           '/_next/',
           '/favicon',
           '/assets/',
         ];
         if (publicPaths.some((p) => pathname.startsWith(p))) return true;
         if (pathname === '/') return true;
+        if (pathname === '/search') return true;
 
         // Protected routes require a token
         return !!token;

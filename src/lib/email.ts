@@ -259,3 +259,107 @@ export async function sendPasswordResetEmail(email: string, token: string): Prom
   `);
   await transporter.sendMail({ from: FROM, to: email, subject: `Reset your password – ${APP_NAME}`, html });
 }
+
+// ─────────────────────────────────────────
+// ORGANIZATION REGISTRATION
+// ─────────────────────────────────────────
+
+export async function sendOrgRegistrationEmail(email: string, orgName: string): Promise<void> {
+  const html = baseTemplate(`
+    <h2 style="color:#2d5a27;margin:0 0 16px;">Organization Registration Received 🏢</h2>
+    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
+      Thank you for registering <strong>${orgName}</strong> on ${APP_NAME}.
+    </p>
+    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
+      Your application is currently <strong>under review</strong>. Our team will verify your details
+      and you will receive an email once your organization has been approved.
+    </p>
+    <p style="color:#8b7355;font-size:13px;">
+      This process typically takes 1-2 business days.
+    </p>
+  `);
+  await transporter.sendMail({
+    from: FROM,
+    to: email,
+    subject: `Organization registration received – ${APP_NAME}`,
+    html,
+  });
+}
+
+export async function sendOrgApprovalEmail(email: string, orgName: string): Promise<void> {
+  const html = baseTemplate(`
+    <h2 style="color:#2d5a27;margin:0 0 16px;">Your Organization is Approved! 🎉</h2>
+    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
+      Congratulations! <strong>${orgName}</strong> has been approved on ${APP_NAME}.
+    </p>
+    <div style="text-align:center;">
+      <a href="${APP_URL}/auth/signin" style="${btnStyle()}">Sign In Now</a>
+    </div>
+  `);
+  await transporter.sendMail({
+    from: FROM,
+    to: email,
+    subject: `Organization approved – ${APP_NAME}`,
+    html,
+  });
+}
+
+/**
+ * Sent when an organization is approved AND a new PLACE_OWNER account is created.
+ * Includes the temporary password so the owner can sign in immediately.
+ */
+export async function sendOrgApprovedWithCredentials(
+  email: string,
+  orgName: string,
+  ownerName: string,
+  temporaryPassword: string
+): Promise<void> {
+  const html = baseTemplate(`
+    <h2 style="color:#2d5a27;margin:0 0 16px;">Your Organization is Approved! 🎉</h2>
+    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
+      Congratulations, <strong>${ownerName}</strong>! <strong>${orgName}</strong> has been approved on ${APP_NAME}.
+    </p>
+    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
+      An account has been created for you. Use the credentials below to sign in:
+    </p>
+    <div style="background:#f0f7f0;border-radius:8px;padding:20px;margin:20px 0;">
+      <p style="color:#2d5a27;font-size:15px;margin:0 0 8px;"><strong>Email:</strong> ${email}</p>
+      <p style="color:#2d5a27;font-size:15px;margin:0;"><strong>Temporary Password:</strong> <code style="background:#e8f5e9;padding:2px 8px;border-radius:4px;font-size:15px;">${temporaryPassword}</code></p>
+    </div>
+    <p style="color:#c0392b;font-size:13px;">
+      ⚠️ Please change your password after your first sign-in.
+    </p>
+    <div style="text-align:center;">
+      <a href="${APP_URL}/auth/signin" style="${btnStyle()}">Sign In Now</a>
+    </div>
+    <p style="color:#8b7355;font-size:12px;text-align:center;">
+      You can manage your places and activities from your dashboard.
+    </p>
+  `);
+  await transporter.sendMail({
+    from: FROM,
+    to: email,
+    subject: `Organization approved – your login credentials – ${APP_NAME}`,
+    html,
+  });
+}
+
+export async function sendOrgRejectionEmail(email: string, orgName: string, reason?: string): Promise<void> {
+  const html = baseTemplate(`
+    <h2 style="color:#c0392b;margin:0 0 16px;">Organization Application Update</h2>
+    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
+      We're sorry to inform you that the registration for <strong>${orgName}</strong> was not approved at this time.
+    </p>
+    ${reason ? `<p style="color:#4a4a4a;line-height:1.6;font-size:15px;"><strong>Reason:</strong> ${reason}</p>` : ''}
+    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
+      If you believe this is an error or would like to reapply, please contact us at 
+      <a href="mailto:${process.env.SMTP_USER}" style="color:#4a7c59;">${process.env.SMTP_USER}</a>.
+    </p>
+  `);
+  await transporter.sendMail({
+    from: FROM,
+    to: email,
+    subject: `Organization application update – ${APP_NAME}`,
+    html,
+  });
+}

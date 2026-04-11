@@ -78,6 +78,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
 
+  // Non-admins must have an approved organization
+  let organizationId: string | null = null;
+  if (session.user.role !== UserRole.SUPER_ADMIN) {
+    const org = await prisma.organization.findFirst({
+      where: { ownerId: session.user.id, status: 'APPROVED' },
+      select: { id: true },
+    });
+    if (!org) {
+      return NextResponse.json(
+        { success: false, error: 'You must have an approved organization to create places.' },
+        { status: 403 }
+      );
+    }
+    organizationId = org.id;
+  }
+
   const body = await req.json();
   const result = placeSchema.safeParse(body);
   if (!result.success) {
@@ -93,7 +109,7 @@ export async function POST(req: NextRequest) {
   }
 
   const place = await prisma.place.create({
-    data: { name, slug, ...rest, ownerId: session.user.id },
+    data: { name, slug, ...rest, ownerId: session.user.id, organizationId },
   });
 
   return NextResponse.json({ success: true, data: place }, { status: 201 });

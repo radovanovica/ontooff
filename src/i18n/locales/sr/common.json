@@ -19,7 +19,8 @@
     "signOut": "Odjava",
     "profile": "Profil",
     "settings": "Podešavanja",
-    "language": "Jezik"
+    "language": "Jezik",
+    "organizations": "Organizacije"
   },
   "home": {
     "heroTitle": "Vaš Bijeg u Prirodu Počinje Ovde",
@@ -64,7 +65,16 @@
         "title": "Mnogo Aktivnosti",
         "desc": "Kampovanje, ribolov, kajaking, planinarenje i još mnogo toga — sve na jednom mestu."
       }
-    }
+    },
+    "search": {
+      "selectActivity": "Odaberite aktivnost",
+      "dateFrom": "Datum dolaska",
+      "dateTo": "Datum odlaska",
+      "button": "Pretraži aktivnosti"
+    },
+    "orgCta": "Imate poslovni objekat?",
+    "orgCtaLink": "Registrujte svoju organizaciju →",
+    "ctaOrgButton": "Registrujte organizaciju"
   },
   "common": {
     "save": "Sačuvaj",
@@ -162,5 +172,17 @@
   "languageSwitcher": {
     "en": "English",
     "sr": "Srpski"
+  },
+  "search": {
+    "title": "Pronađite aktivnosti i lokacije",
+    "backToHome": "Nazad na početnu",
+    "searching": "Pretraga...",
+    "results": "{{count}} mesto(a) pronađeno",
+    "noResults": "Nema pronađenih mesta",
+    "noResultsHint": "Pokušajte da promenite filtere ili odaberete druge aktivnosti.",
+    "clearFilters": "Obriši filtere",
+    "error": "Greška pri učitavanju rezultata. Pokušajte ponovo.",
+    "bookNow": "Rezervišite",
+    "website": "Web sajt"
   }
 }

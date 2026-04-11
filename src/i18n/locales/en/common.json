@@ -19,7 +19,8 @@
     "signOut": "Sign Out",
     "profile": "Profile",
     "settings": "Settings",
-    "language": "Language"
+    "language": "Language",
+    "organizations": "Organizations"
   },
   "home": {
     "heroTitle": "Your Nature Escape Starts Here",
@@ -64,7 +65,16 @@
         "title": "Many Activities",
         "desc": "Camping, fishing, kayaking, hiking and more — all in one platform."
       }
-    }
+    },
+    "search": {
+      "selectActivity": "Select Activity",
+      "dateFrom": "Check-in",
+      "dateTo": "Check-out",
+      "button": "Search Activities"
+    },
+    "orgCta": "Are you a business owner?",
+    "orgCtaLink": "Register your organization →",
+    "ctaOrgButton": "Register Organization"
   },
   "common": {
     "save": "Save",
@@ -162,5 +172,17 @@
   "languageSwitcher": {
     "en": "English",
     "sr": "Srpski"
+  },
+  "search": {
+    "title": "Find Activities & Locations",
+    "backToHome": "Back to home",
+    "searching": "Searching...",
+    "results": "{{count}} place(s) found",
+    "noResults": "No places found",
+    "noResultsHint": "Try adjusting your filters or selecting different activities.",
+    "clearFilters": "Clear filters",
+    "error": "Failed to load results. Please try again.",
+    "bookNow": "Book Now",
+    "website": "Website"
   }
 }

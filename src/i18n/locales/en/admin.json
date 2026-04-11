@@ -15,7 +15,9 @@
       "totalRegistrations": "Total Bookings",
       "pendingRegistrations": "Pending",
       "confirmedRegistrations": "Confirmed",
-      "totalRevenue": "Total Revenue"
+      "totalRevenue": "Total Revenue",
+      "totalOrgs": "Organizations",
+      "pendingOrgs": "Pending Orgs"
     },
     "recentBookings": "Recent Bookings",
     "quickLinks": "Quick Links"
@@ -88,6 +90,36 @@
       "created": "Created"
     },
     "confirmDelete": "Delete this place? All associated data will be permanently removed."
+  },
+  "organizations": {
+    "title": "Organizations",
+    "subtitle": "Manage organization registrations",
+    "searchPlaceholder": "Search by name or email…",
+    "status": "Status",
+    "statuses": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "SUSPENDED": "Suspended"
+    },
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "location": "Location",
+      "places": "Places",
+      "status": "Status",
+      "registered": "Registered"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "suspend": "Suspend",
+      "website": "Website"
+    },
+    "confirmApprove": "Approve Organization",
+    "confirmReject": "Reject Organization",
+    "confirmSuspend": "Suspend Organization",
+    "rejectionReason": "Reason (optional)"
   },
   "registrations": {
     "title": "All Bookings",

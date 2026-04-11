@@ -30,6 +30,7 @@ import {
   AccountCircle,
   AdminPanelSettings,
   ManageAccounts,
+  Business,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -92,6 +93,12 @@ export default function Navbar() {
             label: t('nav.registrations'),
             href: '/admin/registrations',
             icon: <EventNote />,
+            roles: [UserRole.SUPER_ADMIN],
+          },
+          {
+            label: t('nav.organizations', 'Organizations'),
+            href: '/admin/organizations',
+            icon: <Business />,
             roles: [UserRole.SUPER_ADMIN],
           },
         ]

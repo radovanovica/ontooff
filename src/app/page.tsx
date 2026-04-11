@@ -10,6 +10,9 @@ import {
   CardContent,
   Chip,
   Stack,
+  TextField,
+  InputAdornment,
+  Paper,
 } from '@mui/material';
 import {
   NaturePeople,
@@ -19,13 +22,16 @@ import {
   SearchOutlined,
   PinDrop,
   CheckCircleOutlined,
+  Business,
+  CalendarToday,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/layout/Navbar';
 import { useTranslation } from '@/i18n/client';
-
-const ACTIVITY_TAGS = ['Camping', 'Fishing', 'Kayaking', 'Hiking', 'Cycling', 'Hunting'];
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import type { ActivityTag } from '@/types';
 
 const STATS = [
   { value: '50+', key: 'locations' },
@@ -49,6 +55,32 @@ const FEATURES = [
 
 export default function HomePage() {
   const { t } = useTranslation('common');
+  const router = useRouter();
+  const [tags, setTags] = useState<ActivityTag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
+  useEffect(() => {
+    fetch('/api/tags')
+      .then((r) => r.json())
+      .then((d) => setTags(d.data ?? []))
+      .catch(() => {});
+  }, []);
+
+  const toggleTag = (slug: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
+    );
+  };
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (selectedTags.length) params.set('tags', selectedTags.join(','));
+    if (dateFrom) params.set('from', dateFrom);
+    if (dateTo) params.set('to', dateTo);
+    router.push(`/search?${params.toString()}`);
+  };
 
   return (
     <>
@@ -58,7 +90,7 @@ export default function HomePage() {
       <Box
         sx={{
           position: 'relative',
-          minHeight: { xs: '85vh', md: '92vh' },
+          minHeight: { xs: '90vh', md: '95vh' },
           display: 'flex',
           alignItems: 'center',
           overflow: 'hidden',
@@ -79,31 +111,13 @@ export default function HomePage() {
           sx={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(135deg, rgba(10,30,10,0.75) 0%, rgba(20,50,20,0.55) 60%, rgba(10,30,10,0.65) 100%)',
+            background: 'linear-gradient(135deg, rgba(10,30,10,0.78) 0%, rgba(20,50,20,0.58) 60%, rgba(10,30,10,0.68) 100%)',
           }}
         />
 
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, py: { xs: 8, md: 4 } }}>
           <Grid container spacing={4} sx={{ alignItems: 'center' }}>
             <Grid size={{ xs: 12, md: 7 }}>
-              {/* Activity tags */}
-              <Stack direction="row" spacing={1} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
-                {ACTIVITY_TAGS.map((tag) => (
-                  <Chip
-                    key={tag}
-                    label={tag}
-                    size="small"
-                    sx={{
-                      bgcolor: 'rgba(255,255,255,0.15)',
-                      color: 'white',
-                      backdropFilter: 'blur(4px)',
-                      border: '1px solid rgba(255,255,255,0.25)',
-                      fontWeight: 500,
-                    }}
-                  />
-                ))}
-              </Stack>
-
               <Typography
                 variant="h1"
                 sx={{
@@ -111,7 +125,7 @@ export default function HomePage() {
                   color: 'white',
                   fontSize: { xs: '2.4rem', sm: '3.2rem', md: '4rem' },
                   lineHeight: 1.1,
-                  mb: 3,
+                  mb: 2,
                   textShadow: '0 2px 20px rgba(0,0,0,0.4)',
                 }}
               >
@@ -123,7 +137,7 @@ export default function HomePage() {
                 sx={{
                   color: 'rgba(255,255,255,0.88)',
                   fontWeight: 400,
-                  mb: 5,
+                  mb: 4,
                   maxWidth: 520,
                   lineHeight: 1.6,
                 }}
@@ -131,44 +145,117 @@ export default function HomePage() {
                 {t('home.heroSubtitle')}
               </Typography>
 
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                <Link href="/auth/signup" style={{ textDecoration: 'none' }}>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    sx={{
-                      bgcolor: '#3d7a36',
-                      color: 'white',
-                      fontWeight: 700,
-                      px: 5,
-                      py: 1.5,
-                      fontSize: '1rem',
-                      borderRadius: 2,
-                      boxShadow: '0 4px 20px rgba(45,90,39,0.5)',
-                      '&:hover': { bgcolor: '#2d5a27', boxShadow: '0 6px 24px rgba(45,90,39,0.6)' },
-                    }}
-                  >
-                    {t('home.getStarted')}
-                  </Button>
-                </Link>
-                <Link href="/auth/signin" style={{ textDecoration: 'none' }}>
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    sx={{
-                      borderColor: 'rgba(255,255,255,0.6)',
-                      color: 'white',
-                      px: 5,
-                      py: 1.5,
-                      fontSize: '1rem',
-                      borderRadius: 2,
-                      backdropFilter: 'blur(4px)',
-                      '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' },
-                    }}
-                  >
-                    {t('nav.signIn')}
-                  </Button>
-                </Link>
+              {/* ── SEARCH WIDGET ── */}
+              <Paper
+                elevation={8}
+                sx={{
+                  borderRadius: 3,
+                  p: { xs: 2.5, sm: 3 },
+                  bgcolor: 'rgba(255,255,255,0.97)',
+                  backdropFilter: 'blur(12px)',
+                  mb: 3,
+                  maxWidth: 560,
+                }}
+              >
+                {/* Tag chips */}
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5, mb: 1, display: 'block' }}>
+                  {t('home.search.selectActivity', 'Select Activity')}
+                </Typography>
+                <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75, mb: 2.5 }}>
+                  {tags.slice(0, 10).map((tag) => {
+                    const active = selectedTags.includes(tag.slug);
+                    return (
+                      <Chip
+                        key={tag.slug}
+                        label={`${tag.icon ?? ''} ${tag.name}`}
+                        size="small"
+                        onClick={() => toggleTag(tag.slug)}
+                        sx={{
+                          cursor: 'pointer',
+                          fontWeight: 500,
+                          bgcolor: active ? (tag.color ?? '#2d5a27') : 'transparent',
+                          color: active ? 'white' : 'text.primary',
+                          border: `1.5px solid ${active ? (tag.color ?? '#2d5a27') : '#ddd'}`,
+                          '&:hover': {
+                            bgcolor: active ? (tag.color ?? '#2d5a27') : `${tag.color ?? '#2d5a27'}15`,
+                          },
+                        }}
+                      />
+                    );
+                  })}
+                </Stack>
+
+                {/* Date range */}
+                <Grid container spacing={1.5} sx={{ mb: 2 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      label={t('home.search.dateFrom', 'Check-in')}
+                      type="date"
+                      size="small"
+                      fullWidth
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      slotProps={{
+                        inputLabel: { shrink: true },
+                        input: {
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <CalendarToday sx={{ fontSize: 16, color: 'text.secondary' }} />
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      label={t('home.search.dateTo', 'Check-out')}
+                      type="date"
+                      size="small"
+                      fullWidth
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      slotProps={{
+                        inputLabel: { shrink: true },
+                        input: {
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <CalendarToday sx={{ fontSize: 16, color: 'text.secondary' }} />
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+
+                <Button
+                  variant="contained"
+                  fullWidth
+                  size="large"
+                  onClick={handleSearch}
+                  startIcon={<SearchOutlined />}
+                  sx={{
+                    bgcolor: '#2d5a27',
+                    fontWeight: 700,
+                    py: 1.4,
+                    borderRadius: 2,
+                    '&:hover': { bgcolor: '#1e3d1a' },
+                  }}
+                >
+                  {t('home.search.button', 'Search Activities')}
+                </Button>
+              </Paper>
+
+              {/* Register org link */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Business sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 18 }} />
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.75)' }}>
+                  {t('home.orgCta', 'Are you a business owner?')}{' '}
+                  <Link href="/auth/register-org" style={{ color: '#7ec86e', fontWeight: 600, textDecoration: 'none' }}>
+                    {t('home.orgCtaLink', 'Register your organization →')}
+                  </Link>
+                </Typography>
               </Box>
             </Grid>
 
@@ -447,25 +534,47 @@ export default function HomePage() {
           <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.82)', mb: 5, fontWeight: 400 }}>
             {t('home.ctaSubtitle')}
           </Typography>
-          <Link href="/auth/signup" style={{ textDecoration: 'none' }}>
-            <Button
-              variant="contained"
-              size="large"
-              sx={{
-                bgcolor: '#3d7a36',
-                color: 'white',
-                px: 7,
-                py: 1.75,
-                fontSize: '1.05rem',
-                fontWeight: 700,
-                borderRadius: 2,
-                boxShadow: '0 4px 24px rgba(45,90,39,0.5)',
-                '&:hover': { bgcolor: '#2d5a27' },
-              }}
-            >
-              {t('home.ctaButton')}
-            </Button>
-          </Link>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: 'center' }}>
+            <Link href="/auth/signup" style={{ textDecoration: 'none' }}>
+              <Button
+                variant="contained"
+                size="large"
+                sx={{
+                  bgcolor: '#3d7a36',
+                  color: 'white',
+                  px: 5,
+                  py: 1.75,
+                  fontSize: '1.05rem',
+                  fontWeight: 700,
+                  borderRadius: 2,
+                  boxShadow: '0 4px 24px rgba(45,90,39,0.5)',
+                  '&:hover': { bgcolor: '#2d5a27' },
+                }}
+              >
+                {t('home.ctaButton')}
+              </Button>
+            </Link>
+            <Link href="/auth/register-org" style={{ textDecoration: 'none' }}>
+              <Button
+                variant="outlined"
+                size="large"
+                startIcon={<Business />}
+                sx={{
+                  borderColor: 'rgba(255,255,255,0.5)',
+                  color: 'white',
+                  px: 4,
+                  py: 1.75,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  backdropFilter: 'blur(4px)',
+                  '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' },
+                }}
+              >
+                {t('home.ctaOrgButton', 'Register Organization')}
+              </Button>
+            </Link>
+          </Stack>
         </Container>
       </Box>
 

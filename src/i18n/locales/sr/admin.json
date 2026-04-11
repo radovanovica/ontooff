@@ -15,7 +15,9 @@
       "totalRegistrations": "Ukupno rezervacija",
       "pendingRegistrations": "Na čekanju",
       "confirmedRegistrations": "Potvrđene",
-      "totalRevenue": "Ukupan prihod"
+      "totalRevenue": "Ukupan prihod",
+      "totalOrgs": "Organizacije",
+      "pendingOrgs": "Org na čekanju"
     },
     "recentBookings": "Nedavne rezervacije",
     "quickLinks": "Brze veze"
@@ -88,6 +90,36 @@
       "created": "Kreirano"
     },
     "confirmDelete": "Obrisati ovo mesto? Svi povezani podaci biće trajno uklonjeni."
+  },
+  "organizations": {
+    "title": "Organizacije",
+    "subtitle": "Upravljanje registracijama organizacija",
+    "searchPlaceholder": "Pretraži po imenu ili emailu…",
+    "status": "Status",
+    "statuses": {
+      "PENDING": "Na čekanju",
+      "APPROVED": "Odobren",
+      "REJECTED": "Odbijen",
+      "SUSPENDED": "Suspendovan"
+    },
+    "columns": {
+      "name": "Naziv",
+      "email": "Email",
+      "location": "Lokacija",
+      "places": "Mesta",
+      "status": "Status",
+      "registered": "Registrovan"
+    },
+    "actions": {
+      "approve": "Odobri",
+      "reject": "Odbij",
+      "suspend": "Suspenduj",
+      "website": "Web sajt"
+    },
+    "confirmApprove": "Odobri organizaciju",
+    "confirmReject": "Odbij organizaciju",
+    "confirmSuspend": "Suspenduj organizaciju",
+    "rejectionReason": "Razlog (opciono)"
   },
   "registrations": {
     "title": "Sve rezervacije",
