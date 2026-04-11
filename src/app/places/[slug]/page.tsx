@@ -21,6 +21,7 @@ import { ArrowBack, LocationOn, Phone, Email, Language, Info } from '@mui/icons-
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import RegistrationStepper from '@/components/registration/RegistrationStepper';
+import ReviewList from '@/components/reviews/ReviewList';
 import { SpotStatus } from '@prisma/client';
 
 interface PlaceDetail {
@@ -300,6 +301,11 @@ function PlaceContent() {
                 locations={embedData.locations as Parameters<typeof RegistrationStepper>[0]['locations']}
               />
             )}
+
+            {/* Reviews */}
+            <Box sx={{ mt: 5 }}>
+              <ReviewList placeId={place.id} />
+            </Box>
           </Box>
         </Box>
       </Container>

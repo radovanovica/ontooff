@@ -552,6 +552,31 @@ export interface RegistrationCreateInput {
 }
 
 // ─────────────────────────────────────────
+// REVIEW
+// ─────────────────────────────────────────
+
+export interface Review {
+  id: string;
+  placeId: string;
+  activityLocationId: string | null;
+  registrationId: string;
+  userId: string | null;
+  guestName: string;
+  guestEmail: string;
+  rating: number;           // 1–5
+  title: string | null;
+  body: string;
+  isApproved: boolean;
+  isRejected: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  place?: Place;
+  activityLocation?: ActivityLocation | null;
+  registration?: Registration;
+  user?: User | null;
+}
+
+// ─────────────────────────────────────────
 // DASHBOARD / STATS
 // ─────────────────────────────────────────
 

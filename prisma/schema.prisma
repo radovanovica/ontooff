@@ -97,6 +97,7 @@ model User {
   sessions      Session[]
   places        Place[]
   registrations Registration[]
+  reviews       Review[]
 
   @@index([email])
   @@index([role])
@@ -179,6 +180,7 @@ model Place {
   activityTypes     ActivityType[]
   activityLocations ActivityLocation[]
   embedTokens       EmbedToken[]
+  reviews           Review[]
 
   @@index([ownerId])
   @@index([organizationId])
@@ -235,6 +237,7 @@ model ActivityLocation {
   registrations Registration[]
   pricingRules PricingRule[]
   embedTokens  EmbedToken[]
+  reviews      Review[]
 
   @@index([placeId])
   @@index([activityTypeId])
@@ -371,6 +374,7 @@ model Registration {
   registrationSpots RegistrationSpot[]
   embedToken        EmbedToken?          @relation(fields: [embedTokenId], references: [id], onDelete: SetNull)
   paymentBreakdown  PaymentBreakdownItem[]
+  review            Review?
 
   @@index([activityLocationId])
   @@index([userId])
@@ -466,6 +470,43 @@ model Organization {
   @@index([status])
   @@index([email])
   @@map("organizations")
+}
+
+// ─────────────────────────────────────────
+// REVIEWS
+// ─────────────────────────────────────────
+
+model Review {
+  id                 String    @id @default(cuid())
+  placeId            String
+  activityLocationId String?
+  registrationId     String    @unique
+  userId             String?
+
+  guestName          String
+  guestEmail         String
+
+  rating             Int       // 1–5
+  title              String?
+  body               String    @db.Text
+
+  isApproved         Boolean   @default(false)
+  isRejected         Boolean   @default(false)
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  place            Place             @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  activityLocation ActivityLocation? @relation(fields: [activityLocationId], references: [id], onDelete: SetNull)
+  registration     Registration      @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  user             User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([placeId])
+  @@index([activityLocationId])
+  @@index([registrationId])
+  @@index([userId])
+  @@index([isApproved])
+  @@map("reviews")
 }
 
 // ─────────────────────────────────────────

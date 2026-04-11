@@ -351,5 +351,29 @@
       "loadFailed": "Neuspešno učitavanje rezervacija.",
       "updateStatusFailed": "Neuspešno ažuriranje statusa."
     }
+  },
+  "reviews": {
+    "title": "Recenzije",
+    "tabLabel": "Recenzije",
+    "empty": "Još nema recenzija.",
+    "pending": "Na čekanju",
+    "approved": "Odobreno",
+    "rejected": "Odbijeno",
+    "all": "Sve",
+    "approve": "Odobri",
+    "reject": "Odbij",
+    "delete": "Obriši",
+    "deleteConfirm": "Trajno obrisati ovu recenziju?",
+    "approveSuccess": "Recenzija odobrena.",
+    "rejectSuccess": "Recenzija odbijena.",
+    "deleteSuccess": "Recenzija obrisana.",
+    "actionFailed": "Akcija nije uspela. Pokušajte ponovo.",
+    "booking": "Rezervacija",
+    "location": "Lokacija",
+    "rating": "Ocena",
+    "noTitle": "(bez naslova)",
+    "averageRating": "Prosečna ocena",
+    "totalReviews": "Ukupno recenzija",
+    "pendingCount": "{{count}} na čekanju"
   }
 }

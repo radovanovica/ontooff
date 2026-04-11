@@ -149,7 +149,9 @@
     "emailSent": "Potvrda je poslata na <strong>{{email}}</strong>.",
     "editLink": "Rezervaciju možete izmeniti putem linka u emailu.",
     "newBooking": "Nova rezervacija",
-    "viewBooking": "Moje rezervacije"
+    "viewBooking": "Moje rezervacije",
+    "leaveReview": "Ostavite recenziju",
+    "leaveReviewSubtitle": "Podelite iskustvo kako biste pomogli drugim posetiocima"
   },
   "edit": {
     "title": "Izmena rezervacije",
@@ -176,5 +178,26 @@
     "maxDays": "Maksimalna rezervacija je {{count}} dan/dana.",
     "maxPeople": "Dozvoljeno je maksimalno {{count}} osoba.",
     "minPeople": "Potrebno je minimum {{count}} osoba."
+  },
+  "review": {
+    "title": "Ostavite recenziju",
+    "subtitle": "Podelite iskustvo sa ovom aktivnošću",
+    "ratingLabel": "Vaša ocena",
+    "titleLabel": "Naslov recenzije (opciono)",
+    "titlePlaceholder": "Sažmite vaše iskustvo",
+    "bodyLabel": "Vaša recenzija",
+    "bodyPlaceholder": "Opišite vaše iskustvo — šta vam se svidelo, šta bi moglo biti bolje…",
+    "submit": "Pošalji recenziju",
+    "submitting": "Slanje…",
+    "submitted": "Hvala na recenziji! Biće prikazana nakon odobrenja.",
+    "alreadyReviewed": "Već ste poslali recenziju za ovu rezervaciju.",
+    "verifyTitle": "Verifikujte rezervaciju",
+    "bookingNumber": "Broj rezervacije",
+    "bookingEmail": "Email korišćen za rezervaciju",
+    "verify": "Verifikuj",
+    "verifying": "Verifikacija…",
+    "notFound": "Rezervacija nije pronađena. Proverite broj i email.",
+    "notEligible": "Recenzije se mogu poslati samo za potvrđene ili završene rezervacije.",
+    "stars": "{{count}} zvezda"
   }
 }

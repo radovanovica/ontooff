@@ -149,7 +149,9 @@
     "emailSent": "A confirmation has been sent to <strong>{{email}}</strong>.",
     "editLink": "You can edit your booking using the link in the email.",
     "newBooking": "Make another booking",
-    "viewBooking": "View my bookings"
+    "viewBooking": "View my bookings",
+    "leaveReview": "Leave a Review",
+    "leaveReviewSubtitle": "Share your experience to help other visitors"
   },
   "edit": {
     "title": "Edit Reservation",
@@ -176,5 +178,26 @@
     "maxDays": "Maximum booking is {{count}} day(s).",
     "maxPeople": "Maximum {{count}} people allowed.",
     "minPeople": "Minimum {{count}} people required."
+  },
+  "review": {
+    "title": "Leave a Review",
+    "subtitle": "Share your experience with this activity",
+    "ratingLabel": "Your rating",
+    "titleLabel": "Review title (optional)",
+    "titlePlaceholder": "Summarize your experience",
+    "bodyLabel": "Your review",
+    "bodyPlaceholder": "Tell others about your experience — what you liked, what could be better…",
+    "submit": "Submit Review",
+    "submitting": "Submitting…",
+    "submitted": "Thank you for your review! It will appear after approval.",
+    "alreadyReviewed": "You have already submitted a review for this booking.",
+    "verifyTitle": "Verify your booking",
+    "bookingNumber": "Booking number",
+    "bookingEmail": "Email used for booking",
+    "verify": "Verify",
+    "verifying": "Verifying…",
+    "notFound": "Booking not found. Please check your number and email.",
+    "notEligible": "Reviews can only be submitted for confirmed or completed bookings.",
+    "stars": "{{count}} star(s)"
   }
 }

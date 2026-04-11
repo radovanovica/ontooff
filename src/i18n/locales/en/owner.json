@@ -353,5 +353,29 @@
       "loadFailed": "Failed to load bookings.",
       "updateStatusFailed": "Failed to update status."
     }
+  },
+  "reviews": {
+    "title": "Reviews",
+    "tabLabel": "Reviews",
+    "empty": "No reviews yet.",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "all": "All",
+    "approve": "Approve",
+    "reject": "Reject",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this review permanently?",
+    "approveSuccess": "Review approved.",
+    "rejectSuccess": "Review rejected.",
+    "deleteSuccess": "Review deleted.",
+    "actionFailed": "Action failed. Please try again.",
+    "booking": "Booking",
+    "location": "Location",
+    "rating": "Rating",
+    "noTitle": "(no title)",
+    "averageRating": "Avg. rating",
+    "totalReviews": "Total reviews",
+    "pendingCount": "{{count}} pending"
   }
 }

@@ -53,6 +53,7 @@ import {
   PricingType,
   RegistrationFormData,
 } from '@/types';
+import ReviewForm from '@/components/reviews/ReviewForm';
 
 const step1Schema = z
   .object({
@@ -118,6 +119,8 @@ export default function RegistrationStepper({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [registrationNumber, setRegistrationNumber] = useState<string | null>(null);
+  const [submittedEditToken, setSubmittedEditToken] = useState<string | null>(null);
+  const [submittedPlaceId, setSubmittedPlaceId] = useState<string | null>(null);
 
   const [locationSelectMode, setLocationSelectMode] = useState<'list' | 'map'>('list');
   const availableLocations = locations && locations.length > 0 ? locations : [location];
@@ -421,6 +424,8 @@ export default function RegistrationStepper({
 
       const regNumber = json.data?.registrationNumber ?? json.registrationNumber;
       setRegistrationNumber(regNumber);
+      setSubmittedEditToken(json.data?.editToken ?? null);
+      setSubmittedPlaceId(selectedLocation?.place?.id ?? null);
       onSuccess?.(regNumber);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'An error occurred');
@@ -438,14 +443,36 @@ export default function RegistrationStepper({
 
   if (registrationNumber) {
     return (
-      <Box sx={{ textAlign: 'center', py: 6 }}>
-        <CheckCircle sx={{ fontSize: 72, color: 'success.main', mb: 2 }} />
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>{t('success.title')}</Typography>
-        <Typography color="text.secondary" sx={{ mb: 2 }}>{t('success.subtitle')}</Typography>
-        <Chip label={registrationNumber} color="primary" sx={{ fontSize: '1.1rem', px: 2, py: 2.5, fontWeight: 700 }} />
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-          {t('success.emailSent', { email: formData.email })}
-        </Typography>
+      <Box sx={{ py: 4 }}>
+        {/* Confirmation block */}
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <CheckCircle sx={{ fontSize: 72, color: 'success.main', mb: 2 }} />
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>{t('success.title')}</Typography>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>{t('success.subtitle')}</Typography>
+          <Chip label={registrationNumber} color="primary" sx={{ fontSize: '1.1rem', px: 2, py: 2.5, fontWeight: 700 }} />
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            {t('success.emailSent', { email: formData.email })}
+          </Typography>
+        </Box>
+
+        {/* Review prompt */}
+        {submittedPlaceId && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5, textAlign: 'center' }}>
+              {t('success.leaveReview')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, textAlign: 'center' }}>
+              {t('success.leaveReviewSubtitle')}
+            </Typography>
+            <ReviewForm
+              placeId={submittedPlaceId}
+              activityLocationId={selectedLocation?.id}
+              editToken={submittedEditToken ?? undefined}
+              registrationNumber={registrationNumber}
+              guestEmail={formData.email}
+            />
+          </Box>
+        )}
       </Box>
     );
   }
