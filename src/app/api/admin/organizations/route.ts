@@ -132,3 +132,27 @@ export async function PATCH(req: NextRequest) {
 
   return NextResponse.json({ success: true, data: updatedOrg });
 }
+
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== UserRole.SUPER_ADMIN) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get('id');
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+
+  const org = await prisma.organization.findUnique({ where: { id } });
+  if (!org) return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
+
+  // Unlink places from org before deleting (keep the places themselves)
+  await prisma.place.updateMany({
+    where: { organizationId: id },
+    data: { organizationId: null },
+  });
+
+  await prisma.organization.delete({ where: { id } });
+
+  return NextResponse.json({ success: true });
+}

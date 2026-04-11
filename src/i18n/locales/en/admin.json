@@ -114,7 +114,8 @@
       "approve": "Approve",
       "reject": "Reject",
       "suspend": "Suspend",
-      "website": "Website"
+      "website": "Website",
+      "delete": "Delete permanently"
     },
     "confirmApprove": "Approve Organization",
     "confirmReject": "Reject Organization",

@@ -114,7 +114,8 @@
       "approve": "Odobri",
       "reject": "Odbij",
       "suspend": "Suspenduj",
-      "website": "Web sajt"
+      "website": "Web sajt",
+      "delete": "Trajno obriši"
     },
     "confirmApprove": "Odobri organizaciju",
     "confirmReject": "Odbij organizaciju",

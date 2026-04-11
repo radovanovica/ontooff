@@ -27,7 +27,7 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
-import { Search, CheckCircle, Cancel, OpenInNew } from '@mui/icons-material';
+import { Search, CheckCircle, Cancel, OpenInNew, DeleteForever } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n/client';
@@ -68,6 +68,10 @@ export default function AdminOrganizationsPage() {
   const [actionType, setActionType] = useState<'APPROVED' | 'REJECTED' | 'SUSPENDED' | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [actioning, setActioning] = useState(false);
+
+  // Delete dialog
+  const [deleteTarget, setDeleteTarget] = useState<OrgRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchOrgs = useCallback(async () => {
     setLoading(true);
@@ -112,6 +116,21 @@ export default function AdminOrganizationsPage() {
       setError('Action failed');
     } finally {
       setActioning(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/organizations?id=${deleteTarget.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed');
+      setDeleteTarget(null);
+      fetchOrgs();
+    } catch {
+      setError('Delete failed');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -248,6 +267,11 @@ export default function AdminOrganizationsPage() {
                           </IconButton>
                         </Tooltip>
                       )}
+                      <Tooltip title={t('organizations.actions.delete', 'Delete permanently')}>
+                        <IconButton size="small" color="error" onClick={() => setDeleteTarget(org)}>
+                          <DeleteForever fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -292,6 +316,31 @@ export default function AdminOrganizationsPage() {
             onClick={handleAction}
           >
             {actioning ? <CircularProgress size={16} color="inherit" /> : t(`organizations.actions.${actionType === 'APPROVED' ? 'approve' : actionType === 'REJECTED' ? 'reject' : 'suspend'}`, 'Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Hard delete confirmation dialog */}
+      <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ color: 'error.main' }}>Delete Organization Permanently</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ mb: 1 }}>
+            Permanently delete <strong>{deleteTarget?.name}</strong>?
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            This removes the organization record from the database completely, freeing up the email address <strong>{deleteTarget?.email}</strong> for re-registration.
+            Any linked places will be kept but unlinked from this organization.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteTarget(null)}>{t('common.cancel')}</Button>
+          <Button
+            variant="contained"
+            color="error"
+            disabled={deleting}
+            onClick={handleDelete}
+            startIcon={deleting ? <CircularProgress size={16} color="inherit" /> : <DeleteForever />}
+          >
+            {deleting ? 'Deleting…' : 'Delete Permanently'}
           </Button>
         </DialogActions>
       </Dialog>
