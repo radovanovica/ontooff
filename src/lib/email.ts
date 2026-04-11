@@ -38,8 +38,10 @@ function baseTemplate(content: string): string {
         <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
           <!-- Header -->
           <tr>
-            <td style="background:linear-gradient(135deg,#2d5a27 0%,#4a7c59 100%);padding:32px 40px;text-align:center;">
-              <h1 style="color:#ffffff;margin:0;font-size:24px;font-weight:700;letter-spacing:0.5px;">🌿 ${APP_NAME}</h1>
+            <td style="background:linear-gradient(135deg,#2d5a27 0%,#4a7c59 100%);padding:28px 40px;text-align:center;">
+              <img src="${APP_URL}/assets/images/logo.svg" alt="${APP_NAME}" width="48" height="48" style="display:block;margin:0 auto 10px;" />
+              <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:800;letter-spacing:1px;text-transform:lowercase;">🌿 ${APP_NAME}</h1>
+              <p style="color:rgba(255,255,255,0.75);margin:4px 0 0;font-size:13px;letter-spacing:0.5px;">book nature activities</p>
             </td>
           </tr>
           <!-- Body -->
@@ -183,13 +185,17 @@ export async function sendRegistrationConfirmation(
     ${paymentHtml}
 
     <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      Need to make changes? Use the link below to edit your reservation anytime.
+      You can view or edit your reservation at any time using the link below.
     </p>
     <div style="text-align:center;">
       <a href="${editUrl}" style="${btnStyle()}">View / Edit Reservation</a>
     </div>
-    <p style="color:#8b7355;font-size:12px;text-align:center;">
-      This edit link is personal — do not share it publicly.
+    <p style="color:#8b7355;font-size:13px;text-align:center;margin-top:8px;">
+      If this link doesn't work, copy and paste the following URL into your browser:<br/>
+      <span style="color:#4a7c59;word-break:break-all;">${editUrl}</span>
+    </p>
+    <p style="color:#8b7355;font-size:11px;text-align:center;">
+      ⚠️ This edit link is personal — do not share it publicly.
     </p>
   `);
 

@@ -11,6 +11,21 @@ export async function GET() {
       data: ACTIVITY_TAGS.map((t) => ({ ...t, isActive: true })),
       skipDuplicates: true,
     });
+  } else {
+    // Ensure removed tags (e.g. hunting) are deactivated
+    const activeSlugs = ACTIVITY_TAGS.map((t) => t.slug);
+    await prisma.activityTag.updateMany({
+      where: { slug: { notIn: activeSlugs } },
+      data: { isActive: false },
+    });
+    // Upsert any new tags that may have been added to the config
+    for (const tag of ACTIVITY_TAGS) {
+      await prisma.activityTag.upsert({
+        where: { slug: tag.slug },
+        update: { name: tag.name, icon: tag.icon, color: tag.color, sortOrder: tag.sortOrder, isActive: true },
+        create: { ...tag, isActive: true },
+      });
+    }
   }
 
   const tags = await prisma.activityTag.findMany({

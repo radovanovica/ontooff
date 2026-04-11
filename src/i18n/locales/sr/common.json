@@ -38,7 +38,7 @@
     "howItWorksSubtitle": "Rezervišite savršeno mesto u tri jednostavna koraka.",
     "steps": {
       "find": { "title": "Pronađite lokaciju", "desc": "Pregledajte našu listu outdoor prostora — kampovi, ribolovna jezera, reke za kajaking i još mnogo toga." },
-      "pick": { "title": "Odaberite mesto", "desc": "Koristite interaktivnu mapu da odaberete tačno mesto — bez iznenađenja po dolasku." },
+      "pick": { "title": "Izaberite mesto", "desc": "Koristite interaktivnu mapu da izaberete tačno mesto — bez iznenađenja po dolasku." },
       "book": { "title": "Rezervišite i uživajte", "desc": "Završite rezervaciju za nekoliko minuta. Dobijte potvrdu emailom i krenite u prirodu." }
     },
     "galleryTitle": "Priroda Vas Čeka",
@@ -51,7 +51,7 @@
     "features": {
       "map": {
         "title": "Interaktivne Mape",
-        "desc": "Odaberite tačno mesto na interaktivnoj mapi pre rezervacije."
+        "desc": "Izaberite tačno mesto na interaktivnoj mapi pre rezervacije."
       },
       "booking": {
         "title": "Jednostavna Rezervacija",
@@ -67,7 +67,7 @@
       }
     },
     "search": {
-      "selectActivity": "Odaberite aktivnost",
+      "selectActivity": "Izaberite aktivnost",
       "dateFrom": "Datum dolaska",
       "dateTo": "Datum odlaska",
       "button": "Pretraži aktivnosti"
@@ -122,7 +122,7 @@
     "currency": "Valuta",
     "notes": "Napomene",
     "all": "Svi",
-    "none": "Nijedan",
+    "none": "Nijedno",
     "page": "Strana",
     "of": "od",
     "rows": "redova",
@@ -179,7 +179,7 @@
     "searching": "Pretraga...",
     "results": "{{count}} mesto(a) pronađeno",
     "noResults": "Nema pronađenih mesta",
-    "noResultsHint": "Pokušajte da promenite filtere ili odaberete druge aktivnosti.",
+    "noResultsHint": "Pokušajte da promenite filtere ili izaberite druge aktivnosti.",
     "clearFilters": "Obriši filtere",
     "error": "Greška pri učitavanju rezultata. Pokušajte ponovo.",
     "bookNow": "Rezervišite",

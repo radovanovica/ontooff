@@ -29,6 +29,7 @@ import PageHeader from '@/components/ui/PageHeader';
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
+  instructions: z.string().optional(),
   activityTypeId: z.string().min(1, 'Activity type is required'),
   maxCapacity: z.coerce.number().int().positive().optional().or(z.literal('')),
   requiresSpot: z.boolean().default(true),
@@ -157,6 +158,7 @@ export default function NewLocationPage() {
           activityTypeId: data.activityTypeId,
           name: data.name,
           description: data.description || undefined,
+          instructions: data.instructions || undefined,
           maxCapacity: data.maxCapacity === '' ? undefined : Number(data.maxCapacity) || undefined,
           requiresSpot: data.requiresSpot,
           sortOrder: Number(data.sortOrder) || 0,
@@ -281,6 +283,17 @@ export default function NewLocationPage() {
                     fullWidth
                     multiline
                     rows={3}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    {...register('instructions')}
+                    label={t('locations.form.instructions')}
+                    fullWidth
+                    multiline
+                    rows={3}
+                    placeholder={t('locations.form.instructionsPlaceholder')}
+                    helperText={t('locations.form.instructionsHint')}
                   />
                 </Grid>
                 <Grid size={{ xs: 12 }}>

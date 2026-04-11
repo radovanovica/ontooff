@@ -376,9 +376,9 @@ function SearchContent() {
                         variant="contained"
                         size="small"
                         fullWidth
+                        component={Link}
+                        href={`/places/${place.slug}`}
                         sx={{ bgcolor: '#2d5a27', '&:hover': { bgcolor: '#1e3d1a' } }}
-                        // In future: link to place detail / booking
-                        disabled
                       >
                         {t('search.bookNow', 'Book Now')}
                       </Button>

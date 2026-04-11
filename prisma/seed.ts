@@ -281,11 +281,18 @@ async function main() {
   for (const tag of ACTIVITY_TAGS) {
     await prisma.activityTag.upsert({
       where: { slug: tag.slug },
-      update: { name: tag.name, icon: tag.icon, color: tag.color, sortOrder: tag.sortOrder },
+      update: { name: tag.name, icon: tag.icon, color: tag.color, sortOrder: tag.sortOrder, isActive: true },
       create: { ...tag, isActive: true },
     });
   }
-  console.log(`✅  Activity tags seeded (${ACTIVITY_TAGS.length} tags)`);
+
+  // Deactivate removed tags (e.g. hunting → replaced by glamping)
+  const activeSlugs = ACTIVITY_TAGS.map((t) => t.slug);
+  await prisma.activityTag.updateMany({
+    where: { slug: { notIn: activeSlugs } },
+    data: { isActive: false },
+  });
+  console.log(`✅  Activity tags seeded (${ACTIVITY_TAGS.length} tags, removed tags deactivated)`);
 
   console.log('\n🎉  Seed complete!');
   console.log('\nLogin credentials:');

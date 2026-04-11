@@ -631,6 +631,22 @@ export default function RegistrationStepper({
             </Alert>
           )}
 
+          {/* Show location instructions if available */}
+          {selectedLocation?.instructions && (
+            <Alert
+              severity="info"
+              icon={<MapIcon />}
+              sx={{ mb: 2.5, '& .MuiAlert-message': { width: '100%' } }}
+            >
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
+                {t('locationInstructions')}
+              </Typography>
+              <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+                {selectedLocation.instructions}
+              </Typography>
+            </Alert>
+          )}
+
           <Grid container spacing={2} sx={{ mb: 3 }}>
             <Grid size={{ xs: 12, sm: 6 }}>
               <Controller

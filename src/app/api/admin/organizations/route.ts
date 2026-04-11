@@ -154,5 +154,12 @@ export async function DELETE(req: NextRequest) {
 
   await prisma.organization.delete({ where: { id } });
 
+  // Delete the linked owner account so the email can be reused
+  if (org.ownerId) {
+    await prisma.user.delete({ where: { id: org.ownerId } }).catch(() => {
+      // User may have already been deleted or may own other resources — ignore
+    });
+  }
+
   return NextResponse.json({ success: true });
 }

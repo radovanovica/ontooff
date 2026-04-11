@@ -130,11 +130,21 @@
     "form": {
       "name": "Location name",
       "description": "Description",
+      "instructions": "How to find this location",
+      "instructionsPlaceholder": "e.g. Take the main road north, turn right at the oak tree, follow signs to the river\u2026",
+      "instructionsHint": "Shown to guests during booking",
       "activityType": "Activity type",
       "maxCapacity": "Max capacity",
       "requiresSpot": "Guests must select a specific spot",
       "mapWidth": "Map width (px)",
       "mapHeight": "Map height (px)"
+    },
+    "gallery": {
+      "title": "Gallery",
+      "addPhotos": "Add Photos",
+      "hint": "{{count}} / {{max}} photos",
+      "empty": "No photos yet. Click \"Add Photos\" to upload images of this location.",
+      "fileTooLarge": "File too large. Maximum size is 2 MB."
     },
     "mapEditor": "Map Editor",
     "mapEditorHint": "Draw spot shapes on the SVG canvas below",

@@ -1,8 +1,9 @@
 {
   "title": "Rezervišite aktivnost",
   "embedTitle": "Rezervišite mesto",
+  "locationInstructions": "Kako doći do lokacije",
   "steps": {
-    "selectActivity": "Odaberite aktivnost",
+    "selectActivity": "Izaberite aktivnost",
     "selectSpot": "Datumi i mesto",
     "guests": "Gosti i plaćanje",
     "contact": "Vaši podaci",
@@ -58,7 +59,7 @@
     "summaryTitle": "Pregled rezervacije"
   },
   "step1": {
-    "heading": "Odaberite aktivnost",
+    "heading": "Izaberite aktivnost",
     "subheading": "Izaberite aktivnost i lokaciju koju želite da rezervišete",
     "activityLabel": "Tip aktivnosti",
     "locationLabel": "Lokacija",
@@ -69,7 +70,7 @@
     "spotsAvailable": "Dostupno {{count}} mesto/mesta"
   },
   "step2": {
-    "heading": "Odaberite datume i mesto",
+    "heading": "Izaberite datume i mesto",
     "subheading": "Izaberite datume dolaska i odlaska, zatim izaberite mesto na mapi",
     "startDateLabel": "Datum dolaska",
     "endDateLabel": "Datum odlaska",

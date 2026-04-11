@@ -24,7 +24,7 @@ import {
   DialogActions,
   MenuItem,
 } from '@mui/material';
-import { ArrowBack, Add, Delete, Edit } from '@mui/icons-material';
+import { ArrowBack, Add, Delete, Edit, CloudUpload, Collections } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -47,6 +47,8 @@ interface LocationData {
   mapHeight: number | null;
   mapImageUrl: string | null;
   sortOrder: number;
+  gallery: string | null;      // JSON: string[]
+  instructions: string | null; // How to find the place
   activityType: { id: string; name: string; icon: string | null };
   place: { id: string; name: string };
   spots: SpotData[];
@@ -68,6 +70,7 @@ interface SpotData {
 const locationSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
+  instructions: z.string().optional(),
   maxCapacity: z.coerce.number().int().positive().optional().or(z.literal('')),
   requiresSpot: z.boolean(),
   isActive: z.boolean(),
@@ -106,6 +109,7 @@ function SettingsTab({ location, locationId, onUpdated }: { location: LocationDa
     defaultValues: {
       name: location.name,
       description: location.description ?? '',
+      instructions: location.instructions ?? '',
       maxCapacity: location.maxCapacity ?? undefined,
       requiresSpot: location.requiresSpot,
       isActive: location.isActive,
@@ -124,6 +128,7 @@ function SettingsTab({ location, locationId, onUpdated }: { location: LocationDa
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
+          instructions: data.instructions || undefined,
           maxCapacity: data.maxCapacity === '' ? null : Number(data.maxCapacity) || null,
           mapWidth: data.mapWidth === '' ? null : Number(data.mapWidth) || null,
           mapHeight: data.mapHeight === '' ? null : Number(data.mapHeight) || null,
@@ -167,6 +172,17 @@ function SettingsTab({ location, locationId, onUpdated }: { location: LocationDa
             fullWidth
             multiline
             rows={3}
+          />
+        </Grid>
+        <Grid size={{ xs: 12 }}>
+          <TextField
+            {...register('instructions')}
+            label={t('locations.form.instructions')}
+            fullWidth
+            multiline
+            rows={4}
+            placeholder={t('locations.form.instructionsPlaceholder')}
+            helperText={t('locations.form.instructionsHint')}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
@@ -396,6 +412,170 @@ function SpotsTab({
   );
 }
 
+// ─── Gallery Tab ─────────────────────────────────────────────────────────────
+
+function GalleryTab({ location, locationId, onUpdated }: { location: LocationData; locationId: string; onUpdated: () => void }) {
+  const { t } = useTranslation('owner');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const parseGallery = (): string[] => {
+    if (!location.gallery) return [];
+    try { return JSON.parse(location.gallery) as string[]; } catch { return []; }
+  };
+
+  const [images, setImages] = useState<string[]>(parseGallery);
+
+  // Sync when location changes (after save)
+  useEffect(() => { setImages(parseGallery()); }, [location.gallery]);
+
+  const saveGallery = async (imgs: string[]) => {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/activity-locations/${locationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gallery: JSON.stringify(imgs) }),
+      });
+      if (!res.ok) throw new Error(t('locations.errors.saveFailed'));
+      onUpdated();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('common.error'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    const remaining = 10 - images.length;
+    const toProcess = files.slice(0, remaining);
+    let processed = 0;
+    const newImages: string[] = [];
+
+    toProcess.forEach((file) => {
+      if (file.size > 2 * 1024 * 1024) {
+        setError(t('locations.gallery.fileTooLarge'));
+        processed++;
+        if (processed === toProcess.length && newImages.length > 0) {
+          const updated = [...images, ...newImages];
+          setImages(updated);
+          saveGallery(updated);
+        }
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        newImages.push(ev.target!.result as string);
+        processed++;
+        if (processed === toProcess.length) {
+          const updated = [...images, ...newImages];
+          setImages(updated);
+          saveGallery(updated);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    // Reset input
+    e.target.value = '';
+  };
+
+  const handleDelete = (idx: number) => {
+    const updated = images.filter((_, i) => i !== idx);
+    setImages(updated);
+    saveGallery(updated);
+  };
+
+  return (
+    <Box>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      {/* Upload button */}
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Button
+          component="label"
+          variant="contained"
+          startIcon={<CloudUpload />}
+          disabled={saving || images.length >= 10}
+        >
+          {saving ? t('common.saving') : t('locations.gallery.addPhotos')}
+          <input type="file" accept="image/*" multiple hidden onChange={handleFileChange} />
+        </Button>
+        <Typography variant="caption" color="text.secondary">
+          {t('locations.gallery.hint', { count: images.length, max: 10 })}
+        </Typography>
+      </Box>
+
+      {/* Image grid */}
+      {images.length === 0 ? (
+        <Box
+          sx={{
+            border: '2px dashed',
+            borderColor: 'divider',
+            borderRadius: 2,
+            py: 6,
+            textAlign: 'center',
+            color: 'text.secondary',
+          }}
+        >
+          <Collections sx={{ fontSize: 48, mb: 1, opacity: 0.4 }} />
+          <Typography variant="body2">{t('locations.gallery.empty')}</Typography>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+            gap: 1.5,
+          }}
+        >
+          {images.map((src, idx) => (
+            <Box
+              key={idx}
+              sx={{
+                position: 'relative',
+                borderRadius: 1.5,
+                overflow: 'hidden',
+                aspectRatio: '4/3',
+                border: '1px solid',
+                borderColor: 'divider',
+                bgcolor: 'action.hover',
+                '&:hover .del-btn': { opacity: 1 },
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={src}
+                alt={`Gallery image ${idx + 1}`}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+              <IconButton
+                className="del-btn"
+                size="small"
+                color="error"
+                onClick={() => handleDelete(idx)}
+                sx={{
+                  position: 'absolute',
+                  top: 4,
+                  right: 4,
+                  opacity: 0,
+                  transition: 'opacity 0.2s',
+                  bgcolor: 'rgba(255,255,255,0.9)',
+                  '&:hover': { bgcolor: 'white' },
+                }}
+              >
+                <Delete fontSize="small" />
+              </IconButton>
+            </Box>
+          ))}
+        </Box>
+      )}
+    </Box>
+  );
+}
+
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
 export default function LocationDetailPage() {
@@ -463,6 +643,7 @@ export default function LocationDetailPage() {
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tab label={t('locations.editLocation')} />
         <Tab label={t('spots.title')} />
+        <Tab label={t('locations.gallery.title')} />
       </Tabs>
 
       <TabPanel value={tab} index={0}>
@@ -470,6 +651,9 @@ export default function LocationDetailPage() {
       </TabPanel>
       <TabPanel value={tab} index={1}>
         <SpotsTab locationId={locationId} spots={location.spots} onUpdated={loadLocation} />
+      </TabPanel>
+      <TabPanel value={tab} index={2}>
+        <GalleryTab location={location} locationId={locationId} onUpdated={loadLocation} />
       </TabPanel>
     </Box>
   );

@@ -24,7 +24,7 @@ export const ACTIVITY_TAGS: ActivityTagConfig[] = [
   { name: 'Hiking',         slug: 'hiking',         icon: '🥾', color: '#5d4037', sortOrder: 4  },
   { name: 'Cycling',        slug: 'cycling',        icon: '🚴', color: '#f57f17', sortOrder: 5  },
   { name: 'Swimming',       slug: 'swimming',       icon: '🏊', color: '#0097a7', sortOrder: 6  },
-  { name: 'Hunting',        slug: 'hunting',        icon: '🏹', color: '#4e342e', sortOrder: 7  },
+  { name: 'Glamping',       slug: 'glamping',       icon: '🏕️', color: '#6a1b9a', sortOrder: 7  },
   { name: 'Rock Climbing',  slug: 'rock-climbing',  icon: '🧗', color: '#78909c', sortOrder: 8  },
   { name: 'Horse Riding',   slug: 'horse-riding',   icon: '🐴', color: '#8d6e63', sortOrder: 9  },
   { name: 'Mountain Biking',slug: 'mountain-biking',icon: '🚵', color: '#546e7a', sortOrder: 10 },

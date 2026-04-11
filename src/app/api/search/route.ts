@@ -70,6 +70,11 @@ export async function GET(req: NextRequest) {
             },
           },
         },
+        embedTokens: {
+          where: { isActive: true },
+          select: { token: true },
+          take: 1,
+        },
         _count: {
           select: {
             activityLocations: true,

@@ -221,6 +221,8 @@ model ActivityLocation {
   requiresSpot   Boolean  @default(true)
   isActive       Boolean  @default(true)
   sortOrder      Int      @default(0)
+  gallery        String?  @db.Text
+  instructions   String?  @db.Text
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

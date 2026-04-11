@@ -129,11 +129,21 @@
     "form": {
       "name": "Naziv lokacije",
       "description": "Opis",
+      "instructions": "Kako doći do lokacije",
+      "instructionsPlaceholder": "npr. Idite glavnim putem prema severu, skrenite desno kod hrastove šume, pratite oznake do reke…",
+      "instructionsHint": "Prikazuje se gostima tokom rezervacije",
       "activityType": "Tip aktivnosti",
       "maxCapacity": "Maksimalni kapacitet",
       "requiresSpot": "Gosti moraju izabrati specifično mesto",
       "mapWidth": "Širina mape (px)",
       "mapHeight": "Visina mape (px)"
+    },
+    "gallery": {
+      "title": "Galerija",
+      "addPhotos": "Dodaj fotografije",
+      "hint": "{{count}} / {{max}} fotografija",
+      "empty": "Još nema fotografija. Kliknite \"Dodaj fotografije\" da dodate slike ove lokacije.",
+      "fileTooLarge": "Fajl je prevelik. Maksimalna veličina je 2 MB."
     },
     "mapEditor": "Uređivač mape",
     "mapEditorHint": "Crtajte oblike mesta na SVG platnu ispod",

@@ -17,6 +17,8 @@ const schema = z.object({
   sortOrder: z.number().default(0),
   svgMapData: z.string().optional(),
   mapImageUrl: z.string().optional(),
+  gallery: z.string().optional(),       // JSON: string[] of base64 data-URIs
+  instructions: z.string().optional(),  // How to find this location
 });
 
 async function canAccessPlace(placeId: string, userId: string, role: UserRole) {
