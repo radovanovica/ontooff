@@ -161,7 +161,7 @@ export default function RegistrationEditPage() {
                   )}
                   {registration.totalAmount != null && (
                     <Typography variant="body2" sx={{ mt: 1 }}>
-                      {t('pricing.total')}: <strong>€{registration.totalAmount.toFixed(2)}</strong>
+                      {t('pricing.total')}: <strong>€{Number(registration.totalAmount).toFixed(2)}</strong>
                     </Typography>
                   )}
                 </Box>

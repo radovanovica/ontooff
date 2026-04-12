@@ -963,7 +963,7 @@ export default function RegistrationStepper({
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="subtitle2">{t('pricing.total')}</Typography>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                  {livePricing.currency} {livePricing.totalAmount.toFixed(2)}
+                  {livePricing.currency} {Number(livePricing.totalAmount).toFixed(2)}
                 </Typography>
               </Box>
             </Paper>
