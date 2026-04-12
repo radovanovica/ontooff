@@ -30,6 +30,8 @@ const createSchema = z.object({
   paymentMethod: z.nativeEnum(PaymentMethod).optional(),
   embedTokenId: z.string().optional(),
   source: z.string().optional().default('web'),
+  sendConfirmation: z.boolean().optional().default(true),
+  initialStatus: z.enum(['PENDING', 'CONFIRMED', 'COMPLETED']).optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -295,6 +297,7 @@ export async function POST(req: NextRequest) {
         totalAmount: pricingData.totalAmount,
         paymentMethod: data.paymentMethod ?? null,
         source: data.source ?? 'web',
+        status: data.initialStatus ?? 'PENDING',
         embedTokenId: data.embedTokenId ?? null,
         registrationSpots: data.spotIds.length > 0
           ? { create: data.spotIds.map((spotId) => ({ spotId })) }
@@ -310,7 +313,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Send confirmation email
+    // Send confirmation email (skip for manual owner entries)
     const spotNames = registration.registrationSpots.map(
       (rs: { spot: { name: string; code: string | null } }) =>
         rs.spot.code ? `${rs.spot.name} (${rs.spot.code})` : rs.spot.name
@@ -318,31 +321,33 @@ export async function POST(req: NextRequest) {
 
     const pricingRule = registration.pricingRule;
 
-    await sendRegistrationConfirmation(data.email, {
-      registrationNumber,
-      firstName: data.firstName,
-      locationName: location.name,
-      activityName: location.activityType.name,
-      placeName: location.place.name,
-      startDate: startDate.toLocaleDateString('en-GB'),
-      endDate: endDate.toLocaleDateString('en-GB'),
-      numberOfDays,
-      spotNames,
-      guestSummary: formatGuestSummary(data.guestCounts as GuestCounts),
-      totalAmount: pricingData.totalAmount,
-      currency: pricingRule?.currency ?? 'RSD',
-      paymentMethod: data.paymentMethod
-        ? ({ CASH: 'Cash', CARD: 'Card', BOTH: 'Cash or Card' })[data.paymentMethod]
-        : undefined,
-      requiresPayment: pricingRule?.requiresPayment ?? false,
-      paymentBreakdown: registration.paymentBreakdown.map(
-        (item: { label: string; totalPrice: unknown }) => ({
-          label: item.label,
-          totalPrice: Number(item.totalPrice),
-        })
-      ),
-      editToken: registration.editToken,
-    }).catch(console.error);
+    if (data.sendConfirmation !== false) {
+      await sendRegistrationConfirmation(data.email, {
+        registrationNumber,
+        firstName: data.firstName,
+        locationName: location.name,
+        activityName: location.activityType.name,
+        placeName: location.place.name,
+        startDate: startDate.toLocaleDateString('en-GB'),
+        endDate: endDate.toLocaleDateString('en-GB'),
+        numberOfDays,
+        spotNames,
+        guestSummary: formatGuestSummary(data.guestCounts as GuestCounts),
+        totalAmount: pricingData.totalAmount,
+        currency: pricingRule?.currency ?? 'RSD',
+        paymentMethod: data.paymentMethod
+          ? ({ CASH: 'Cash', CARD: 'Card', BOTH: 'Cash or Card' })[data.paymentMethod]
+          : undefined,
+        requiresPayment: pricingRule?.requiresPayment ?? false,
+        paymentBreakdown: registration.paymentBreakdown.map(
+          (item: { label: string; totalPrice: unknown }) => ({
+            label: item.label,
+            totalPrice: Number(item.totalPrice),
+          })
+        ),
+        editToken: registration.editToken,
+      }).catch(console.error);
+    }
 
     return NextResponse.json({ success: true, data: registration }, { status: 201 });
   } catch (error) {

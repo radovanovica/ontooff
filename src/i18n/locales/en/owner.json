@@ -333,6 +333,19 @@
       "CANCELLED": "Cancelled",
       "NO_SHOW": "No Show"
     },
+    "addNew": "Add Booking",
+    "manual": {
+      "title": "Add Manual Booking",
+      "subtitle": "For bookings received by phone, email or in person",
+      "submit": "Create Booking",
+      "submitting": "Creating…",
+      "success": "Booking created successfully.",
+      "selectLocation": "Select location",
+      "sendConfirmation": "Send confirmation email to guest",
+      "initialStatus": "Initial status",
+      "adults": "Adults",
+      "notes": "Notes (optional)"
+    },
     "actions": {
       "refresh": "Refresh",
       "view": "View",

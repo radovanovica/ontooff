@@ -331,6 +331,19 @@
       "CANCELLED": "Otkazano",
       "NO_SHOW": "Nije došao"
     },
+    "addNew": "Dodaj rezervaciju",
+    "manual": {
+      "title": "Dodaj ručnu rezervaciju",
+      "subtitle": "Za rezervacije primljene telefonom, emailom ili lično",
+      "submit": "Kreiraj rezervaciju",
+      "submitting": "Kreiranje…",
+      "success": "Rezervacija uspešno kreirana.",
+      "selectLocation": "Izaberite lokaciju",
+      "sendConfirmation": "Pošalji potvrdu gostu na email",
+      "initialStatus": "Početni status",
+      "adults": "Odrasli",
+      "notes": "Napomene (opciono)"
+    },
     "actions": {
       "refresh": "Osveži",
       "view": "Prikaži",
