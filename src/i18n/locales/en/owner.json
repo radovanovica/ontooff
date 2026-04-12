@@ -323,6 +323,7 @@
       "amount": "Amount",
       "status": "Status",
       "created": "Created",
+      "spots": "Spots",
       "currency": "RSD",
       "empty": "—"
     },

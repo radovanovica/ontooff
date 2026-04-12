@@ -321,6 +321,7 @@
       "amount": "Iznos",
       "status": "Status",
       "created": "Kreirano",
+      "spots": "Mesta",
       "currency": "RSD",
       "empty": "—"
     },

@@ -53,10 +53,12 @@ interface ActivityLocation {
   id: string;
   name: string;
   activityType: { name: string };
+  spots: { id: string; name: string; code: string | null }[];
 }
 
 interface ManualBookingForm {
   activityLocationId: string;
+  spotIds: string[];
   firstName: string;
   lastName: string;
   email: string;
@@ -71,6 +73,7 @@ interface ManualBookingForm {
 
 const EMPTY_FORM: ManualBookingForm = {
   activityLocationId: '',
+  spotIds: [],
   firstName: '',
   lastName: '',
   email: '',
@@ -155,6 +158,7 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           activityLocationId: form.activityLocationId,
+          spotIds: form.spotIds.length > 0 ? form.spotIds : undefined,
           firstName: form.firstName,
           lastName: form.lastName,
           email: form.email,
@@ -289,7 +293,7 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
               <Select
                 value={form.activityLocationId}
                 label={t('bookings.table.location')}
-                onChange={(e) => setForm((prev) => ({ ...prev, activityLocationId: e.target.value }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, activityLocationId: e.target.value, spotIds: [] }))}
               >
                 {locations.map((loc) => (
                   <MenuItem key={loc.id} value={loc.id}>
@@ -298,6 +302,44 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
                 ))}
               </Select>
             </FormControl>
+
+            {/* Spots — shown once a location is selected */}
+            {(() => {
+              const selectedLoc = locations.find((l) => l.id === form.activityLocationId);
+              if (!selectedLoc || selectedLoc.spots.length === 0) return null;
+              return (
+                <FormControl fullWidth size="small">
+                  <InputLabel>{t('bookings.table.spots', 'Spots')}</InputLabel>
+                  <Select
+                    multiple
+                    value={form.spotIds}
+                    label={t('bookings.table.spots', 'Spots')}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        spotIds: typeof e.target.value === 'string'
+                          ? e.target.value.split(',')
+                          : (e.target.value as string[]),
+                      }))
+                    }
+                    renderValue={(selected) =>
+                      (selected as string[])
+                        .map((id) => selectedLoc.spots.find((s) => s.id === id))
+                        .filter(Boolean)
+                        .map((s) => s!.code ? `${s!.name} (${s!.code})` : s!.name)
+                        .join(', ')
+                    }
+                  >
+                    {selectedLoc.spots.map((spot) => (
+                      <MenuItem key={spot.id} value={spot.id}>
+                        <Checkbox checked={form.spotIds.includes(spot.id)} />
+                        {spot.name}{spot.code ? ` (${spot.code})` : ''}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              );
+            })()}
 
             <Divider />
 

@@ -43,7 +43,10 @@ async function canAccessRegistration(id: string, userId: string, role: UserRole,
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  const editToken = req.nextUrl.searchParams.get('editToken') ?? undefined;
+  const editToken =
+    req.nextUrl.searchParams.get('editToken') ??
+    req.headers.get('x-edit-token') ??
+    undefined;
 
   if (!session && !editToken) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -80,7 +83,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
-  const editToken = req.nextUrl.searchParams.get('editToken') ?? undefined;
+  const editToken =
+    req.nextUrl.searchParams.get('editToken') ??
+    req.headers.get('x-edit-token') ??
+    undefined;
 
   if (!session && !editToken) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
