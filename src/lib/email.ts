@@ -273,6 +273,94 @@ export async function sendPasswordResetEmail(email: string, token: string, name 
 }
 
 // ─────────────────────────────────────────
+// OWNER NEW BOOKING NOTIFICATION
+// ─────────────────────────────────────────
+
+export interface OwnerBookingNotificationData {
+  registrationId: string;
+  registrationNumber: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone?: string;
+  locationName: string;
+  activityName: string;
+  placeName: string;
+  startDate: string;
+  endDate: string;
+  numberOfDays: number;
+  spotNames: string[];
+  guestSummary: string;
+  totalAmount?: number;
+  currency?: string;
+  requiresPayment: boolean;
+  editToken: string;
+}
+
+export async function sendOwnerNewBookingNotification(
+  ownerEmail: string,
+  data: OwnerBookingNotificationData
+): Promise<void> {
+  const viewUrl  = `${APP_URL}/owner/bookings/${data.registrationId}`;
+  const approveUrl = `${APP_URL}/api/registrations/${data.registrationId}/approve?token=${data.editToken}`;
+
+  const spotsHtml = data.spotNames.length
+    ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📍 Spot(s):</strong> ${data.spotNames.join(', ')}</p>`
+    : '';
+
+  const amountHtml = data.requiresPayment && data.totalAmount != null
+    ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>💰 Amount:</strong> ${data.currency} ${Number(data.totalAmount).toFixed(2)}</p>`
+    : '';
+
+  const phoneHtml = data.guestPhone
+    ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📞 Phone:</strong> ${data.guestPhone}</p>`
+    : '';
+
+  const html = baseTemplate(`
+    <h2 style="color:#2d5a27;margin:0 0 8px;">New Booking Received 🎉</h2>
+    <p style="color:#8b7355;font-size:14px;margin:0 0 24px;">Reservation #${data.registrationNumber} – ${data.placeName}</p>
+
+    <div style="background:#f0f7f0;border-left:4px solid #2d5a27;border-radius:4px;padding:20px;margin:0 0 20px;">
+      <p style="color:#4a4a4a;font-size:15px;font-weight:700;margin:0 0 12px;">📋 Booking Details</p>
+      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>🌿 Activity:</strong> ${data.activityName}</p>
+      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📍 Location:</strong> ${data.locationName}</p>
+      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📅 Dates:</strong> ${data.startDate} → ${data.endDate} (${data.numberOfDays} day${data.numberOfDays > 1 ? 's' : ''})</p>
+      ${spotsHtml}
+      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>👥 Guests:</strong> ${data.guestSummary}</p>
+      ${amountHtml}
+    </div>
+
+    <div style="background:#fff8f0;border-left:4px solid #e67e22;border-radius:4px;padding:20px;margin:0 0 24px;">
+      <p style="color:#4a4a4a;font-size:15px;font-weight:700;margin:0 0 12px;">👤 Guest Information</p>
+      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>Name:</strong> ${data.guestName}</p>
+      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>✉️ Email:</strong> <a href="mailto:${data.guestEmail}" style="color:#4a7c59;">${data.guestEmail}</a></p>
+      ${phoneHtml}
+    </div>
+
+    <p style="color:#4a4a4a;font-size:14px;margin:0 0 20px;">
+      This booking is currently <strong>pending your approval</strong>. Use the buttons below to confirm it or view the full details in your dashboard.
+    </p>
+
+    <div style="text-align:center;margin-bottom:12px;">
+      <a href="${approveUrl}" style="${btnStyle('#2d5a27')}">✅ Confirm Booking</a>
+    </div>
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="${viewUrl}" style="${btnStyle('#4a7c59')}">👁️ View in Dashboard</a>
+    </div>
+
+    <p style="color:#8b7355;font-size:12px;text-align:center;">
+      Clicking "Confirm Booking" will immediately set the status to <strong>Confirmed</strong> and notify the guest.
+    </p>
+  `);
+
+  await transporter.sendMail({
+    from: FROM,
+    to: ownerEmail,
+    subject: `New Booking #${data.registrationNumber} – ${data.guestName} – ${data.activityName}`,
+    html,
+  });
+}
+
+// ─────────────────────────────────────────
 // ORGANIZATION REGISTRATION
 // ─────────────────────────────────────────
 

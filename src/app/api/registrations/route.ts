@@ -6,7 +6,7 @@ import { authOptions } from '@/lib/auth';
 import { UserRole, PaymentMethod, GuestCounts, AgeGroupType } from '@/types';
 import { generateRegistrationNumber, checkSpotAvailability } from '@/lib/utils';
 import { calculatePricing, formatGuestSummary, getTotalGuests } from '@/lib/pricing';
-import { sendRegistrationConfirmation } from '@/lib/email';
+import { sendRegistrationConfirmation, sendOwnerNewBookingNotification } from '@/lib/email';
 import type { PricingTier } from '@prisma/client';
 
 const guestCountsSchema = z.record(z.string(), z.number().int().nonnegative()).refine(
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
       where: { id: data.activityLocationId, isActive: true },
       include: {
         activityType: true,
-        place: { select: { name: true } },
+        place: { select: { name: true, id: true, owner: { select: { email: true, name: true } } } },
       },
     });
 
@@ -349,7 +349,29 @@ export async function POST(req: NextRequest) {
       }).catch(console.error);
     }
 
-    return NextResponse.json({ success: true, data: registration }, { status: 201 });
+    // Always notify the place owner about a new booking
+    const ownerEmail = location.place.owner?.email;
+    if (ownerEmail) {
+      await sendOwnerNewBookingNotification(ownerEmail, {
+        registrationId: registration.id,
+        registrationNumber,
+        guestName: `${data.firstName} ${data.lastName}`,
+        guestEmail: data.email,
+        guestPhone: data.phone,
+        locationName: location.name,
+        activityName: location.activityType.name,
+        placeName: location.place.name,
+        startDate: startDate.toLocaleDateString('en-GB'),
+        endDate: endDate.toLocaleDateString('en-GB'),
+        numberOfDays,
+        spotNames,
+        guestSummary: formatGuestSummary(data.guestCounts as GuestCounts),
+        totalAmount: pricingData.totalAmount,
+        currency: pricingRule?.currency ?? 'RSD',
+        requiresPayment: pricingRule?.requiresPayment ?? false,
+        editToken: registration.editToken,
+      }).catch(console.error);
+    }
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });

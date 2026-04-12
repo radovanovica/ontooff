@@ -8,6 +8,7 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 import { RegistrationStatus, UserRole } from '@/types';
 import BookingDecisionActions from './_components/BookingDecisionActions';
+import ApprovalBanner from './_components/ApprovalBanner';
 import { getTranslation } from '@/i18n/server';
 import { defaultLocale } from '@/i18n/config';
 
@@ -77,6 +78,7 @@ export default async function OwnerBookingDetailsPage({ params }: Props) {
 
   return (
     <Box>
+      <ApprovalBanner />
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1.5 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
