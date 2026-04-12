@@ -16,13 +16,14 @@ import {
   Divider,
   ImageList,
   ImageListItem,
+  Avatar,
+  Rating,
 } from '@mui/material';
 import { ArrowBack, LocationOn, Phone, Email, Language, Info } from '@mui/icons-material';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import RegistrationStepper from '@/components/registration/RegistrationStepper';
 import ReviewList from '@/components/reviews/ReviewList';
-import { SpotStatus } from '@prisma/client';
 
 interface PlaceDetail {
   id: string;
@@ -35,6 +36,8 @@ interface PlaceDetail {
   phone: string | null;
   email: string | null;
   website: string | null;
+  logoUrl: string | null;
+  coverUrl: string | null;
   embedToken: string | null;
   activityTypes: {
     id: string;
@@ -115,7 +118,14 @@ function PlaceContent() {
       {/* Hero */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%)',
+          background: place.coverUrl
+            ? undefined
+            : 'linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%)',
+          backgroundImage: place.coverUrl
+            ? `linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.6) 100%), url(${place.coverUrl})`
+            : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
           pt: 10,
           pb: 6,
           color: 'white',
@@ -130,20 +140,33 @@ function PlaceContent() {
           >
             Back to Search
           </Button>
-          <Typography variant="h3" sx={{ fontWeight: 800, mb: 1 }}>
-            {place.name}
-          </Typography>
-          {(place.city || place.country) && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
-              <LocationOn sx={{ fontSize: 18 }} />
-              <Typography variant="h6" sx={{ fontWeight: 400 }}>
-                {[place.city, place.country].filter(Boolean).join(', ')}
+
+          {/* Logo + name row */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+            {place.logoUrl && (
+              <Avatar
+                src={place.logoUrl}
+                alt={place.name}
+                sx={{ width: 72, height: 72, borderRadius: 2, border: '3px solid rgba(255,255,255,0.7)', bgcolor: 'white' }}
+              />
+            )}
+            <Box>
+              <Typography variant="h3" sx={{ fontWeight: 800, mb: 0.5 }}>
+                {place.name}
               </Typography>
+              {(place.city || place.country) && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <LocationOn sx={{ fontSize: 18 }} />
+                  <Typography variant="h6" sx={{ fontWeight: 400 }}>
+                    {[place.city, place.country].filter(Boolean).join(', ')}
+                  </Typography>
+                </Box>
+              )}
             </Box>
-          )}
+          </Box>
 
           {/* Activity tags */}
-          <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75 }}>
+          <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75, mt: 2 }}>
             {Array.from(
               new Map(
                 place.activityTypes

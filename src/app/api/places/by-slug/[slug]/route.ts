@@ -20,6 +20,8 @@ export async function GET(
       phone: true,
       email: true,
       website: true,
+      logoUrl: true,
+      coverUrl: true,
       activityTypes: {
         where: { isActive: true },
         select: {

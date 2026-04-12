@@ -25,6 +25,7 @@ import {
   BusinessCenter,
   ArrowBack,
 } from '@mui/icons-material';
+import { Rating } from '@mui/material';
 import Link from 'next/link';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -44,6 +45,8 @@ interface SearchPlace {
   phone: string | null;
   email: string | null;
   website: string | null;
+  averageRating: number | null;
+  reviewCount: number;
   activityTypes: {
     id: string;
     name: string;
@@ -294,12 +297,17 @@ function SearchContent() {
                     '&:hover': { boxShadow: 8, transform: 'translateY(-4px)' },
                   }}
                 >
-                  {/* Cover image placeholder */}
+                  {/* Cover image */}
                   <Box
                     sx={{
                       height: 160,
                       bgcolor: '#e8f5e9',
-                      background: 'linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%)',
+                      background: place.coverUrl
+                        ? undefined
+                        : 'linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%)',
+                      backgroundImage: place.coverUrl ? `url(${place.coverUrl})` : undefined,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -307,23 +315,65 @@ function SearchContent() {
                       overflow: 'hidden',
                     }}
                   >
-                    <BusinessCenter sx={{ fontSize: 56, color: 'rgba(255,255,255,0.3)' }} />
-                    {/* Activity type icons */}
-                    <Stack direction="row" spacing={0.5} sx={{ position: 'absolute', bottom: 10, left: 12 }}>
-                      {place.activityTypes.slice(0, 4).map((at) => (
+                    {!place.coverUrl && <BusinessCenter sx={{ fontSize: 56, color: 'rgba(255,255,255,0.3)' }} />}
+
+                    {/* Logo avatar */}
+                    {place.logoUrl && (
+                      <Box
+                        component="img"
+                        src={place.logoUrl}
+                        alt={place.name}
+                        sx={{
+                          position: 'absolute',
+                          bottom: 10,
+                          left: 12,
+                          width: 48,
+                          height: 48,
+                          borderRadius: 1.5,
+                          objectFit: 'cover',
+                          border: '2px solid white',
+                          bgcolor: 'white',
+                          boxShadow: 2,
+                        }}
+                      />
+                    )}
+
+                    {/* Activity type chips */}
+                    <Stack direction="row" spacing={0.5} sx={{ position: 'absolute', bottom: 10, left: place.logoUrl ? 72 : 12 }}>
+                      {place.activityTypes.slice(0, 3).map((at) => (
                         <Chip
                           key={at.id}
                           label={`${at.icon ?? ''} ${at.name}`}
                           size="small"
-                          sx={{
-                            bgcolor: 'rgba(0,0,0,0.45)',
-                            color: 'white',
-                            fontSize: '0.7rem',
-                            height: 22,
-                          }}
+                          sx={{ bgcolor: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '0.7rem', height: 22 }}
                         />
                       ))}
                     </Stack>
+
+                    {/* Rating badge */}
+                    {place.averageRating !== null && (
+                      <Box sx={{
+                        position: 'absolute',
+                        top: 10,
+                        right: 10,
+                        bgcolor: 'rgba(0,0,0,0.6)',
+                        color: 'white',
+                        borderRadius: 1.5,
+                        px: 1,
+                        py: 0.25,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                      }}>
+                        <Rating value={place.averageRating} precision={0.1} size="small" readOnly sx={{ color: '#ffc107', fontSize: '0.9rem' }} />
+                        <Typography variant="caption" sx={{ fontWeight: 700, lineHeight: 1 }}>
+                          {place.averageRating.toFixed(1)}
+                        </Typography>
+                        <Typography variant="caption" sx={{ opacity: 0.8, lineHeight: 1 }}>
+                          ({place.reviewCount})
+                        </Typography>
+                      </Box>
+                    )}
                   </Box>
 
                   <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>

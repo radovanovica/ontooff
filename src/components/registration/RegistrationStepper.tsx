@@ -90,7 +90,7 @@ type Step2Values = z.infer<typeof step2Schema>;
 type Step3Values = z.infer<typeof step3Schema>;
 
 type LocationWithDetails = ActivityLocation & {
-  place?: { name: string; id: string };
+  place?: { name: string; id: string; slug: string; logoUrl?: string | null };
   spots?: SpotMapItem[];
   pricingRules?: PricingRule[];
 };
@@ -491,6 +491,8 @@ export default function RegistrationStepper({
   };
 
   const coverImageUrl = getCoverImageUrl(selectedLocation);
+  const placeLogoUrl = selectedLocation?.place?.logoUrl ?? availableLocations[0]?.place?.logoUrl ?? null;
+  const placeName = selectedLocation?.place?.name ?? availableLocations[0]?.place?.name ?? null;
 
   return (
     <Box>
@@ -502,8 +504,8 @@ export default function RegistrationStepper({
         ))}
       </Stepper>
 
-      {/* Cover image header — shown when a location with a cover photo is selected */}
-      {coverImageUrl && (
+      {/* Place branding header — cover photo or logo bar */}
+      {coverImageUrl ? (
         <Box
           sx={{
             mb: 3,
@@ -516,24 +518,45 @@ export default function RegistrationStepper({
             position: 'relative',
           }}
         >
-          {/* Gradient overlay with location name */}
+          {/* Gradient overlay with logo + location name */}
           <Box
             sx={{
               position: 'absolute',
               inset: 0,
-              background: 'linear-gradient(to top, rgba(0,0,0,0.55) 40%, transparent 100%)',
+              background: 'linear-gradient(to top, rgba(0,0,0,0.6) 40%, transparent 100%)',
               display: 'flex',
               alignItems: 'flex-end',
+              gap: 1.5,
               px: 2,
               pb: 1.5,
             }}
           >
+            {placeLogoUrl && (
+              <Box
+                component="img"
+                src={placeLogoUrl}
+                alt={placeName ?? ''}
+                sx={{ width: 40, height: 40, borderRadius: 1.5, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.8)', bgcolor: 'white', flexShrink: 0 }}
+              />
+            )}
             <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
               {selectedLocation?.activityType?.name && `${selectedLocation.activityType.name} — `}{selectedLocation?.name}
             </Typography>
           </Box>
         </Box>
-      )}
+      ) : placeLogoUrl ? (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, p: 1.5, borderRadius: 2, bgcolor: 'grey.50', border: '1px solid', borderColor: 'divider' }}>
+          <Box
+            component="img"
+            src={placeLogoUrl}
+            alt={placeName ?? ''}
+            sx={{ width: 48, height: 48, borderRadius: 1.5, objectFit: 'cover', border: '1px solid', borderColor: 'divider' }}
+          />
+          {placeName && (
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{placeName}</Typography>
+          )}
+        </Box>
+      ) : null}
 
       {activeStep === 0 && (
         <Box component="form" onSubmit={handleSubmit1(onStep1Submit)}>

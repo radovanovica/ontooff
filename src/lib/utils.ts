@@ -86,7 +86,7 @@ export async function validateEmbedToken(token: string) {
   const embedToken = await prisma.embedToken.findUnique({
     where: { token },
     include: {
-      place: { select: { id: true, name: true, isActive: true } },
+      place: { select: { id: true, name: true, isActive: true, logoUrl: true, slug: true } },
       activityLocation: {
         select: {
           id: true,

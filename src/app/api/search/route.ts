@@ -1,6 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// Local types for the search result shape
+interface SearchLocation {
+  id: string;
+  name: string;
+  maxCapacity: number | null;
+  requiresSpot: boolean;
+  _count: { spots: number };
+  available?: boolean;
+  capacity?: number;
+  bookedSpots?: number;
+}
+interface SearchActivityType {
+  id: string;
+  name: string;
+  icon: string | null;
+  color: string | null;
+  tags: { tag: { id: string; name: string; slug: string; icon: string | null; color: string | null } }[];
+  activityLocations: SearchLocation[];
+}
+interface SearchPlaceRaw {
+  id: string;
+  name: string;
+  slug: string;
+  city: string | null;
+  country: string | null;
+  description: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  logoUrl: string | null;
+  coverUrl: string | null;
+  activityTypes: SearchActivityType[];
+  embedTokens: { token: string }[];
+  _count: { activityLocations: number };
+}
+
 /**
  * GET /api/search
  * Query params:
@@ -43,47 +79,60 @@ export async function GET(req: NextRequest) {
     ...activityTypeFilter,
   };
 
-  const [places, total] = await Promise.all([
-    prisma.place.findMany({
-      where,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        owner: { select: { name: true } },
-        activityTypes: {
-          where: { isActive: true },
-          include: {
-            tags: {
-              include: { tag: true },
-            },
-            activityLocations: {
-              where: { isActive: true },
-              select: {
-                id: true,
-                name: true,
-                maxCapacity: true,
-                requiresSpot: true,
-                // Check availability if dates provided
-                _count: { select: { spots: true } },
-              },
-            },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const places: SearchPlaceRaw[] = (await prisma.place.findMany({
+    where,
+    skip: (page - 1) * pageSize,
+    take: pageSize,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      owner: { select: { name: true } },
+      activityTypes: {
+        where: { isActive: true },
+        include: {
+          tags: {
+            include: { tag: true },
           },
-        },
-        embedTokens: {
-          where: { isActive: true },
-          select: { token: true },
-          take: 1,
-        },
-        _count: {
-          select: {
-            activityLocations: true,
+          activityLocations: {
+            where: { isActive: true },
+            select: {
+              id: true,
+              name: true,
+              maxCapacity: true,
+              requiresSpot: true,
+              _count: { select: { spots: true } },
+            },
           },
         },
       },
-    }),
-    prisma.place.count({ where }),
-  ]);
+      embedTokens: {
+        where: { isActive: true },
+        select: { token: true },
+        take: 1,
+      },
+      _count: {
+        select: {
+          activityLocations: true,
+        },
+      },
+    },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  })) as any;
+  const total = await prisma.place.count({ where });
+
+  // Fetch average ratings for all places in one query
+  const placeIds = places.map((p: SearchPlaceRaw) => p.id);
+  const ratingsRaw = await prisma.review.groupBy({
+    by: ['placeId'],
+    where: { placeId: { in: placeIds }, isApproved: true, isRejected: false },
+    _avg: { rating: true },
+    _count: { rating: true },
+  });
+  type RatingEntry = { avg: number | null; count: number };
+  type GroupByResult = { placeId: string; _avg: { rating: number | null }; _count: { rating: number } };
+  const ratingMap = new Map<string, RatingEntry>(
+    (ratingsRaw as GroupByResult[]).map((r) => [r.placeId, { avg: r._avg.rating ?? null, count: r._count.rating }])
+  );
 
   // If dates provided, filter out locations that are fully booked
   const fromDate = from ? new Date(from) : null;
@@ -91,8 +140,14 @@ export async function GET(req: NextRequest) {
 
   const results = await Promise.all(
     places.map(async (place) => {
+      const rating = ratingMap.get(place.id);
+      const base = {
+        ...place,
+        averageRating: rating?.avg ?? null,
+        reviewCount: rating?.count ?? 0,
+      };
       if (!fromDate || !toDate) {
-        return { ...place, availableLocations: place.activityTypes.flatMap((at) => at.activityLocations) };
+        return { ...base, availableLocations: place.activityTypes.flatMap((at) => at.activityLocations) };
       }
 
       // For each activity location check available spots
@@ -117,7 +172,7 @@ export async function GET(req: NextRequest) {
       );
 
       const availableLocations = activityLocationsWithAvailability.filter((l) => l.available);
-      return { ...place, availableLocations };
+      return { ...base, availableLocations };
     })
   );
 
