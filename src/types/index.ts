@@ -219,6 +219,8 @@ export interface ActivityLocation {
   gallery: string | null;           // JSON: string[] of base64 data-URIs
   coverImageIndex: number | null;   // index of the primary/cover gallery image
   instructions: string | null;      // How to find the location
+  latitude: number | null;
+  longitude: number | null;
   createdAt: Date;
   updatedAt: Date;
   place?: Place;

@@ -37,11 +37,17 @@ import {
   Map as MapIcon,
   ViewList,
 } from '@mui/icons-material';
+import dynamic from 'next/dynamic';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from '@/i18n/client';
+
+const LocationMap = dynamic(
+  () => import('@/components/map/LocationMap'),
+  { ssr: false, loading: () => null }
+);
 import { format, differenceInCalendarDays, addDays } from 'date-fns';
 import type { SpotMapItem } from '@/components/map/SpotMap';
 import { calculatePricing as calculatePricingLocal, getPricingTierGuestKey, formatGuestSummary } from '@/lib/pricing';
@@ -123,7 +129,18 @@ export default function RegistrationStepper({
   const [submittedPlaceId, setSubmittedPlaceId] = useState<string | null>(null);
 
   const [locationSelectMode, setLocationSelectMode] = useState<'list' | 'map'>('list');
+  const [mapSubMode, setMapSubMode] = useState<'virtual' | 'real'>('virtual');
   const availableLocations = locations && locations.length > 0 ? locations : [location];
+
+  // Which map modes are available
+  const hasVirtualMap = availableLocations.some((loc) => !!loc.svgMapData);
+  const hasRealMap = availableLocations.some(
+    (loc) => loc.latitude != null && loc.longitude != null
+  );
+  const gpsLocations = availableLocations.filter(
+    (loc): loc is typeof loc & { latitude: number; longitude: number } =>
+      loc.latitude != null && loc.longitude != null
+  );
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
   const selectedLocation = availableLocations.find((loc) => loc.id === selectedLocationId) ?? null;
 
@@ -564,7 +581,13 @@ export default function RegistrationStepper({
             <ToggleButtonGroup
               value={locationSelectMode}
               exclusive
-              onChange={(_, value) => value && setLocationSelectMode(value)}
+              onChange={(_, value) => {
+                if (!value) return;
+                setLocationSelectMode(value);
+                // Default sub-mode: real map if no virtual map exists
+                if (value === 'map' && !hasVirtualMap && hasRealMap) setMapSubMode('real');
+                if (value === 'map' && hasVirtualMap) setMapSubMode('virtual');
+              }}
               size="small"
             >
               <ToggleButton value="list"><ViewList sx={{ mr: 0.75 }} fontSize="small" /> Selection List</ToggleButton>
@@ -606,120 +629,179 @@ export default function RegistrationStepper({
 
           {locationSelectMode === 'map' && (
             <Box sx={{ mb: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
-              <Box
-                sx={{
-                  px: 1.5,
-                  py: 1,
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 1,
-                  alignItems: 'center',
-                  borderBottom: '1px solid',
-                  borderColor: 'divider',
-                  bgcolor: 'background.paper',
-                }}
-              >
-                <Typography variant="caption" sx={{ fontWeight: 700, mr: 0.5 }}>
-                  Legend:
-                </Typography>
-                <Chip
-                  size="small"
-                  label="Selectable"
-                  sx={{
-                    bgcolor: '#1b5e20',
-                    color: 'white',
-                    fontWeight: 700,
-                    '& .MuiChip-label': { px: 1.25 },
-                  }}
-                />
-                <Chip
-                  size="small"
-                  label="Selected"
-                  sx={{
-                    bgcolor: '#0d47a1',
-                    color: 'white',
-                    fontWeight: 700,
-                    border: '2px solid #ffeb3b',
-                    '& .MuiChip-label': { px: 1.25 },
-                  }}
-                />
-              </Box>
-              <svg
-                viewBox={`0 0 ${selectedLocation?.mapWidth ?? 900} ${selectedLocation?.mapHeight ?? 600}`}
-                style={{ width: '100%', height: 'auto', display: 'block', background: '#f0ebe3' }}
-              >
-                {(availableLocations.find((loc) => !!loc.mapImageUrl)?.mapImageUrl || selectedLocation?.mapImageUrl) && (
-                  <image
-                    href={availableLocations.find((loc) => !!loc.mapImageUrl)?.mapImageUrl || selectedLocation?.mapImageUrl || ''}
-                    x={0}
-                    y={0}
-                    width={selectedLocation?.mapWidth ?? 900}
-                    height={selectedLocation?.mapHeight ?? 600}
-                    preserveAspectRatio="xMidYMid slice"
+              {/* Sub-mode toggle when both virtual and real maps are available */}
+              {hasVirtualMap && hasRealMap && (
+                <Box sx={{ px: 1.5, py: 1, borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+                  <ToggleButtonGroup
+                    value={mapSubMode}
+                    exclusive
+                    onChange={(_, v) => v && setMapSubMode(v)}
+                    size="small"
+                  >
+                    <ToggleButton value="virtual">Virtual Map</ToggleButton>
+                    <ToggleButton value="real">Real Map</ToggleButton>
+                  </ToggleButtonGroup>
+                </Box>
+              )}
+
+              {/* Real-world Leaflet map */}
+              {(hasRealMap && (!hasVirtualMap || mapSubMode === 'real')) && (
+                <Box>
+                  {!hasVirtualMap && (
+                    <Typography variant="caption" sx={{ display: 'block', px: 1.5, py: 0.75, color: 'text.secondary', borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+                      Click a pin to select a location
+                    </Typography>
+                  )}
+                  <LocationMap
+                    pins={gpsLocations.map((loc) => ({
+                      id: loc.id,
+                      name: `${loc.activityType?.name ?? 'Activity'} — ${loc.name}`,
+                      description: loc.description ?? undefined,
+                      latitude: loc.latitude,
+                      longitude: loc.longitude,
+                      color: selectedLocationId === loc.id ? '#0d47a1' : '#1b5e20',
+                    }))}
+                    height={360}
+                    onPinClick={(id) => setSelectedLocationId(id)}
                   />
-                )}
-                {availableLocations.map((loc) => {
-                  const zone = parseLocationZone(loc.svgMapData);
-                  if (!zone) return null;
-                  const selected = selectedLocationId === loc.id;
-                  const baseRadius = zone.r;
-                  return (
-                    <g key={loc.id} onClick={() => setSelectedLocationId(loc.id)} style={{ cursor: 'pointer' }}>
-                      <circle
-                        cx={zone.cx}
-                        cy={zone.cy}
-                        r={selected ? baseRadius + 8 : baseRadius + 5}
-                        fill="rgba(0,0,0,0.18)"
+                  {selectedLocationId && (
+                    <Box sx={{ px: 1.5, py: 1, bgcolor: 'primary.50', borderTop: '1px solid', borderColor: 'divider' }}>
+                      <Typography variant="caption" color="primary.main" sx={{ fontWeight: 700 }}>
+                        Selected: {availableLocations.find((l) => l.id === selectedLocationId)?.name}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              )}
+
+              {/* Virtual SVG map */}
+              {(hasVirtualMap && (!hasRealMap || mapSubMode === 'virtual')) && (
+                <Box>
+                  <Box
+                    sx={{
+                      px: 1.5,
+                      py: 1,
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 1,
+                      alignItems: 'center',
+                      borderBottom: '1px solid',
+                      borderColor: 'divider',
+                      bgcolor: 'background.paper',
+                    }}
+                  >
+                    <Typography variant="caption" sx={{ fontWeight: 700, mr: 0.5 }}>
+                      Legend:
+                    </Typography>
+                    <Chip
+                      size="small"
+                      label="Selectable"
+                      sx={{
+                        bgcolor: '#1b5e20',
+                        color: 'white',
+                        fontWeight: 700,
+                        '& .MuiChip-label': { px: 1.25 },
+                      }}
+                    />
+                    <Chip
+                      size="small"
+                      label="Selected"
+                      sx={{
+                        bgcolor: '#0d47a1',
+                        color: 'white',
+                        fontWeight: 700,
+                        border: '2px solid #ffeb3b',
+                        '& .MuiChip-label': { px: 1.25 },
+                      }}
+                    />
+                  </Box>
+                  <svg
+                    viewBox={`0 0 ${selectedLocation?.mapWidth ?? 900} ${selectedLocation?.mapHeight ?? 600}`}
+                    style={{ width: '100%', height: 'auto', display: 'block', background: '#f0ebe3' }}
+                  >
+                    {(availableLocations.find((loc) => !!loc.mapImageUrl)?.mapImageUrl || selectedLocation?.mapImageUrl) && (
+                      <image
+                        href={availableLocations.find((loc) => !!loc.mapImageUrl)?.mapImageUrl || selectedLocation?.mapImageUrl || ''}
+                        x={0}
+                        y={0}
+                        width={selectedLocation?.mapWidth ?? 900}
+                        height={selectedLocation?.mapHeight ?? 600}
+                        preserveAspectRatio="xMidYMid slice"
                       />
-                      <circle
-                        cx={zone.cx}
-                        cy={zone.cy}
-                        r={selected ? baseRadius + 5 : baseRadius + 2}
-                        fill="none"
-                        stroke={selected ? '#ffeb3b' : 'rgba(255,255,255,0.95)'}
-                        strokeWidth={selected ? 4 : 3}
-                      />
-                      <circle
-                        cx={zone.cx}
-                        cy={zone.cy}
-                        r={baseRadius}
-                        fill={selected ? '#0d47a1' : '#1b5e20'}
-                        fillOpacity={selected ? 0.95 : 0.82}
-                        stroke="white"
-                        strokeWidth={selected ? 3 : 2}
-                      />
-                      {selected && (
-                        <text
-                          x={zone.cx}
-                          y={zone.cy + 4}
-                          textAnchor="middle"
-                          fill="white"
-                          fontSize={14}
-                          fontWeight={900}
-                          stroke="rgba(0,0,0,0.55)"
-                          strokeWidth={2}
-                          paintOrder="stroke"
-                        >
-                          ✓
-                        </text>
-                      )}
-                      <text
-                        x={zone.cx}
-                        y={zone.cy + baseRadius + 16}
-                        textAnchor="middle"
-                        fill={selected ? '#0d47a1' : 'rgba(0,0,0,0.9)'}
-                        fontSize={selected ? 12 : 11}
-                        fontWeight={selected ? 900 : 700}
-                        stroke="rgba(255,255,255,0.98)"
-                        strokeWidth={4}
-                        paintOrder="stroke"
-                      >
-                        {selected ? `Selected: ${loc.name}` : loc.name}
-                      </text>
-                    </g>
-                  );
-                })}
-              </svg>
+                    )}
+                    {availableLocations.map((loc) => {
+                      const zone = parseLocationZone(loc.svgMapData);
+                      if (!zone) return null;
+                      const selected = selectedLocationId === loc.id;
+                      const baseRadius = zone.r;
+                      return (
+                        <g key={loc.id} onClick={() => setSelectedLocationId(loc.id)} style={{ cursor: 'pointer' }}>
+                          <circle
+                            cx={zone.cx}
+                            cy={zone.cy}
+                            r={selected ? baseRadius + 8 : baseRadius + 5}
+                            fill="rgba(0,0,0,0.18)"
+                          />
+                          <circle
+                            cx={zone.cx}
+                            cy={zone.cy}
+                            r={selected ? baseRadius + 5 : baseRadius + 2}
+                            fill="none"
+                            stroke={selected ? '#ffeb3b' : 'rgba(255,255,255,0.95)'}
+                            strokeWidth={selected ? 4 : 3}
+                          />
+                          <circle
+                            cx={zone.cx}
+                            cy={zone.cy}
+                            r={baseRadius}
+                            fill={selected ? '#0d47a1' : '#1b5e20'}
+                            fillOpacity={selected ? 0.95 : 0.82}
+                            stroke="white"
+                            strokeWidth={selected ? 3 : 2}
+                          />
+                          {selected && (
+                            <text
+                              x={zone.cx}
+                              y={zone.cy + 4}
+                              textAnchor="middle"
+                              fill="white"
+                              fontSize={14}
+                              fontWeight={900}
+                              stroke="rgba(0,0,0,0.55)"
+                              strokeWidth={2}
+                              paintOrder="stroke"
+                            >
+                              ✓
+                            </text>
+                          )}
+                          <text
+                            x={zone.cx}
+                            y={zone.cy + baseRadius + 16}
+                            textAnchor="middle"
+                            fill={selected ? '#0d47a1' : 'rgba(0,0,0,0.9)'}
+                            fontSize={selected ? 12 : 11}
+                            fontWeight={selected ? 900 : 700}
+                            stroke="rgba(255,255,255,0.98)"
+                            strokeWidth={4}
+                            paintOrder="stroke"
+                          >
+                            {selected ? `Selected: ${loc.name}` : loc.name}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </Box>
+              )}
+
+              {/* Fallback: no map data at all */}
+              {!hasVirtualMap && !hasRealMap && (
+                <Box sx={{ p: 3, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No map available for these locations. Use the Selection List instead.
+                  </Typography>
+                </Box>
+              )}
             </Box>
           )}
 

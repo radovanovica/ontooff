@@ -24,14 +24,23 @@ import {
   CalendarToday,
   BusinessCenter,
   ArrowBack,
+  ViewList,
+  Map as MapIcon,
 } from '@mui/icons-material';
 import { Rating } from '@mui/material';
+import { ToggleButtonGroup, ToggleButton } from '@mui/material';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import { useTranslation } from '@/i18n/client';
 import type { ActivityTag } from '@/types';
+
+const LocationMap = dynamic(
+  () => import('@/components/map/LocationMap'),
+  { ssr: false, loading: () => null }
+);
 
 interface SearchPlace {
   id: string;
@@ -57,6 +66,8 @@ interface SearchPlace {
       id: string;
       name: string;
       maxCapacity: number | null;
+      latitude?: number | null;
+      longitude?: number | null;
       available?: boolean;
       capacity?: number;
     }[];
@@ -79,6 +90,7 @@ function SearchContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
+  const [resultsView, setResultsView] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
     fetch('/api/tags')
@@ -248,22 +260,35 @@ function SearchContent() {
               t('search.results', '{{count}} place(s) found', { count: total }).replace('{{count}}', String(total))
             )}
           </Typography>
-          {selectedTags.length > 0 && (
-            <Stack direction="row" spacing={1}>
-              {selectedTags.map((slug) => {
-                const tag = tags.find((t) => t.slug === slug);
-                return tag ? (
-                  <Chip
-                    key={slug}
-                    label={`${tag.icon ?? ''} ${tag.name}`}
-                    size="small"
-                    onDelete={() => toggleTag(slug)}
-                    sx={{ bgcolor: tag.color + '20', color: tag.color }}
-                  />
-                ) : null;
-              })}
-            </Stack>
-          )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {selectedTags.length > 0 && (
+              <Stack direction="row" spacing={1}>
+                {selectedTags.map((slug) => {
+                  const tag = tags.find((t) => t.slug === slug);
+                  return tag ? (
+                    <Chip
+                      key={slug}
+                      label={`${tag.icon ?? ''} ${tag.name}`}
+                      size="small"
+                      onDelete={() => toggleTag(slug)}
+                      sx={{ bgcolor: tag.color + '20', color: tag.color }}
+                    />
+                  ) : null;
+                })}
+              </Stack>
+            )}
+            {results.length > 0 && (
+              <ToggleButtonGroup
+                value={resultsView}
+                exclusive
+                onChange={(_, v) => v && setResultsView(v)}
+                size="small"
+              >
+                <ToggleButton value="list"><ViewList fontSize="small" sx={{ mr: 0.5 }} />List</ToggleButton>
+                <ToggleButton value="map"><MapIcon fontSize="small" sx={{ mr: 0.5 }} />Map</ToggleButton>
+              </ToggleButtonGroup>
+            )}
+          </Box>
         </Box>
 
         {loading ? (
@@ -282,6 +307,41 @@ function SearchContent() {
               {t('search.clearFilters', 'Clear filters')}
             </Button>
           </Box>
+        ) : resultsView === 'map' ? (
+          (() => {
+            const pins = results.flatMap((place) =>
+              place.activityTypes
+                .flatMap((at) => at.activityLocations)
+                .filter((loc) => loc.latitude != null && loc.longitude != null)
+                .map((loc) => ({
+                  id: `${place.id}__${loc.id}`,
+                  name: place.name,
+                  description: `${loc.name}${place.city ? ` · ${place.city}` : ''}`,
+                  latitude: loc.latitude as number,
+                  longitude: loc.longitude as number,
+                }))
+            );
+            if (pins.length === 0) {
+              return (
+                <Alert severity="info">
+                  No locations with GPS coordinates found in these results. Set coordinates in Location Settings to enable map view.
+                </Alert>
+              );
+            }
+            return (
+              <Box sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+                <LocationMap
+                  pins={pins}
+                  height={520}
+                  onPinClick={(compositeId) => {
+                    const placeId = compositeId.split('__')[0];
+                    const place = results.find((p) => p.id === placeId);
+                    if (place) window.location.href = `/places/${place.slug}`;
+                  }}
+                />
+              </Box>
+            );
+          })()
         ) : (
           <Grid container spacing={3}>
             {results.map((place) => (

@@ -7,6 +7,8 @@ interface SearchLocation {
   name: string;
   maxCapacity: number | null;
   requiresSpot: boolean;
+  latitude: number | null;
+  longitude: number | null;
   _count: { spots: number };
   available?: boolean;
   capacity?: number;
@@ -100,6 +102,8 @@ export async function GET(req: NextRequest) {
               name: true,
               maxCapacity: true,
               requiresSpot: true,
+              latitude: true,
+              longitude: true,
               _count: { select: { spots: true } },
             },
           },
