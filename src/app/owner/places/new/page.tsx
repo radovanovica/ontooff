@@ -23,6 +23,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from '@/i18n/client';
 import PageHeader from '@/components/ui/PageHeader';
+import { uploadFileToS3 } from '@/lib/upload';
+import { uploadFileToS3 } from '@/lib/upload';
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
@@ -138,40 +140,41 @@ export default function NewPlacePage() {
 
   // ── Map image upload (auto-saves immediately) ────────────────────────────
 
-  const saveImageToPlace = async (base64: string | null) => {
-    if (!createdPlaceId) return;
-    setImageUploading(true);
-    setImageError(null);
-    try {
-      const res = await fetch(`/api/places/${createdPlaceId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mapImageUrl: base64 }),
-      });
-      if (!res.ok) throw new Error(t('places.errors.imageSaveFailed'));
-      setMapImageUrl(base64 ?? '');
-    } catch (e) {
-      setImageError(e instanceof Error ? e.message : t('places.errors.uploadFailed'));
-    } finally {
-      setImageUploading(false);
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
+    if (!file || !createdPlaceId) return;
+    if (file.size > 10 * 1024 * 1024) {
       setImageError(t('places.errors.imageSizeExceeded'));
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => saveImageToPlace(reader.result as string);
-    reader.onerror = () => setImageError(t('places.errors.fileReadFailed'));
-    reader.readAsDataURL(file);
+    setImageUploading(true);
+    setImageError(null);
+    try {
+      const url = await uploadFileToS3(file, 'images/map');
+      const res = await fetch(`/api/places/${createdPlaceId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mapImageUrl: url }),
+      });
+      if (!res.ok) throw new Error(t('places.errors.imageSaveFailed'));
+      setMapImageUrl(url);
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : t('places.errors.uploadFailed'));
+    } finally {
+      setImageUploading(false);
+    }
     e.target.value = '';
   };
 
-  const handleClearImage = () => saveImageToPlace(null);
+  const handleClearImage = async () => {
+    if (!createdPlaceId) return;
+    await fetch(`/api/places/${createdPlaceId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mapImageUrl: null }),
+    });
+    setMapImageUrl('');
+  };
 
   // ────────────────────────────────────────────────────────────────────────
 

@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from '@/i18n/client';
+import { uploadFileToS3 } from '@/lib/upload';
 
 const schema = z.object({
   name: z.string().min(1),
@@ -101,27 +102,34 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
     }
   };
 
-  const handleMapFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMapFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setMapError(t('places.errors.mapFileTooLarge', 'Map image must be under 5 MB'));
+    if (file.size > 10 * 1024 * 1024) {
+      setMapError(t('places.errors.mapFileTooLarge', 'Map image must be under 10 MB'));
       return;
     }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string;
+    setMapUploading(true);
+    setMapError(null);
+    try {
       // Detect dimensions from image
+      const objectUrl = URL.createObjectURL(file);
       const img = new Image();
-      img.onload = () => {
-        setMapWidth(img.naturalWidth || 1200);
-        setMapHeight(img.naturalHeight || 800);
-      };
-      img.src = dataUrl;
-      setMapImageUrl(dataUrl);
-    };
-    reader.readAsDataURL(file);
-    // Reset input so same file can be re-selected
+      await new Promise<void>((resolve) => {
+        img.onload = () => { resolve(); URL.revokeObjectURL(objectUrl); };
+        img.onerror = () => resolve();
+        img.src = objectUrl;
+      });
+      setMapWidth(img.naturalWidth || 1200);
+      setMapHeight(img.naturalHeight || 800);
+
+      const url = await uploadFileToS3(file, 'images/map');
+      setMapImageUrl(url);
+    } catch (err) {
+      setMapError(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setMapUploading(false);
+    }
     e.target.value = '';
   };
 
@@ -167,16 +175,24 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
   // ── Shared image upload helper ──────────────────────────────────────────────
   const makeFileHandler = (
     setUrl: (v: string | null) => void,
-    fileRef: React.RefObject<HTMLInputElement | null>,
-  ) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploading: (v: boolean) => void,
+    setErr: (v: string | null) => void,
+    folder: string,
+  ) => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setUrl(ev.target?.result as string);
-    reader.readAsDataURL(file);
+    if (file.size > 10 * 1024 * 1024) { setErr('Image must be under 10 MB'); return; }
+    setUploading(true);
+    setErr(null);
+    try {
+      const url = await uploadFileToS3(file, folder);
+      setUrl(url);
+    } catch (err) {
+      setErr(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
     e.target.value = '';
-    void fileRef;
   };
 
   const makeSaveHandler = (
@@ -387,7 +403,7 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
           </Box>
         </Box>
         <input ref={profileFileRef} type="file" accept="image/*" style={{ display: 'none' }}
-          onChange={makeFileHandler(setProfileImageUrl, profileFileRef)} />
+          onChange={makeFileHandler(setProfileImageUrl, setProfileUploading, setProfileError, 'images/profile')} />
         <Snackbar open={profileSuccess} autoHideDuration={3000} onClose={() => setProfileSuccess(false)} message={t('places.profileImageSaved', 'Profile image saved')} />
       </Box>
 
@@ -451,7 +467,7 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
           </Paper>
         )}
         <input ref={coverFileRef} type="file" accept="image/*" style={{ display: 'none' }}
-          onChange={makeFileHandler(setCoverImageUrl, coverFileRef)} />
+          onChange={makeFileHandler(setCoverImageUrl, setCoverUploading, setCoverError, 'images/cover')} />
         <Snackbar open={coverSuccess} autoHideDuration={3000} onClose={() => setCoverSuccess(false)} message={t('places.coverImageSaved', 'Cover image saved')} />
       </Box>
     </Box>

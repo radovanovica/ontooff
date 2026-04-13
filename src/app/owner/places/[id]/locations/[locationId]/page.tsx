@@ -33,6 +33,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from '@/i18n/client';
 import PageHeader from '@/components/ui/PageHeader';
+import { uploadFileToS3 } from '@/lib/upload';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -462,38 +463,31 @@ function GalleryTab({ location, locationId, onUpdated }: { location: LocationDat
     saveGallery(images, newCover);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
     const remaining = 10 - images.length;
     const toProcess = files.slice(0, remaining);
-    let processed = 0;
-    const newImages: string[] = [];
 
-    toProcess.forEach((file) => {
-      if (file.size > 2 * 1024 * 1024) {
-        setError(t('locations.gallery.fileTooLarge'));
-        processed++;
-        if (processed === toProcess.length && newImages.length > 0) {
-          const updated = [...images, ...newImages];
-          setImages(updated);
-          saveGallery(updated);
-        }
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        newImages.push(ev.target!.result as string);
-        processed++;
-        if (processed === toProcess.length) {
-          const updated = [...images, ...newImages];
-          setImages(updated);
-          saveGallery(updated);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-    // Reset input
+    setSaving(true);
+    setError(null);
+    try {
+      const uploaded = await Promise.all(
+        toProcess.map(async (file) => {
+          if (file.size > 10 * 1024 * 1024) {
+            throw new Error(t('locations.gallery.fileTooLarge'));
+          }
+          return uploadFileToS3(file, 'images/gallery');
+        })
+      );
+      const updated = [...images, ...uploaded];
+      setImages(updated);
+      await saveGallery(updated);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setSaving(false);
+    }
     e.target.value = '';
   };
 
