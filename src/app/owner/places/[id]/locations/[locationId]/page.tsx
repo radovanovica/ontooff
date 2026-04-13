@@ -23,8 +23,9 @@ import {
   DialogContent,
   DialogActions,
   MenuItem,
+  Divider,
 } from '@mui/material';
-import { ArrowBack, Add, Delete, Edit, CloudUpload, Collections, Star, StarBorder } from '@mui/icons-material';
+import { ArrowBack, Add, Delete, Edit, CloudUpload, Collections, Star, StarBorder, MyLocation } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -48,6 +49,8 @@ interface LocationData {
   mapHeight: number | null;
   mapImageUrl: string | null;
   sortOrder: number;
+  latitude: number | null;
+  longitude: number | null;
   gallery: string | null;           // JSON: string[]
   coverImageIndex: number | null;    // index of primary gallery image
   instructions: string | null;       // How to find the place
@@ -79,6 +82,8 @@ const locationSchema = z.object({
   mapWidth: z.coerce.number().int().positive().optional().or(z.literal('')),
   mapHeight: z.coerce.number().int().positive().optional().or(z.literal('')),
   sortOrder: z.coerce.number().default(0),
+  latitude: z.coerce.number().optional().or(z.literal('')),
+  longitude: z.coerce.number().optional().or(z.literal('')),
 });
 
 const spotSchema = z.object({
@@ -100,13 +105,34 @@ function TabPanel({ children, value, index }: { children?: React.ReactNode; valu
 
 // ─── Settings Tab ────────────────────────────────────────────────────────────
 
-function SettingsTab({ location, locationId, onUpdated }: { location: LocationData; locationId: string; onUpdated: () => void }) {
+function SettingsTab({ location, locationId, placeId, onUpdated }: { location: LocationData; locationId: string; placeId: string; onUpdated: () => void }) {
   const { t } = useTranslation('owner');
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [geocoding, setGeocoding] = useState(false);
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm<LocationFormValues>({
+  const handleGeocode = async () => {
+    setGeocoding(true);
+    try {
+      const res = await fetch(`/api/places/${placeId}`);
+      const json = await res.json();
+      const place = json.data;
+      const addr = [place.address, place.city, place.country].filter(Boolean).join(', ');
+      const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}&limit=1`);
+      const results = await geoRes.json();
+      if (results[0]) {
+        setValue('latitude', Number(results[0].lat));
+        setValue('longitude', Number(results[0].lon));
+      }
+    } catch {
+      // silently ignore geocode errors
+    } finally {
+      setGeocoding(false);
+    }
+  };
+
+  const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<LocationFormValues>({
     resolver: zodResolver(locationSchema),
     defaultValues: {
       name: location.name,
@@ -118,6 +144,8 @@ function SettingsTab({ location, locationId, onUpdated }: { location: LocationDa
       mapWidth: location.mapWidth ?? undefined,
       mapHeight: location.mapHeight ?? undefined,
       sortOrder: location.sortOrder,
+      latitude: location.latitude ?? '',
+      longitude: location.longitude ?? '',
     },
   });
 
@@ -134,6 +162,8 @@ function SettingsTab({ location, locationId, onUpdated }: { location: LocationDa
           maxCapacity: data.maxCapacity === '' ? null : Number(data.maxCapacity) || null,
           mapWidth: data.mapWidth === '' ? null : Number(data.mapWidth) || null,
           mapHeight: data.mapHeight === '' ? null : Number(data.mapHeight) || null,
+          latitude: data.latitude === '' ? null : data.latitude === undefined ? null : Number(data.latitude),
+          longitude: data.longitude === '' ? null : data.longitude === undefined ? null : Number(data.longitude),
         }),
       });
       if (!res.ok) throw new Error(t('locations.errors.saveFailed'));
@@ -215,6 +245,40 @@ function SettingsTab({ location, locationId, onUpdated }: { location: LocationDa
           <Alert severity="info">
             {t('locations.mapManagedHint')}
           </Alert>
+        </Grid>
+        <Grid size={{ xs: 12 }}>
+          <Divider sx={{ my: 1 }}>Map Pin Location</Divider>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField
+            {...register('latitude')}
+            label="Latitude"
+            type="number"
+            fullWidth
+            helperText="e.g. 44.8176"
+            slotProps={{ htmlInput: { step: 'any' } }}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField
+            {...register('longitude')}
+            label="Longitude"
+            type="number"
+            fullWidth
+            helperText="e.g. 20.4633"
+            slotProps={{ htmlInput: { step: 'any' } }}
+          />
+        </Grid>
+        <Grid size={{ xs: 12 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<MyLocation />}
+            onClick={handleGeocode}
+            disabled={geocoding}
+          >
+            {geocoding ? 'Looking up...' : 'Auto-fill from place address'}
+          </Button>
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
@@ -721,7 +785,7 @@ export default function LocationDetailPage() {
       </Tabs>
 
       <TabPanel value={tab} index={0}>
-        <SettingsTab location={location} locationId={locationId} onUpdated={loadLocation} />
+        <SettingsTab location={location} locationId={locationId} placeId={placeId} onUpdated={loadLocation} />
       </TabPanel>
       <TabPanel value={tab} index={1}>
         <SpotsTab locationId={locationId} spots={location.spots} onUpdated={loadLocation} />

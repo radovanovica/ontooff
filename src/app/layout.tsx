@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import Providers from './providers';
 import I18nLocaleSync from '@/components/providers/I18nLocaleSync';
 import './globals.css';
+import 'leaflet/dist/leaflet.css';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 

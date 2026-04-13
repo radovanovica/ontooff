@@ -38,6 +38,8 @@ export async function GET(
               description: true,
               gallery: true,
               instructions: true,
+              latitude: true,
+              longitude: true,
             },
             orderBy: { sortOrder: 'asc' },
           },

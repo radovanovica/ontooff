@@ -21,9 +21,15 @@ import {
 } from '@mui/material';
 import { ArrowBack, LocationOn, Phone, Email, Language, Info } from '@mui/icons-material';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import Navbar from '@/components/layout/Navbar';
 import RegistrationStepper from '@/components/registration/RegistrationStepper';
 import ReviewList from '@/components/reviews/ReviewList';
+
+const LocationMap = dynamic(
+  () => import('@/components/map/LocationMap'),
+  { ssr: false, loading: () => null }
+);
 
 interface PlaceDetail {
   id: string;
@@ -51,6 +57,8 @@ interface PlaceDetail {
       description: string | null;
       gallery: string | null;       // JSON: string[]
       instructions: string | null;
+      latitude: number | null;
+      longitude: number | null;
     }[];
   }[];
 }
@@ -292,6 +300,27 @@ function PlaceContent() {
                       </ImageListItem>
                     ))}
                   </ImageList>
+                </Box>
+              );
+            })()}
+
+            {/* Location Map */}
+            {(() => {
+              const pins = place.activityTypes
+                .flatMap((at) => at.activityLocations)
+                .filter((loc) => loc.latitude != null && loc.longitude != null)
+                .map((loc) => ({
+                  id: loc.id,
+                  name: loc.name,
+                  description: loc.description ?? undefined,
+                  latitude: loc.latitude as number,
+                  longitude: loc.longitude as number,
+                }));
+              if (pins.length === 0) return null;
+              return (
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Location</Typography>
+                  <LocationMap pins={pins} height="360px" />
                 </Box>
               );
             })()}

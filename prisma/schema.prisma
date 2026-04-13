@@ -228,6 +228,8 @@ model ActivityLocation {
   gallery             String?  @db.Text
   coverImageIndex     Int?
   instructions        String?  @db.Text
+  latitude            Float?
+  longitude           Float?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
