@@ -90,6 +90,7 @@ function SearchContent() {
   );
   const [dateFrom, setDateFrom] = useState(searchParams.get('from') ?? '');
   const [dateTo, setDateTo] = useState(searchParams.get('to') ?? '');
+  const [locationQuery, setLocationQuery] = useState(searchParams.get('location') ?? '');
   const [results, setResults] = useState<SearchPlace[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +112,7 @@ function SearchContent() {
       if (selectedTags.length) params.set('tags', selectedTags.join(','));
       if (dateFrom) params.set('from', dateFrom);
       if (dateTo) params.set('to', dateTo);
+      if (locationQuery.trim()) params.set('location', locationQuery.trim());
       const res = await fetch(`/api/search?${params}`);
       const data = await res.json();
       setResults(data.data?.items ?? []);
@@ -120,7 +122,7 @@ function SearchContent() {
     } finally {
       setLoading(false);
     }
-  }, [selectedTags, dateFrom, dateTo, t]);
+  }, [selectedTags, dateFrom, dateTo, locationQuery, t]);
 
   // Run search on mount with URL params
   useEffect(() => {
@@ -139,6 +141,7 @@ function SearchContent() {
     if (selectedTags.length) params.set('tags', selectedTags.join(','));
     if (dateFrom) params.set('from', dateFrom);
     if (dateTo) params.set('to', dateTo);
+    if (locationQuery.trim()) params.set('location', locationQuery.trim());
     router.push(`/search?${params.toString()}`, { scroll: false });
     doSearch();
   };
@@ -165,7 +168,7 @@ function SearchContent() {
           <Paper sx={{ p: 2.5, borderRadius: 2 }}>
             <Grid container spacing={2} sx={{ alignItems: 'flex-end' }}>
               {/* Tags */}
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5, mb: 1, display: 'block' }}>
                   {t('home.search.selectActivity', 'Activity')}
                 </Typography>
@@ -192,6 +195,28 @@ function SearchContent() {
                     );
                   })}
                 </Stack>
+              </Grid>
+
+              {/* Location search */}
+              <Grid size={{ xs: 12, sm: 4, md: 2 }}>
+                <TextField
+                  label="City or Country"
+                  size="small"
+                  fullWidth
+                  placeholder="e.g. Paris, France"
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LocationOn sx={{ fontSize: 15, color: 'text.secondary' }} />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
               </Grid>
 
               {/* Dates */}
@@ -265,6 +290,15 @@ function SearchContent() {
             )}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {locationQuery && (
+              <Chip
+                icon={<LocationOn sx={{ fontSize: 14 }} />}
+                label={locationQuery}
+                size="small"
+                onDelete={() => { setLocationQuery(''); }}
+                sx={{ bgcolor: '#e3f2fd', color: '#1565c0' }}
+              />
+            )}
             {selectedTags.length > 0 && (
               <Stack direction="row" spacing={1}>
                 {selectedTags.map((slug) => {
@@ -307,7 +341,7 @@ function SearchContent() {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               {t('search.noResultsHint', 'Try adjusting your filters or selecting different activities.')}
             </Typography>
-            <Button variant="outlined" onClick={() => { setSelectedTags([]); setDateFrom(''); setDateTo(''); }}>
+            <Button variant="outlined" onClick={() => { setSelectedTags([]); setDateFrom(''); setDateTo(''); setLocationQuery(''); }}>
               {t('search.clearFilters', 'Clear filters')}
             </Button>
           </Box>

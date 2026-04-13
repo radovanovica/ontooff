@@ -53,6 +53,7 @@ export async function GET(req: NextRequest) {
   const tagsParam = searchParams.get('tags') ?? '';
   const from = searchParams.get('from') ?? '';
   const to = searchParams.get('to') ?? '';
+  const location = searchParams.get('location') ?? '';
   const page = Number(searchParams.get('page') ?? 1);
   const pageSize = Number(searchParams.get('pageSize') ?? 12);
 
@@ -76,9 +77,20 @@ export async function GET(req: NextRequest) {
       }
     : {};
 
+  // Build location filter (city OR country)
+  const locationFilter = location
+    ? {
+        OR: [
+          { city: { contains: location, mode: 'insensitive' as const } },
+          { country: { contains: location, mode: 'insensitive' as const } },
+        ],
+      }
+    : {};
+
   const where = {
     isActive: true,
     ...activityTypeFilter,
+    ...locationFilter,
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -188,6 +200,12 @@ export async function GET(req: NextRequest) {
   if (tagSlugs.length) {
     freeWhere.tags = { some: { tag: { slug: { in: tagSlugs } } } };
   }
+  if (location) {
+    freeWhere.OR = [
+      { city: { contains: location, mode: 'insensitive' } },
+      { country: { contains: location, mode: 'insensitive' } },
+    ];
+  }
   const freeLocations = await prisma.freeLocation.findMany({
     where: freeWhere,
     include: { tags: { include: { tag: true } } },
@@ -244,7 +262,7 @@ export async function GET(req: NextRequest) {
       page,
       pageSize,
       totalPages: Math.ceil(((fromDate ? filtered.length : total) + freeItems.length) / pageSize),
-      filters: { tags: tagSlugs, from, to },
+      filters: { tags: tagSlugs, from, to, location },
     },
   });
 }
