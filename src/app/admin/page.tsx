@@ -6,6 +6,7 @@ import {
   AttachMoney,
   Business,
   HourglassEmpty,
+  Public,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import { getServerSession } from 'next-auth';
@@ -23,6 +24,7 @@ async function getStats() {
     pendingRegistrations,
     pendingOrgs,
     totalOrgs,
+    freeLocations,
     revenue,
   ] = await Promise.all([
     prisma.user.count(),
@@ -31,6 +33,7 @@ async function getStats() {
     prisma.registration.count({ where: { status: 'PENDING' } }),
     prisma.organization.count({ where: { status: 'PENDING' } }),
     prisma.organization.count(),
+    prisma.freeLocation.count(),
     prisma.registration.aggregate({
       _sum: { totalAmount: true },
       where: { paymentStatus: 'PAID' },
@@ -43,6 +46,7 @@ async function getStats() {
     pendingRegistrations,
     pendingOrgs,
     totalOrgs,
+    freeLocations,
     totalRevenue: Number(revenue._sum.totalAmount ?? 0),
   };
 }
@@ -60,6 +64,7 @@ export default async function AdminDashboardPage() {
     { label: t('dashboard.stats.pendingRegistrations'), value: stats.pendingRegistrations, icon: HourglassEmpty, color: '#f57c00', href: '/admin/registrations' },
     { label: t('dashboard.stats.totalOrgs', 'Organizations'), value: stats.totalOrgs, icon: Business, color: '#7b1fa2', href: '/admin/organizations' },
     { label: t('dashboard.stats.pendingOrgs', 'Pending Orgs'), value: stats.pendingOrgs, icon: HourglassEmpty, color: '#c0392b', href: '/admin/organizations?status=PENDING' },
+    { label: 'Community Locations', value: stats.freeLocations, icon: Public, color: '#7b3f00', href: '/admin/free-locations' },
     { label: t('dashboard.stats.totalRevenue'), value: `€${Number(stats.totalRevenue).toLocaleString()}`, icon: AttachMoney, color: '#2e7d32', href: '/admin/registrations' },
   ];
 

@@ -56,6 +56,10 @@ interface SearchPlace {
   website: string | null;
   averageRating: number | null;
   reviewCount: number;
+  /** true for free/community locations not tied to a place */
+  isFree?: boolean;
+  /** direct tags array (used by free locations) */
+  tags?: { tag: ActivityTag }[];
   activityTypes: {
     id: string;
     name: string;
@@ -72,7 +76,7 @@ interface SearchPlace {
       capacity?: number;
     }[];
   }[];
-  availableLocations?: { id: string; name: string }[];
+  availableLocations?: { id: string; name: string; latitude?: number | null; longitude?: number | null }[];
 }
 
 function SearchContent() {
@@ -309,8 +313,21 @@ function SearchContent() {
           </Box>
         ) : resultsView === 'map' ? (
           (() => {
-            const pins = results.flatMap((place) =>
-              place.activityTypes
+            const pins = results.flatMap((place) => {
+              if (place.isFree) {
+                // Free location — use its own GPS coords from availableLocations[0]
+                const loc = place.availableLocations?.[0];
+                if (!loc || loc.latitude == null || loc.longitude == null) return [];
+                return [{
+                  id: `free__${place.id}`,
+                  name: place.name,
+                  description: place.city ?? '',
+                  latitude: loc.latitude as number,
+                  longitude: loc.longitude as number,
+                  color: '#7b3f00',
+                }];
+              }
+              return place.activityTypes
                 .flatMap((at) => at.activityLocations)
                 .filter((loc) => loc.latitude != null && loc.longitude != null)
                 .map((loc) => ({
@@ -319,8 +336,8 @@ function SearchContent() {
                   description: `${loc.name}${place.city ? ` · ${place.city}` : ''}`,
                   latitude: loc.latitude as number,
                   longitude: loc.longitude as number,
-                }))
-            );
+                }));
+            });
             if (pins.length === 0) {
               return (
                 <Alert severity="info">
@@ -334,9 +351,15 @@ function SearchContent() {
                   pins={pins}
                   height={520}
                   onPinClick={(compositeId) => {
-                    const placeId = compositeId.split('__')[0];
-                    const place = results.find((p) => p.id === placeId);
-                    if (place) window.location.href = `/places/${place.slug}`;
+                    if (compositeId.startsWith('free__')) {
+                      const placeId = compositeId.replace('free__', '');
+                      const place = results.find((p) => p.id === placeId);
+                      if (place) window.location.href = `/locations/${place.slug}`;
+                    } else {
+                      const placeId = compositeId.split('__')[0];
+                      const place = results.find((p) => p.id === placeId);
+                      if (place) window.location.href = `/places/${place.slug}`;
+                    }
                   }}
                 />
               </Box>
@@ -398,20 +421,47 @@ function SearchContent() {
                       />
                     )}
 
-                    {/* Activity type chips */}
+                    {/* Activity type chips (place) or type tags (free) */}
                     <Stack direction="row" spacing={0.5} sx={{ position: 'absolute', bottom: 10, left: place.logoUrl ? 72 : 12 }}>
-                      {place.activityTypes.slice(0, 3).map((at) => (
-                        <Chip
-                          key={at.id}
-                          label={`${at.icon ?? ''} ${at.name}`}
-                          size="small"
-                          sx={{ bgcolor: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '0.7rem', height: 22 }}
-                        />
-                      ))}
+                      {place.isFree
+                        ? (place.tags ?? []).slice(0, 3).map((t) => (
+                            <Chip
+                              key={t.tag.slug}
+                              label={`${t.tag.icon ?? ''} ${t.tag.name}`}
+                              size="small"
+                              sx={{ bgcolor: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '0.7rem', height: 22 }}
+                            />
+                          ))
+                        : place.activityTypes.slice(0, 3).map((at) => (
+                            <Chip
+                              key={at.id}
+                              label={`${at.icon ?? ''} ${at.name}`}
+                              size="small"
+                              sx={{ bgcolor: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '0.7rem', height: 22 }}
+                            />
+                          ))
+                      }
                     </Stack>
 
+                    {/* Free / Community badge */}
+                    {place.isFree && (
+                      <Chip
+                        label="🌍 Community"
+                        size="small"
+                        sx={{
+                          position: 'absolute',
+                          top: 10,
+                          left: 10,
+                          bgcolor: '#7b3f00',
+                          color: 'white',
+                          fontWeight: 700,
+                          fontSize: '0.68rem',
+                        }}
+                      />
+                    )}
+
                     {/* Rating badge */}
-                    {place.averageRating !== null && (
+                    {!place.isFree && place.averageRating !== null && (
                       <Box sx={{
                         position: 'absolute',
                         top: 10,
@@ -456,42 +506,60 @@ function SearchContent() {
                       </Typography>
                     )}
 
-                    {/* Tags from activity types */}
+                    {/* Tags */}
                     <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-                      {Array.from(
-                        new Map(
-                          place.activityTypes
-                            .flatMap((at) => at.tags.map((t) => t.tag))
-                            .map((tag) => [tag.slug, tag])
-                        ).values()
-                      ).slice(0, 5).map((tag) => (
-                        <Chip
-                          key={tag.slug}
-                          label={`${tag.icon ?? ''} ${tag.name}`}
-                          size="small"
-                          sx={{
-                            bgcolor: (tag.color ?? '#2d5a27') + '18',
-                            color: tag.color ?? '#2d5a27',
-                            fontSize: '0.68rem',
-                            height: 20,
-                          }}
-                        />
-                      ))}
+                      {(() => {
+                        const tagList = place.isFree
+                          ? (place.tags ?? []).map((t) => t.tag)
+                          : Array.from(
+                              new Map(
+                                place.activityTypes
+                                  .flatMap((at) => at.tags.map((t) => t.tag))
+                                  .map((tag) => [tag.slug, tag])
+                              ).values()
+                            );
+                        return tagList.slice(0, 5).map((tag) => (
+                          <Chip
+                            key={tag.slug}
+                            label={`${tag.icon ?? ''} ${tag.name}`}
+                            size="small"
+                            sx={{
+                              bgcolor: (tag.color ?? '#2d5a27') + '18',
+                              color: tag.color ?? '#2d5a27',
+                              fontSize: '0.68rem',
+                              height: 20,
+                            }}
+                          />
+                        ));
+                      })()}
                     </Stack>
 
                     <Divider sx={{ mb: 2 }} />
 
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        fullWidth
-                        component={Link}
-                        href={`/places/${place.slug}`}
-                        sx={{ bgcolor: '#2d5a27', '&:hover': { bgcolor: '#1e3d1a' } }}
-                      >
-                        {t('search.bookNow', 'Book Now')}
-                      </Button>
+                      {place.isFree ? (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          component={Link}
+                          href={`/locations/${place.slug}`}
+                          sx={{ borderColor: '#7b3f00', color: '#7b3f00', '&:hover': { borderColor: '#5a2e00', bgcolor: '#7b3f0010' } }}
+                        >
+                          View Location
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="contained"
+                          size="small"
+                          fullWidth
+                          component={Link}
+                          href={`/places/${place.slug}`}
+                          sx={{ bgcolor: '#2d5a27', '&:hover': { bgcolor: '#1e3d1a' } }}
+                        >
+                          {t('search.bookNow', 'Book Now')}
+                        </Button>
+                      )}
                       {place.website && (
                         <Button
                           variant="outlined"

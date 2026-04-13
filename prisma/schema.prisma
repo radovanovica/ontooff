@@ -512,6 +512,50 @@ model Review {
 }
 
 // ─────────────────────────────────────────
+// FREE / COMMUNITY LOCATIONS
+// ─────────────────────────────────────────
+
+model FreeLocation {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  description     String?  @db.Text
+  address         String?
+  city            String?
+  country         String?
+  latitude        Float?
+  longitude       Float?
+  phone           String?
+  email           String?
+  website         String?
+  logoUrl         String?
+  coverUrl        String?
+  gallery         String?  @db.Text   // JSON: string[] of URLs
+  coverImageIndex Int?
+  instructions    String?  @db.Text
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tags FreeLocationTag[]
+
+  @@index([isActive])
+  @@index([slug])
+  @@map("free_locations")
+}
+
+model FreeLocationTag {
+  freeLocationId String
+  tagId          String
+
+  freeLocation FreeLocation @relation(fields: [freeLocationId], references: [id], onDelete: Cascade)
+  tag          ActivityTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([freeLocationId, tagId])
+  @@map("free_location_tags")
+}
+
+// ─────────────────────────────────────────
 // ACTIVITY TAGS
 // ─────────────────────────────────────────
 
@@ -526,6 +570,7 @@ model ActivityTag {
   createdAt DateTime @default(now())
 
   activityTypes ActivityTypeTag[]
+  freeLocations FreeLocationTag[]
 
   @@index([isActive])
   @@map("activity_tags")

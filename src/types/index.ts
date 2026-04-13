@@ -124,6 +124,34 @@ export interface ActivityTag {
 }
 
 // ─────────────────────────────────────────
+// FREE / COMMUNITY LOCATION
+// ─────────────────────────────────────────
+
+export interface FreeLocation {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  logoUrl: string | null;
+  coverUrl: string | null;
+  gallery: string | null;
+  coverImageIndex: number | null;
+  instructions: string | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  tags?: { tag: ActivityTag }[];
+}
+
+// ─────────────────────────────────────────
 // PLACE
 // ─────────────────────────────────────────
 

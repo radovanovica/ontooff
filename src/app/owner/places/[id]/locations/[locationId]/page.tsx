@@ -24,8 +24,10 @@ import {
   DialogActions,
   MenuItem,
   Divider,
+  InputAdornment,
+  Paper,
 } from '@mui/material';
-import { ArrowBack, Add, Delete, Edit, CloudUpload, Collections, Star, StarBorder, MyLocation } from '@mui/icons-material';
+import { ArrowBack, Add, Delete, Edit, CloudUpload, Collections, Star, StarBorder, PinDrop, Search, Close } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -35,6 +37,13 @@ import { z } from 'zod';
 import { useTranslation } from '@/i18n/client';
 import PageHeader from '@/components/ui/PageHeader';
 import { uploadFileToS3 } from '@/lib/upload';
+import dynamic from 'next/dynamic';
+import type MapPickerType from '@/components/map/MapPicker';
+
+const MapPicker = dynamic(() => import('@/components/map/MapPicker'), {
+  ssr: false,
+  loading: () => null,
+}) as unknown as typeof MapPickerType;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -110,29 +119,9 @@ function SettingsTab({ location, locationId, placeId, onUpdated }: { location: L
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [geocoding, setGeocoding] = useState(false);
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
 
-  const handleGeocode = async () => {
-    setGeocoding(true);
-    try {
-      const res = await fetch(`/api/places/${placeId}`);
-      const json = await res.json();
-      const place = json.data;
-      const addr = [place.address, place.city, place.country].filter(Boolean).join(', ');
-      const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}&limit=1`);
-      const results = await geoRes.json();
-      if (results[0]) {
-        setValue('latitude', Number(results[0].lat));
-        setValue('longitude', Number(results[0].lon));
-      }
-    } catch {
-      // silently ignore geocode errors
-    } finally {
-      setGeocoding(false);
-    }
-  };
-
-  const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<LocationFormValues>({
+  const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm<LocationFormValues>({
     resolver: zodResolver(locationSchema),
     defaultValues: {
       name: location.name,
@@ -249,36 +238,68 @@ function SettingsTab({ location, locationId, placeId, onUpdated }: { location: L
         <Grid size={{ xs: 12 }}>
           <Divider sx={{ my: 1 }}>Map Pin Location</Divider>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <TextField
-            {...register('latitude')}
-            label="Latitude"
-            type="number"
-            fullWidth
-            helperText="e.g. 44.8176"
-            slotProps={{ htmlInput: { step: 'any' } }}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <TextField
-            {...register('longitude')}
-            label="Longitude"
-            type="number"
-            fullWidth
-            helperText="e.g. 20.4633"
-            slotProps={{ htmlInput: { step: 'any' } }}
-          />
-        </Grid>
         <Grid size={{ xs: 12 }}>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<MyLocation />}
-            onClick={handleGeocode}
-            disabled={geocoding}
-          >
-            {geocoding ? 'Looking up...' : 'Auto-fill from place address'}
-          </Button>
+          {/* Read-only lat/lng display + picker button */}
+          {(() => {
+            const lat = watch('latitude');
+            const lng = watch('longitude');
+            const hasCoords = lat !== '' && lat !== undefined && lng !== '' && lng !== undefined;
+            return (
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                  <Box sx={{ flex: 1, minWidth: 180 }}>
+                    {hasCoords ? (
+                      <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                        📍 {Number(lat).toFixed(6)}, {Number(lng).toFixed(6)}
+                      </Typography>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">No pin set yet</Typography>
+                    )}
+                  </Box>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<PinDrop />}
+                    onClick={() => setMapPickerOpen(true)}
+                  >
+                    {hasCoords ? 'Reposition Pin' : 'Pin on Map'}
+                  </Button>
+                  {hasCoords && (
+                    <Button
+                      variant="text"
+                      size="small"
+                      color="error"
+                      startIcon={<Close />}
+                      onClick={() => { setValue('latitude', ''); setValue('longitude', ''); }}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </Box>
+              </Paper>
+            );
+          })()}
+
+          {/* Hidden inputs to keep RHF registration */}
+          <input type="hidden" {...register('latitude')} />
+          <input type="hidden" {...register('longitude')} />
+
+          {/* Map picker dialog */}
+          <Dialog open={mapPickerOpen} onClose={() => setMapPickerOpen(false)} maxWidth="md" fullWidth>
+            <DialogTitle sx={{ pb: 1 }}>Pin Location on Map</DialogTitle>
+            <DialogContent sx={{ p: 0 }}>
+              <MapPicker
+                initialLat={watch('latitude') !== '' ? Number(watch('latitude')) : undefined}
+                initialLng={watch('longitude') !== '' ? Number(watch('longitude')) : undefined}
+                onConfirm={(lat: number, lng: number) => {
+                  setValue('latitude', lat);
+                  setValue('longitude', lng);
+                  setMapPickerOpen(false);
+                }}
+                onCancel={() => setMapPickerOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller

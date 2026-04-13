@@ -183,14 +183,67 @@ export async function GET(req: NextRequest) {
   // Filter out places with no available locations when dates are given
   const filtered = fromDate ? results.filter((p) => (p.availableLocations?.length ?? 0) > 0) : results;
 
+  // ── Free / community locations ──────────────────────────────────────────────
+  const freeWhere: Record<string, unknown> = { isActive: true };
+  if (tagSlugs.length) {
+    freeWhere.tags = { some: { tag: { slug: { in: tagSlugs } } } };
+  }
+  const freeLocations = await prisma.freeLocation.findMany({
+    where: freeWhere,
+    include: { tags: { include: { tag: true } } },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  // Shape free locations into the same search result format
+  const freeItems = freeLocations.map((loc) => ({
+    id: loc.id,
+    name: loc.name,
+    slug: loc.slug,
+    city: loc.city,
+    country: loc.country,
+    description: loc.description,
+    coverUrl: loc.coverUrl,
+    logoUrl: loc.logoUrl,
+    phone: loc.phone,
+    email: loc.email,
+    website: loc.website,
+    averageRating: null,
+    reviewCount: 0,
+    isFree: true,
+    activityTypes: [] as {
+      id: string;
+      name: string;
+      icon: string | null;
+      color: string | null;
+      tags: { tag: { id: string; name: string; slug: string; icon: string | null; color: string | null } }[];
+      activityLocations: {
+        id: string;
+        name: string;
+        maxCapacity: null;
+        latitude: number | null;
+        longitude: number | null;
+        available: true;
+      }[];
+    }[],
+    tags: loc.tags,
+    availableLocations: [{
+      id: loc.id,
+      name: loc.name,
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+    }],
+  }));
+
+  const allItems = [...filtered, ...freeItems];
+
   return NextResponse.json({
     success: true,
     data: {
-      items: filtered,
-      total: fromDate ? filtered.length : total,
+      items: allItems,
+      total: (fromDate ? filtered.length : total) + freeItems.length,
       page,
       pageSize,
-      totalPages: Math.ceil((fromDate ? filtered.length : total) / pageSize),
+      totalPages: Math.ceil(((fromDate ? filtered.length : total) + freeItems.length) / pageSize),
       filters: { tags: tagSlugs, from, to },
     },
   });
