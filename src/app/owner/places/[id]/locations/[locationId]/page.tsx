@@ -27,8 +27,8 @@ import {
   InputAdornment,
   Paper,
 } from '@mui/material';
-import { ArrowBack, Add, Delete, Edit, CloudUpload, Collections, Star, StarBorder, PinDrop, Search, Close } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import { ArrowBack, Add, Delete, Edit, CloudUpload, Collections, Star, StarBorder, PinDrop, Search, Close, MyLocation } from '@mui/icons-material';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
@@ -47,6 +47,15 @@ const MapPicker = dynamic(() => import('@/components/map/MapPicker'), {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+const ZONE_RADIUS = 32;
+
+interface PlaceMapData {
+  mapImageUrl: string | null;
+  mapWidth: number | null;
+  mapHeight: number | null;
+  activityLocations: { id: string; name: string; svgMapData: string | null }[];
+}
+
 interface LocationData {
   id: string;
   name: string;
@@ -63,6 +72,7 @@ interface LocationData {
   gallery: string | null;           // JSON: string[]
   coverImageIndex: number | null;    // index of primary gallery image
   instructions: string | null;       // How to find the place
+  svgMapData: string | null;
   activityType: { id: string; name: string; icon: string | null };
   place: { id: string; name: string };
   spots: SpotData[];
@@ -120,6 +130,75 @@ function SettingsTab({ location, locationId, placeId, onUpdated }: { location: L
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mapPickerOpen, setMapPickerOpen] = useState(false);
+
+  // Virtual map zone state
+  const [placeMap, setPlaceMap] = useState<PlaceMapData | null>(null);
+  const [pickingZone, setPickingZone] = useState(false);
+  const [zonePosition, setZonePosition] = useState<{ cx: number; cy: number } | null>(() => {
+    if (!location.svgMapData) return null;
+    try {
+      const d = JSON.parse(location.svgMapData) as { cx: number; cy: number };
+      return { cx: d.cx, cy: d.cy };
+    } catch { return null; }
+  });
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [savingZone, setSavingZone] = useState(false);
+
+  // Load place map data for virtual zone editor
+  useEffect(() => {
+    fetch(`/api/places/${placeId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setPlaceMap(d.data);
+      })
+      .catch(() => null);
+  }, [placeId]);
+
+  const mapWidth = placeMap?.mapWidth ?? 900;
+  const mapHeight = placeMap?.mapHeight ?? 600;
+
+  const getSvgCoords = useCallback(
+    (clientX: number, clientY: number) => {
+      const el = svgRef.current;
+      if (!el) return { x: 0, y: 0 };
+      const rect = el.getBoundingClientRect();
+      return {
+        x: Math.round((clientX - rect.left) * (mapWidth / rect.width)),
+        y: Math.round((clientY - rect.top) * (mapHeight / rect.height)),
+      };
+    },
+    [mapWidth, mapHeight]
+  );
+
+  const handleSvgClick = useCallback(
+    (e: React.MouseEvent<SVGSVGElement>) => {
+      if (!pickingZone) return;
+      const { x, y } = getSvgCoords(e.clientX, e.clientY);
+      setZonePosition({ cx: x, cy: y });
+      setPickingZone(false);
+    },
+    [pickingZone, getSvgCoords]
+  );
+
+  const handleSaveZone = async (newPos: { cx: number; cy: number } | null) => {
+    setSavingZone(true);
+    try {
+      const svgMapData = newPos
+        ? JSON.stringify({ type: 'circle', cx: newPos.cx, cy: newPos.cy, r: ZONE_RADIUS })
+        : null;
+      const res = await fetch(`/api/activity-locations/${locationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ svgMapData }),
+      });
+      if (!res.ok) throw new Error('Save failed');
+      onUpdated();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error saving zone');
+    } finally {
+      setSavingZone(false);
+    }
+  };
 
   const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm<LocationFormValues>({
     resolver: zodResolver(locationSchema),
@@ -331,6 +410,132 @@ function SettingsTab({ location, locationId, placeId, onUpdated }: { location: L
           </Button>
         </Grid>
       </Grid>
+
+      {/* ── Virtual Map Zone Placement ───────────────────────────────── */}
+      {placeMap?.mapImageUrl && (
+        <Box sx={{ mt: 4 }}>
+          <Divider sx={{ mb: 3 }}>Virtual Map Zone</Divider>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                Zone on Place Map
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {zonePosition
+                  ? `Placed at cx=${zonePosition.cx}, cy=${zonePosition.cy}`
+                  : 'No zone placed on virtual map yet'}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                variant={pickingZone ? 'contained' : 'outlined'}
+                size="small"
+                startIcon={<MyLocation />}
+                onClick={() => setPickingZone((v) => !v)}
+              >
+                {pickingZone ? 'Click map to place…' : zonePosition ? 'Move Zone' : 'Place on Map'}
+              </Button>
+              {zonePosition && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="error"
+                  onClick={() => {
+                    setZonePosition(null);
+                    handleSaveZone(null);
+                  }}
+                  disabled={savingZone}
+                >
+                  Remove
+                </Button>
+              )}
+              {zonePosition && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  color="success"
+                  onClick={() => handleSaveZone(zonePosition)}
+                  disabled={savingZone}
+                >
+                  {savingZone ? 'Saving…' : 'Save Zone'}
+                </Button>
+              )}
+            </Box>
+          </Box>
+          <Box
+            sx={{
+              border: '2px solid',
+              borderColor: pickingZone ? 'primary.main' : 'divider',
+              borderRadius: 1.5,
+              overflow: 'hidden',
+              cursor: pickingZone ? 'crosshair' : 'default',
+              bgcolor: '#f0ebe3',
+              transition: 'border-color 0.2s',
+              position: 'relative',
+            }}
+          >
+            {pickingZone && (
+              <Box
+                sx={{
+                  position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
+                  zIndex: 10, pointerEvents: 'none',
+                }}
+              >
+                <Chip label="Click to place zone" color="primary" size="small" icon={<MyLocation />} />
+              </Box>
+            )}
+            <svg
+              ref={svgRef}
+              viewBox={`0 0 ${mapWidth} ${mapHeight}`}
+              style={{ width: '100%', height: 'auto', display: 'block', maxHeight: 500, userSelect: 'none' }}
+              onClick={handleSvgClick}
+            >
+              <image
+                href={placeMap.mapImageUrl}
+                x={0} y={0}
+                width={mapWidth} height={mapHeight}
+                preserveAspectRatio="xMidYMid slice"
+              />
+              {/* Other locations */}
+              {(placeMap.activityLocations ?? [])
+                .filter((z) => z.id !== locationId && z.svgMapData)
+                .map((z) => {
+                  try {
+                    const d = JSON.parse(z.svgMapData!) as { cx: number; cy: number; r?: number };
+                    return (
+                      <g key={z.id} style={{ pointerEvents: 'none' }}>
+                        <circle cx={d.cx} cy={d.cy} r={d.r ?? ZONE_RADIUS} fill="#1b5e20" fillOpacity={0.5} stroke="white" strokeWidth={2} />
+                        <text x={d.cx} y={d.cy + (d.r ?? ZONE_RADIUS) + 14}
+                          textAnchor="middle" fill="rgba(0,0,0,0.75)" fontSize={11} fontWeight={700}
+                          stroke="rgba(255,255,255,0.95)" strokeWidth={3} paintOrder="stroke">
+                          {z.name}
+                        </text>
+                      </g>
+                    );
+                  } catch { return null; }
+                })}
+              {/* This location's zone */}
+              {zonePosition && (
+                <g style={{ pointerEvents: 'none' }}>
+                  <circle cx={zonePosition.cx} cy={zonePosition.cy} r={ZONE_RADIUS}
+                    fill="#0d47a1" fillOpacity={0.85} stroke="#ffeb3b" strokeWidth={3} />
+                  <text x={zonePosition.cx} y={zonePosition.cy + 4}
+                    textAnchor="middle" fill="white" fontSize={14} fontWeight={900}
+                    stroke="rgba(0,0,0,0.55)" strokeWidth={2} paintOrder="stroke">
+                    ✓
+                  </text>
+                  <text x={zonePosition.cx} y={zonePosition.cy + ZONE_RADIUS + 14}
+                    textAnchor="middle" fill="#0d47a1" fontSize={12} fontWeight={900}
+                    stroke="rgba(255,255,255,0.98)" strokeWidth={4} paintOrder="stroke">
+                    {location.name}
+                  </text>
+                </g>
+              )}
+            </svg>
+          </Box>
+        </Box>
+      )}
+
       <Snackbar open={success} autoHideDuration={3000} onClose={() => setSuccess(false)} message={t('locations.updated')} />
     </Box>
   );

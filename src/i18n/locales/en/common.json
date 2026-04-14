@@ -228,9 +228,14 @@
     "clickPinToSelect": "Click a pin to select a location",
     "noMapAvailable": "No map available for these locations. Use the Selection List instead.",
     "noAvailableSpots": "No available spots for selected dates.",
-    "noPaymentRequired": "No payment required — your booking is free of charge.",
+    "noPaymentRequired": "No payment required \u2014 your booking is free of charge.",
     "fixedRatePricing": "This pricing rule is fixed-rate. Guest counts are applied automatically.",
     "noPricingRule": "No pricing rule configured for this activity yet.",
-    "maxPeople": "Max {{count}} people"
+    "maxPeople": "Max {{count}} people",
+    "selectActivity": "Select an Activity",
+    "selectActivityHint": "This place offers multiple activities. Please select the one you want to book.",
+    "locationsAvailable": "locations available",
+    "changeActivity": "Change activity",
+    "photos": "Photos"
   }
 }

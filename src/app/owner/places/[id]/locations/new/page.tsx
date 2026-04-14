@@ -88,7 +88,7 @@ export default function NewLocationPage() {
 
   // Zone position picked on map
   const [pickedZone, setPickedZone] = useState<{ cx: number; cy: number } | null>(null);
-  const [pickingMode, setPickingMode] = useState(false);
+  const [pickingMode, setPickingMode] = useState(true); // start in picking mode so user can click immediately
   const svgRef = useRef<SVGSVGElement>(null);
 
   const { register, handleSubmit, control, formState: { errors } } = useForm<FormInputValues, unknown, FormOutputValues>({

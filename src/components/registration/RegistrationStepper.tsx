@@ -27,6 +27,10 @@ import {
   CardContent,
   Checkbox,
   Stack,
+  ImageList,
+  ImageListItem,
+  Collapse,
+  IconButton,
 } from '@mui/material';
 import DateRangePicker from '@/components/ui/DateRangePicker';
 import {
@@ -37,6 +41,9 @@ import {
   CheckCircle,
   Map as MapIcon,
   ViewList,
+  PhotoLibrary,
+  ExpandMore,
+  ExpandLess,
 } from '@mui/icons-material';
 import dynamic from 'next/dynamic';
 import { useForm, Controller } from 'react-hook-form';
@@ -125,10 +132,40 @@ export default function RegistrationStepper({
   const [registrationNumber, setRegistrationNumber] = useState<string | null>(null);
   const [submittedEditToken, setSubmittedEditToken] = useState<string | null>(null);
   const [submittedPlaceId, setSubmittedPlaceId] = useState<string | null>(null);
+  const [galleryOpen, setGalleryOpen] = useState(false);
 
   const [locationSelectMode, setLocationSelectMode] = useState<'list' | 'map'>('list');
   const [mapSubMode, setMapSubMode] = useState<'virtual' | 'real'>('virtual');
-  const availableLocations = locations && locations.length > 0 ? locations : [location];
+  const allLocations = locations && locations.length > 0 ? locations : [location];
+
+  // Derive unique activity types from all locations
+  const activityTypes = useMemo(() => {
+    const seen = new Map<string, { id: string; name: string; icon: string | null; color: string | null }>();
+    for (const loc of allLocations) {
+      if (loc.activityType && !seen.has(loc.activityTypeId)) {
+        seen.set(loc.activityTypeId, {
+          id: loc.activityTypeId,
+          name: loc.activityType.name,
+          icon: (loc.activityType as { icon?: string | null }).icon ?? null,
+          color: (loc.activityType as { color?: string | null }).color ?? null,
+        });
+      }
+    }
+    return Array.from(seen.values());
+  }, [allLocations]);
+
+  const hasMultipleActivityTypes = activityTypes.length > 1;
+  const [selectedActivityTypeId, setSelectedActivityTypeId] = useState<string | null>(
+    hasMultipleActivityTypes ? null : (activityTypes[0]?.id ?? null)
+  );
+
+  // Filter locations by selected activity type
+  const availableLocations = useMemo(
+    () => selectedActivityTypeId
+      ? allLocations.filter((loc) => loc.activityTypeId === selectedActivityTypeId)
+      : allLocations,
+    [allLocations, selectedActivityTypeId]
+  );
 
   // Which map modes are available
   const hasVirtualMap = availableLocations.some((loc) => !!loc.svgMapData);
@@ -515,18 +552,96 @@ export default function RegistrationStepper({
   };
 
   const coverImageUrl = getCoverImageUrl(selectedLocation);
-  const placeLogoUrl = selectedLocation?.place?.logoUrl ?? availableLocations[0]?.place?.logoUrl ?? null;
-  const placeName = selectedLocation?.place?.name ?? availableLocations[0]?.place?.name ?? null;
+  const placeLogoUrl = selectedLocation?.place?.logoUrl ?? availableLocations[0]?.place?.logoUrl ?? allLocations[0]?.place?.logoUrl ?? null;
+  const placeName = selectedLocation?.place?.name ?? availableLocations[0]?.place?.name ?? allLocations[0]?.place?.name ?? null;
+
+  // ── Activity selection screen (multi-activity places) ───────────────
+  if (hasMultipleActivityTypes && !selectedActivityTypeId) {
+    return (
+      <Box>
+        {/* Place branding */}
+        {placeLogoUrl && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, p: 1.5, borderRadius: 2, bgcolor: 'grey.50', border: '1px solid', borderColor: 'divider' }}>
+            <Box component="img" src={placeLogoUrl} alt={placeName ?? ''} sx={{ width: 48, height: 48, borderRadius: 1.5, objectFit: 'cover', border: '1px solid', borderColor: 'divider' }} />
+            {placeName && <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{placeName}</Typography>}
+          </Box>
+        )}
+        <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+          {tc('stepper.selectActivity')}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          {tc('stepper.selectActivityHint')}
+        </Typography>
+        <Grid container spacing={1.5}>
+          {activityTypes.map((at) => (
+            <Grid size={{ xs: 12, sm: 6 }} key={at.id}>
+              <Card
+                variant="outlined"
+                sx={{
+                  borderRadius: 2,
+                  border: '2px solid',
+                  borderColor: 'divider',
+                  cursor: 'pointer',
+                  transition: 'border-color 0.15s, box-shadow 0.15s',
+                  '&:hover': { borderColor: at.color ?? 'primary.main', boxShadow: 2 },
+                }}
+              >
+                <CardActionArea onClick={() => setSelectedActivityTypeId(at.id)} sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    {at.icon && (
+                      <Typography sx={{ fontSize: '2rem', lineHeight: 1 }}>{at.icon}</Typography>
+                    )}
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{at.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {allLocations.filter((l) => l.activityTypeId === at.id).length} {tc('stepper.locationsAvailable')}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </CardActionArea>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+    );
+  }
 
   return (
     <Box>
-      <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+      <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: hasMultipleActivityTypes ? 1.5 : 4 }}>
         {STEPS.map((step, idx) => (
           <Step key={step.label} completed={activeStep > idx}>
             <StepLabel>{step.label}</StepLabel>
           </Step>
         ))}
       </Stepper>
+
+      {/* Activity type badge + change button when multi-activity */}
+      {hasMultipleActivityTypes && selectedActivityTypeId && (() => {
+        const at = activityTypes.find((a) => a.id === selectedActivityTypeId);
+        return at ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, px: 0.5 }}>
+            <Chip
+              label={`${at.icon ?? ''} ${at.name}`.trim()}
+              size="small"
+              sx={{ fontWeight: 700, bgcolor: at.color ?? 'primary.main', color: 'white' }}
+            />
+            <Button
+              size="small"
+              variant="text"
+              sx={{ fontSize: '0.75rem', py: 0, minWidth: 'auto' }}
+              onClick={() => {
+                setSelectedActivityTypeId(null);
+                setSelectedLocationId(null);
+                setActiveStep(0);
+              }}
+            >
+              {tc('stepper.changeActivity')}
+            </Button>
+          </Box>
+        ) : null;
+      })()}
 
       {/* Place branding header — cover photo or logo bar */}
       {coverImageUrl ? (
@@ -581,6 +696,58 @@ export default function RegistrationStepper({
           )}
         </Box>
       ) : null}
+
+      {/* Gallery strip — shows when a location with photos is selected */}
+      {(() => {
+        const galleryImages: string[] = [];
+        if (selectedLocation?.gallery) {
+          try { galleryImages.push(...(JSON.parse(selectedLocation.gallery) as string[])); } catch { /* ignore */ }
+        }
+        if (galleryImages.length === 0) return null;
+        return (
+          <Box sx={{ mb: 2.5 }}>
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', px: 0.5, py: 0.75, borderRadius: 1, '&:hover': { bgcolor: 'action.hover' } }}
+              onClick={() => setGalleryOpen((v) => !v)}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <PhotoLibrary sx={{ fontSize: 18, color: 'text.secondary' }} />
+                <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                  {tc('stepper.photos')} ({galleryImages.length})
+                </Typography>
+              </Box>
+              <IconButton size="small" sx={{ p: 0.25 }}>
+                {galleryOpen ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+              </IconButton>
+            </Box>
+            <Collapse in={galleryOpen}>
+              <ImageList
+                sx={{ width: '100%', maxHeight: 220, borderRadius: 1.5, overflow: 'hidden', mt: 0.5 }}
+                variant="quilted"
+                cols={Math.min(galleryImages.length, 4)}
+                rowHeight={galleryImages.length === 1 ? 200 : 100}
+                gap={4}
+              >
+                {galleryImages.map((src, idx) => (
+                  <ImageListItem
+                    key={idx}
+                    cols={idx === 0 && galleryImages.length > 2 ? 2 : 1}
+                    rows={idx === 0 && galleryImages.length > 2 ? 2 : 1}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={src}
+                      alt={`${selectedLocation?.name ?? ''} photo ${idx + 1}`}
+                      loading="lazy"
+                      style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
+                    />
+                  </ImageListItem>
+                ))}
+              </ImageList>
+            </Collapse>
+          </Box>
+        );
+      })()}
 
       {activeStep === 0 && (
         <Box component="form" onSubmit={handleSubmit1(onStep1Submit)}>

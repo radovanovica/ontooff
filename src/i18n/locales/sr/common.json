@@ -231,6 +231,11 @@
     "noPaymentRequired": "Plaćanje nije potrebno — vaša rezervacija je besplatna.",
     "fixedRatePricing": "Ovaj cenovnik je fiksne stope. Broj gostiju se primenjuje automatski.",
     "noPricingRule": "Cenovnik još nije konfigurisan za ovu aktivnost.",
-    "maxPeople": "Maks. {{count}} osoba"
+    "maxPeople": "Maks. {{count}} osoba",
+    "selectActivity": "Odaberite aktivnost",
+    "selectActivityHint": "Ovo mesto nudi više aktivnosti. Molimo odaberite aktivnost za rezervaciju.",
+    "locationsAvailable": "lokacija dostupno",
+    "changeActivity": "Promeni aktivnost",
+    "photos": "Fotografije"
   }
 }

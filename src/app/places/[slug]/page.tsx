@@ -245,15 +245,15 @@ function PlaceContent() {
               </Stack>
             </Paper>
 
-            {/* Location instructions */}
-            {place.activityTypes.flatMap((at) => at.activityLocations).some((loc) => loc.instructions) && (
+            {/* Location instructions — only when at least one location has coords AND instructions */}
+            {place.activityTypes.flatMap((at) => at.activityLocations).some((loc) => loc.instructions && loc.latitude != null && loc.longitude != null) && (
               <Paper variant="outlined" sx={{ p: 3, borderRadius: 2, mt: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <Info sx={{ color: 'info.main', fontSize: 20 }} />
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>How to Find Us</Typography>
                 </Box>
                 <Stack spacing={2}>
-                  {place.activityTypes.flatMap((at) => at.activityLocations).filter((loc) => loc.instructions).map((loc) => (
+                  {place.activityTypes.flatMap((at) => at.activityLocations).filter((loc) => loc.instructions && loc.latitude != null && loc.longitude != null).map((loc) => (
                     <Box key={loc.id}>
                       <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>{loc.name}</Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-line', lineHeight: 1.7 }}>
