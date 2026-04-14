@@ -26,6 +26,7 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  Pagination,
 } from '@mui/material';
 import { Search, CheckCircle, Cancel, OpenInNew, DeleteForever } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
@@ -62,6 +63,10 @@ export default function AdminOrganizationsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('PENDING');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const PAGE_SIZE = 20;
 
   // Action dialog
   const [actionTarget, setActionTarget] = useState<OrgRow | null>(null);
@@ -79,15 +84,19 @@ export default function AdminOrganizationsPage() {
       const params = new URLSearchParams();
       if (search) params.set('search', search);
       if (statusFilter) params.set('status', statusFilter);
+      params.set('page', String(page));
+      params.set('pageSize', String(PAGE_SIZE));
       const res = await fetch(`/api/admin/organizations?${params}`);
       const data = await res.json();
       setOrgs(data.data?.items ?? []);
+      setTotal(data.data?.total ?? 0);
+      setTotalPages(data.data?.totalPages ?? Math.ceil((data.data?.total ?? 0) / PAGE_SIZE));
     } catch {
       setError('Failed to load organizations');
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter]);
+  }, [search, statusFilter, page]);
 
   useEffect(() => {
     const timer = setTimeout(fetchOrgs, 300);
@@ -152,7 +161,7 @@ export default function AdminOrganizationsPage() {
           size="small"
           placeholder={t('organizations.searchPlaceholder', 'Search by name or email…')}
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           slotProps={{
             input: {
               startAdornment: (
@@ -167,7 +176,7 @@ export default function AdminOrganizationsPage() {
           <Select
             value={statusFilter}
             label={t('organizations.status', 'Status')}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
           >
             <MenuItem value="">{t('common.all')}</MenuItem>
             <MenuItem value="PENDING">{t('organizations.statuses.PENDING', 'Pending')}</MenuItem>
@@ -280,6 +289,22 @@ export default function AdminOrganizationsPage() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+            {total} total organizations
+          </Typography>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, p) => setPage(p)}
+            color="primary"
+            shape="rounded"
+          />
+        </Box>
+      )}
 
       {/* Confirm action dialog */}
       <Dialog open={!!actionTarget} onClose={() => { setActionTarget(null); setActionType(null); setRejectionReason(''); }} maxWidth="sm" fullWidth>

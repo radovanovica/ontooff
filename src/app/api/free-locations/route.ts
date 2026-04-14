@@ -31,22 +31,44 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const tagSlug = searchParams.get('tag');
   const isActiveParam = searchParams.get('isActive');
+  const page = Number(searchParams.get('page') ?? 1);
+  const pageSize = Number(searchParams.get('pageSize') ?? 20);
+  const search = searchParams.get('search') ?? '';
 
   const where: Record<string, unknown> = {};
   if (isActiveParam !== 'all') where.isActive = true;
   if (tagSlug) {
     where.tags = { some: { tag: { slug: tagSlug } } };
   }
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { city: { contains: search, mode: 'insensitive' } },
+      { country: { contains: search, mode: 'insensitive' } },
+    ];
+  }
 
-  const locations = await prisma.freeLocation.findMany({
-    where,
-    include: {
-      tags: { include: { tag: true } },
-    },
-    orderBy: { createdAt: 'desc' },
+  const [locations, total] = await Promise.all([
+    prisma.freeLocation.findMany({
+      where,
+      include: {
+        tags: { include: { tag: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.freeLocation.count({ where }),
+  ]);
+
+  return NextResponse.json({
+    success: true,
+    data: locations,
+    total,
+    page,
+    pageSize,
+    totalPages: Math.ceil(total / pageSize),
   });
-
-  return NextResponse.json({ success: true, data: locations });
 }
 
 // POST /api/free-locations — admin only

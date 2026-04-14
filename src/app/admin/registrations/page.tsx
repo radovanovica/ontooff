@@ -17,6 +17,7 @@ import {
   InputAdornment,
   Tooltip,
   IconButton,
+  Pagination,
 } from '@mui/material';
 import { Search, OpenInNew } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
@@ -47,21 +48,27 @@ export default function AdminRegistrationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const PAGE_SIZE = 20;
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ pageSize: '50' });
+      const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
       if (search) params.set('search', search);
       const res = await fetch(`/api/registrations?${params}`);
       const data = await res.json();
       setRows(data.data?.items ?? data.items ?? []);
+      setTotal(data.data?.total ?? 0);
+      setTotalPages(data.data?.totalPages ?? 1);
     } catch {
       setError('Failed to load registrations');
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, page]);
 
   useEffect(() => {
     const timer = setTimeout(fetchData, 300);
@@ -81,7 +88,7 @@ export default function AdminRegistrationsPage() {
       <Box sx={{ mb: 3 }}>
         <TextField
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           placeholder={t('registrations.searchPlaceholder')}
           size="small"
           sx={{ minWidth: 280 }}
@@ -177,6 +184,22 @@ export default function AdminRegistrationsPage() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+            {total} total registrations
+          </Typography>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, p) => setPage(p)}
+            color="primary"
+            shape="rounded"
+          />
+        </Box>
+      )}
     </Box>
   );
 }

@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     prisma.organization.count({ where }),
   ]);
 
-  return NextResponse.json({ success: true, data: { items, total, page, pageSize } });
+  return NextResponse.json({ success: true, data: { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) } });
 }
 
 export async function PATCH(req: NextRequest) {

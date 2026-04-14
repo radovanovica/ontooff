@@ -25,6 +25,7 @@ import {
   Divider,
   Tooltip,
   Container,
+  CircularProgress,
 } from '@mui/material';
 import {
   Search,
@@ -39,6 +40,7 @@ import {
 } from '@mui/icons-material';
 import { ActivityTag } from '@/types';
 import DateRangePicker from '@/components/ui/DateRangePicker';
+import Navbar from '@/components/layout/Navbar';
 
 // Dynamically import the interactive map (no SSR)
 const SearchMap = dynamic(() => import('@/components/map/SearchMap'), {
@@ -175,7 +177,10 @@ function SearchPage() {
   // ── Results
   const [places, setPlaces] = useState<SearchPlace[]>([]);
   const [total, setTotal] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
 
   // ── Tags
@@ -209,19 +214,33 @@ function SearchPage() {
       from: string;
       to: string;
       bbox: BBox | null;
+      page?: number;
+      append?: boolean;
       updateUrl?: boolean;
     }) => {
+      const page = opts.page ?? 1;
       const id = ++fetchIdRef.current;
-      setLoading(true);
+      if (opts.append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
       setError('');
       try {
-        const qs = buildQuery(opts.tags, opts.location, opts.from, opts.to, opts.bbox, 1);
+        const qs = buildQuery(opts.tags, opts.location, opts.from, opts.to, opts.bbox, page);
         const res = await fetch(`/api/search?${qs}`);
         const data = await res.json();
         if (id !== fetchIdRef.current) return; // stale
         if (!data.success) throw new Error(data.error ?? 'Search failed');
-        setPlaces(data.data.items ?? []);
+        const newItems: SearchPlace[] = data.data.items ?? [];
+        if (opts.append) {
+          setPlaces((prev) => [...prev, ...newItems]);
+        } else {
+          setPlaces(newItems);
+        }
         setTotal(data.data.total ?? 0);
+        setCurrentPage(data.data.page ?? 1);
+        setTotalPages(data.data.totalPages ?? 1);
 
         if (opts.updateUrl) {
           const urlQs = buildQuery(opts.tags, opts.location, opts.from, opts.to, null, 1);
@@ -231,7 +250,10 @@ function SearchPage() {
         if (id !== fetchIdRef.current) return;
         setError(e instanceof Error ? e.message : 'Search failed');
       } finally {
-        if (id === fetchIdRef.current) setLoading(false);
+        if (id === fetchIdRef.current) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       }
     },
     [router]
@@ -245,14 +267,18 @@ function SearchPage() {
       from: initialFrom,
       to: initialTo,
       bbox: null,
+      page: 1,
+      append: false,
       updateUrl: false,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Text filter search (clears bbox)
+  // ── Text filter search (clears bbox, resets to page 1)
   const handleFilterSearch = useCallback(() => {
     setMapBbox(null);
+    setCurrentPage(1);
+    setTotalPages(1);
     suppressNextBboxSearch.current = true;
     fetchResults({
       tags: selectedTags,
@@ -260,6 +286,8 @@ function SearchPage() {
       from,
       to,
       bbox: null,
+      page: 1,
+      append: false,
       updateUrl: true,
     });
   }, [fetchResults, selectedTags, locationQuery, from, to]);
@@ -274,12 +302,16 @@ function SearchPage() {
       if (bboxDebounceRef.current) clearTimeout(bboxDebounceRef.current);
       bboxDebounceRef.current = setTimeout(() => {
         setMapBbox(bbox);
+        setCurrentPage(1);
+        setTotalPages(1);
         fetchResults({
           tags: selectedTags,
           location: locationQuery,
           from,
           to,
           bbox,
+          page: 1,
+          append: false,
           updateUrl: false,
         });
       }, 600);
@@ -295,8 +327,10 @@ function SearchPage() {
     setTo('');
     setSelectedTags([]);
     setMapBbox(null);
+    setCurrentPage(1);
+    setTotalPages(1);
     suppressNextBboxSearch.current = true;
-    fetchResults({ tags: [], location: '', from: '', to: '', bbox: null, updateUrl: true });
+    fetchResults({ tags: [], location: '', from: '', to: '', bbox: null, page: 1, append: false, updateUrl: true });
   }, [fetchResults]);
 
   const toggleTag = useCallback((slug: string) => {
@@ -304,6 +338,21 @@ function SearchPage() {
       prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
     );
   }, []);
+
+  // ── Load more
+  const handleLoadMore = useCallback(() => {
+    const nextPage = currentPage + 1;
+    fetchResults({
+      tags: selectedTags,
+      location: locationQuery,
+      from,
+      to,
+      bbox: mapBbox,
+      page: nextPage,
+      append: true,
+      updateUrl: false,
+    });
+  }, [fetchResults, currentPage, selectedTags, locationQuery, from, to, mapBbox]);
 
   // ── Map pins
   const mapPins = useMemo<MapPin[]>(() =>
@@ -330,6 +379,9 @@ function SearchPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      {/* ── Navbar ── */}
+      <Navbar />
+
       {/* ── Sticky filter bar ── */}
       <Box
         sx={{
@@ -338,8 +390,8 @@ function SearchPage() {
           borderColor: 'divider',
           py: 2,
           position: 'sticky',
-          top: 0,
-          zIndex: 100,
+          top: { xs: '56px', sm: '64px' },
+          zIndex: 99,
           boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
         }}
       >
@@ -433,6 +485,8 @@ function SearchPage() {
                     setView(v);
                     if (v === 'list' && mapBbox) {
                       setMapBbox(null);
+                      setCurrentPage(1);
+                      setTotalPages(1);
                       suppressNextBboxSearch.current = true;
                       fetchResults({
                         tags: selectedTags,
@@ -440,6 +494,8 @@ function SearchPage() {
                         from,
                         to,
                         bbox: null,
+                        page: 1,
+                        append: false,
                         updateUrl: false,
                       });
                     }
@@ -495,6 +551,8 @@ function SearchPage() {
               label="Filtered by map area"
               onDelete={() => {
                 setMapBbox(null);
+                setCurrentPage(1);
+                setTotalPages(1);
                 suppressNextBboxSearch.current = true;
                 fetchResults({
                   tags: selectedTags,
@@ -502,6 +560,8 @@ function SearchPage() {
                   from,
                   to,
                   bbox: null,
+                  page: 1,
+                  append: false,
                   updateUrl: false,
                 });
               }}
@@ -554,18 +614,36 @@ function SearchPage() {
                 )}
               </Box>
             ) : (
-              <Grid container spacing={2}>
-                {places.map((place) => (
-                  <Grid key={place.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                    <PlaceCard
-                      place={place}
-                      highlighted={highlightedId === place.id}
-                      onMouseEnter={() => setHighlightedId(place.id)}
-                      onMouseLeave={() => setHighlightedId(null)}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
+              <>
+                <Grid container spacing={2}>
+                  {places.map((place) => (
+                    <Grid key={place.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                      <PlaceCard
+                        place={place}
+                        highlighted={highlightedId === place.id}
+                        onMouseEnter={() => setHighlightedId(place.id)}
+                        onMouseLeave={() => setHighlightedId(null)}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+
+                {/* Load More */}
+                {currentPage < totalPages && (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      onClick={handleLoadMore}
+                      disabled={loadingMore}
+                      startIcon={loadingMore ? <CircularProgress size={18} /> : undefined}
+                      sx={{ minWidth: 180 }}
+                    >
+                      {loadingMore ? 'Loading…' : `Load More (${total - places.length} more)`}
+                    </Button>
+                  </Box>
+                )}
+              </>
             )}
           </>
         )}

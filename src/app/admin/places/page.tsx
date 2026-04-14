@@ -15,9 +15,12 @@ import {
   IconButton,
   Tooltip,
   Chip,
+  Pagination,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
-import { OpenInNew, Add } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { OpenInNew, Add, Search } from '@mui/icons-material';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n/client';
@@ -39,14 +42,33 @@ export default function AdminPlacesPage() {
   const [places, setPlaces] = useState<PlaceRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const PAGE_SIZE = 20;
+
+  const fetchPlaces = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
+      if (search) params.set('search', search);
+      const res = await fetch(`/api/places?${params}`);
+      const data = await res.json();
+      setPlaces(data.data?.items ?? data.items ?? []);
+      setTotal(data.data?.total ?? 0);
+      setTotalPages(data.data?.totalPages ?? Math.ceil((data.data?.total ?? 0) / PAGE_SIZE));
+    } catch {
+      setError('Failed to load places');
+    } finally {
+      setLoading(false);
+    }
+  }, [search, page]);
 
   useEffect(() => {
-    fetch('/api/places?pageSize=100')
-      .then((r) => r.json())
-      .then((d) => setPlaces(d.data?.items ?? d.items ?? []))
-      .catch(() => setError('Failed to load places'))
-      .finally(() => setLoading(false));
-  }, []);
+    const timer = setTimeout(fetchPlaces, 300);
+    return () => clearTimeout(timer);
+  }, [fetchPlaces]);
 
   return (
     <Box>
@@ -64,6 +86,19 @@ export default function AdminPlacesPage() {
       />
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="Search places…"
+          size="small"
+          sx={{ minWidth: 280 }}
+          slotProps={{
+            input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> },
+          }}
+        />
+      </Box>
 
       <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 2 }}>
         <Table size="small">
@@ -134,6 +169,22 @@ export default function AdminPlacesPage() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+            {total} total places
+          </Typography>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, p) => setPage(p)}
+            color="primary"
+            shape="rounded"
+          />
+        </Box>
+      )}
     </Box>
   );
 }

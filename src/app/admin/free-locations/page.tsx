@@ -26,6 +26,8 @@ import {
   FormControlLabel,
   Divider,
   Stack,
+  Pagination,
+  InputAdornment,
 } from '@mui/material';
 import {
   Add,
@@ -38,6 +40,7 @@ import {
   Star,
   StarBorder,
   Collections,
+  Search,
 } from '@mui/icons-material';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
@@ -105,6 +108,11 @@ export default function AdminFreeLocationsPage() {
   const [error, setError] = useState<string | null>(null);
   const [tags, setTags] = useState<ActivityTag[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const PAGE_SIZE = 20;
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<FreeLocationRow | null>(null);
@@ -135,17 +143,21 @@ export default function AdminFreeLocationsPage() {
 
   const load = useCallback(() => {
     setLoading(true);
+    const params = new URLSearchParams({ isActive: 'all', page: String(page), pageSize: String(PAGE_SIZE) });
+    if (search) params.set('search', search);
     Promise.all([
-      fetch('/api/free-locations?isActive=all').then((r) => r.json()),
+      fetch(`/api/free-locations?${params}`).then((r) => r.json()),
       fetch('/api/tags').then((r) => r.json()),
     ])
       .then(([loc, tag]) => {
         setLocations(loc.data ?? []);
+        setTotal(loc.total ?? 0);
+        setTotalPages(loc.totalPages ?? 1);
         setTags(tag.data ?? []);
       })
       .catch(() => setError('Failed to load'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [page, search]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -314,6 +326,20 @@ export default function AdminFreeLocationsPage() {
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
+      {/* Search */}
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="Search locations…"
+          size="small"
+          sx={{ minWidth: 280 }}
+          slotProps={{
+            input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> },
+          }}
+        />
+      </Box>
+
       {/* Table */}
       <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 2 }}>
         <Table size="small">
@@ -395,6 +421,22 @@ export default function AdminFreeLocationsPage() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+            {total} total locations
+          </Typography>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, p) => setPage(p)}
+            color="primary"
+            shape="rounded"
+          />
+        </Box>
+      )}
 
       {/* ─── Add / Edit Dialog ─────────────────────────────────────────────── */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>

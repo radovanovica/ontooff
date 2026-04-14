@@ -22,6 +22,7 @@ import {
   CircularProgress,
   Alert,
   Switch,
+  Pagination,
 } from '@mui/material';
 import { Search, Edit } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
@@ -47,6 +48,10 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const PAGE_SIZE = 20;
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -54,15 +59,19 @@ export default function AdminUsersPage() {
       const params = new URLSearchParams();
       if (search) params.set('search', search);
       if (roleFilter) params.set('role', roleFilter);
+      params.set('page', String(page));
+      params.set('pageSize', String(PAGE_SIZE));
       const res = await fetch(`/api/admin/users?${params}`);
       const data = await res.json();
       setUsers(data.data?.items ?? data.items ?? []);
+      setTotal(data.data?.total ?? 0);
+      setTotalPages(data.data?.totalPages ?? 1);
     } catch {
       setError('Failed to load users');
     } finally {
       setLoading(false);
     }
-  }, [search, roleFilter]);
+  }, [search, roleFilter, page]);
 
   useEffect(() => {
     const t = setTimeout(fetchUsers, 300);
@@ -107,7 +116,7 @@ export default function AdminUsersPage() {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <TextField
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           placeholder={t('users.searchPlaceholder')}
           size="small"
           sx={{ minWidth: 240 }}
@@ -117,7 +126,7 @@ export default function AdminUsersPage() {
         />
         <FormControl size="small" sx={{ minWidth: 160 }}>
           <InputLabel>{t('users.roleFilter')}</InputLabel>
-          <Select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} label={t('users.roleFilter')}>
+          <Select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }} label={t('users.roleFilter')}>
             <MenuItem value="">{t('common.all')}</MenuItem>
             {Object.values(UserRole).map((r) => (
               <MenuItem key={r} value={r}>{r}</MenuItem>
@@ -208,6 +217,22 @@ export default function AdminUsersPage() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+            {total} total users
+          </Typography>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, p) => setPage(p)}
+            color="primary"
+            shape="rounded"
+          />
+        </Box>
+      )}
     </Box>
   );
 }

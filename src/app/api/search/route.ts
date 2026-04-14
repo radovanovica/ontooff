@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
   const to = searchParams.get('to') ?? '';
   const location = searchParams.get('location') ?? '';
   const page = Number(searchParams.get('page') ?? 1);
-  const pageSize = Number(searchParams.get('pageSize') ?? 50);
+  const pageSize = Number(searchParams.get('pageSize') ?? 12);
 
   // Bounding box (map viewport) filtering
   const minLat = searchParams.get('minLat') ? Number(searchParams.get('minLat')) : null;
@@ -122,8 +122,6 @@ export async function GET(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const places: SearchPlaceRaw[] = (await prisma.place.findMany({
     where,
-    skip: (page - 1) * pageSize,
-    take: pageSize,
     orderBy: { createdAt: 'desc' },
     include: {
       owner: { select: { name: true } },
@@ -160,7 +158,6 @@ export async function GET(req: NextRequest) {
     },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   })) as any;
-  const total = await prisma.place.count({ where });
 
   // Fetch average ratings for all places in one query
   const placeIds = places.map((p: SearchPlaceRaw) => p.id);
@@ -241,9 +238,11 @@ export async function GET(req: NextRequest) {
     include: { tags: { include: { tag: true } } },
     orderBy: { createdAt: 'desc' },
   });
+  const freeTotal = await prisma.freeLocation.count({ where: freeWhere });
 
   // Shape free locations into the same search result format
-  const freeItems = freeLocations.map((loc) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const freeItems = freeLocations.map((loc: any) => ({
     id: loc.id,
     name: loc.name,
     slug: loc.slug,
@@ -282,16 +281,20 @@ export async function GET(req: NextRequest) {
     }],
   }));
 
+  const combinedTotal = (fromDate ? filtered.length : results.length) + freeTotal;
   const allItems = [...filtered, ...freeItems];
+  // Apply pagination: slice from the combined sorted array
+  const offset = (page - 1) * pageSize;
+  const pagedItems = allItems.slice(offset, offset + pageSize);
 
   return NextResponse.json({
     success: true,
     data: {
-      items: allItems,
-      total: (fromDate ? filtered.length : total) + freeItems.length,
+      items: pagedItems,
+      total: combinedTotal,
       page,
       pageSize,
-      totalPages: Math.ceil(((fromDate ? filtered.length : total) + freeItems.length) / pageSize),
+      totalPages: Math.ceil(combinedTotal / pageSize),
       filters: { tags: tagSlugs, from, to, location },
     },
   });
