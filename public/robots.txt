@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Block private/admin areas
+Disallow: /admin/
+Disallow: /owner/
+Disallow: /profile/
+Disallow: /auth/
+Disallow: /embed/
+Disallow: /registration/
+Disallow: /review/
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://www.ontooff.app/sitemap.xml
