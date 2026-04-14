@@ -389,7 +389,7 @@ export default function HomePage() {
                 }}
               >
                 <Image
-                  src="/assets/images/ilustation-1.jpg"
+                  src="/assets/images/ilustration-1.jpg"
                   alt="Activity illustration"
                   fill
                   unoptimized
@@ -409,7 +409,7 @@ export default function HomePage() {
                 }}
               >
                 <Image
-                  src="/assets/images/ilustation-2.jpg"
+                  src="/assets/images/ilustration-2.jpg"
                   alt="Outdoor experience"
                   fill
                   unoptimized
