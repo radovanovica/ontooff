@@ -27,9 +27,9 @@ import {
   CardContent,
   Checkbox,
   Stack,
-  ImageList,
-  ImageListItem,
-  Collapse,
+  Dialog,
+  DialogContent,
+  Fade,
   IconButton,
 } from '@mui/material';
 import DateRangePicker from '@/components/ui/DateRangePicker';
@@ -42,8 +42,9 @@ import {
   Map as MapIcon,
   ViewList,
   PhotoLibrary,
-  ExpandMore,
-  ExpandLess,
+  ChevronLeft,
+  ChevronRight,
+  Close,
 } from '@mui/icons-material';
 import dynamic from 'next/dynamic';
 import { useForm, Controller } from 'react-hook-form';
@@ -109,6 +110,7 @@ interface RegistrationStepperProps {
   location: LocationWithDetails;
   locations?: LocationWithDetails[];
   embedTokenId?: string;
+  initialActivityTypeId?: string | null;
   onSuccess?: (registrationNumber: string) => void;
 }
 
@@ -116,6 +118,7 @@ export default function RegistrationStepper({
   location,
   locations,
   embedTokenId,
+  initialActivityTypeId,
   onSuccess,
 }: RegistrationStepperProps) {
   const { t } = useTranslation('registration');
@@ -133,6 +136,7 @@ export default function RegistrationStepper({
   const [submittedEditToken, setSubmittedEditToken] = useState<string | null>(null);
   const [submittedPlaceId, setSubmittedPlaceId] = useState<string | null>(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryIdx, setGalleryIdx] = useState(0);
 
   const [locationSelectMode, setLocationSelectMode] = useState<'list' | 'map'>('list');
   const [mapSubMode, setMapSubMode] = useState<'virtual' | 'real'>('virtual');
@@ -156,8 +160,18 @@ export default function RegistrationStepper({
 
   const hasMultipleActivityTypes = activityTypes.length > 1;
   const [selectedActivityTypeId, setSelectedActivityTypeId] = useState<string | null>(
-    hasMultipleActivityTypes ? null : (activityTypes[0]?.id ?? null)
+    initialActivityTypeId ?? (hasMultipleActivityTypes ? null : (activityTypes[0]?.id ?? null))
   );
+
+  // Sync when parent drives the activity selection (e.g. sidebar chip click)
+  useEffect(() => {
+    if (initialActivityTypeId !== undefined) {
+      setSelectedActivityTypeId(initialActivityTypeId ?? null);
+      setSelectedLocationId(null);
+      setActiveStep(0);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialActivityTypeId]);
 
   // Filter locations by selected activity type
   const availableLocations = useMemo(
@@ -697,7 +711,7 @@ export default function RegistrationStepper({
         </Box>
       ) : null}
 
-      {/* Gallery strip — shows when a location with photos is selected */}
+      {/* Gallery — grid preview + lightbox */}
       {(() => {
         const galleryImages: string[] = [];
         if (selectedLocation?.gallery) {
@@ -706,45 +720,139 @@ export default function RegistrationStepper({
         if (galleryImages.length === 0) return null;
         return (
           <Box sx={{ mb: 2.5 }}>
-            <Box
-              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', px: 0.5, py: 0.75, borderRadius: 1, '&:hover': { bgcolor: 'action.hover' } }}
-              onClick={() => setGalleryOpen((v) => !v)}
-            >
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                 <PhotoLibrary sx={{ fontSize: 18, color: 'text.secondary' }} />
                 <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
                   {tc('stepper.photos')} ({galleryImages.length})
                 </Typography>
               </Box>
-              <IconButton size="small" sx={{ p: 0.25 }}>
-                {galleryOpen ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
-              </IconButton>
+              {galleryImages.length > 3 && (
+                <Button
+                  size="small"
+                  onClick={() => { setGalleryIdx(0); setGalleryOpen(true); }}
+                  sx={{ fontSize: '0.72rem', py: 0, minWidth: 'auto', color: 'text.secondary' }}
+                >
+                  +{galleryImages.length - 3} more
+                </Button>
+              )}
             </Box>
-            <Collapse in={galleryOpen}>
-              <ImageList
-                sx={{ width: '100%', maxHeight: 220, borderRadius: 1.5, overflow: 'hidden', mt: 0.5 }}
-                variant="quilted"
-                cols={Math.min(galleryImages.length, 4)}
-                rowHeight={galleryImages.length === 1 ? 200 : 100}
-                gap={4}
+
+            {/* Grid preview */}
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: galleryImages.length === 1 ? '1fr' : galleryImages.length === 2 ? '1fr 1fr' : '2fr 1fr',
+                gridTemplateRows: galleryImages.length >= 3 ? '120px 120px' : '160px',
+                gap: 0.75,
+                borderRadius: 1.5,
+                overflow: 'hidden',
+              }}
+            >
+              {/* Image 1 */}
+              <Box
+                onClick={() => { setGalleryIdx(0); setGalleryOpen(true); }}
+                sx={{ gridRow: galleryImages.length >= 3 ? 'span 2' : 'auto', position: 'relative', overflow: 'hidden', cursor: 'pointer', '&:hover img': { transform: 'scale(1.04)' } }}
               >
-                {galleryImages.map((src, idx) => (
-                  <ImageListItem
-                    key={idx}
-                    cols={idx === 0 && galleryImages.length > 2 ? 2 : 1}
-                    rows={idx === 0 && galleryImages.length > 2 ? 2 : 1}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={galleryImages[0]} alt="photo 1" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }} />
+              </Box>
+              {/* Image 2 */}
+              {galleryImages.length >= 2 && (
+                <Box
+                  onClick={() => { setGalleryIdx(1); setGalleryOpen(true); }}
+                  sx={{ position: 'relative', overflow: 'hidden', cursor: 'pointer', '&:hover img': { transform: 'scale(1.04)' } }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={galleryImages[1]} alt="photo 2" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }} />
+                </Box>
+              )}
+              {/* Image 3 — with +N overlay */}
+              {galleryImages.length >= 3 && (
+                <Box
+                  onClick={() => { setGalleryIdx(2); setGalleryOpen(true); }}
+                  sx={{ position: 'relative', overflow: 'hidden', cursor: 'pointer', '&:hover img': { transform: 'scale(1.04)' } }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={galleryImages[2]} alt="photo 3" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }} />
+                  {galleryImages.length > 3 && (
+                    <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.52)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Typography variant="h6" sx={{ color: 'white', fontWeight: 800 }}>+{galleryImages.length - 3}</Typography>
+                    </Box>
+                  )}
+                </Box>
+              )}
+            </Box>
+
+            {/* Lightbox */}
+            <Dialog
+              open={galleryOpen}
+              onClose={() => setGalleryOpen(false)}
+              maxWidth={false}
+              slotProps={{ paper: { sx: { bgcolor: 'rgba(0,0,0,0.95)', borderRadius: 0, m: 0, maxWidth: '100vw', width: '100vw', height: '100vh', maxHeight: '100vh' } } }}
+            >
+              <DialogContent sx={{ p: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', position: 'relative' }}>
+                <IconButton
+                  onClick={() => setGalleryOpen(false)}
+                  sx={{ position: 'absolute', top: 16, right: 16, color: 'white', bgcolor: 'rgba(255,255,255,0.12)', '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' }, zIndex: 10 }}
+                >
+                  <Close />
+                </IconButton>
+                <Typography variant="caption" sx={{ position: 'absolute', top: 22, left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,255,255,0.7)', zIndex: 10 }}>
+                  {galleryIdx + 1} / {galleryImages.length}
+                </Typography>
+                {galleryImages.length > 1 && (
+                  <IconButton
+                    onClick={() => setGalleryIdx((i) => (i - 1 + galleryImages.length) % galleryImages.length)}
+                    sx={{ position: 'absolute', left: 16, color: 'white', bgcolor: 'rgba(255,255,255,0.12)', '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' }, zIndex: 10 }}
                   >
+                    <ChevronLeft sx={{ fontSize: 36 }} />
+                  </IconButton>
+                )}
+                <Fade in key={galleryIdx}>
+                  <Box sx={{ maxWidth: '90vw', maxHeight: '90vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={src}
-                      alt={`${selectedLocation?.name ?? ''} photo ${idx + 1}`}
-                      loading="lazy"
-                      style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
+                      src={galleryImages[galleryIdx]}
+                      alt={`photo ${galleryIdx + 1}`}
+                      style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', borderRadius: 8 }}
                     />
-                  </ImageListItem>
-                ))}
-              </ImageList>
-            </Collapse>
+                  </Box>
+                </Fade>
+                {galleryImages.length > 1 && (
+                  <IconButton
+                    onClick={() => setGalleryIdx((i) => (i + 1) % galleryImages.length)}
+                    sx={{ position: 'absolute', right: 16, color: 'white', bgcolor: 'rgba(255,255,255,0.12)', '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' }, zIndex: 10 }}
+                  >
+                    <ChevronRight sx={{ fontSize: 36 }} />
+                  </IconButton>
+                )}
+                {galleryImages.length > 1 && (
+                  <Stack
+                    direction="row"
+                    spacing={0.75}
+                    sx={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', maxWidth: '80vw', overflowX: 'auto', pb: 0.5 }}
+                  >
+                    {galleryImages.map((src, i) => (
+                      <Box
+                        key={i}
+                        onClick={() => setGalleryIdx(i)}
+                        sx={{
+                          width: 52, height: 36, borderRadius: 1, overflow: 'hidden', cursor: 'pointer', flexShrink: 0,
+                          border: '2px solid', borderColor: i === galleryIdx ? 'white' : 'transparent',
+                          opacity: i === galleryIdx ? 1 : 0.55,
+                          transition: 'opacity 0.2s, border-color 0.2s',
+                          '&:hover': { opacity: 1 },
+                        }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={src} alt={`thumb ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      </Box>
+                    ))}
+                  </Stack>
+                )}
+              </DialogContent>
+            </Dialog>
           </Box>
         );
       })()}

@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Box,
@@ -66,6 +66,10 @@ function PlaceContent() {
   } | null>(null);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
+
+  // Activity filter — drives the stepper pre-selection
+  const [selectedActivityTypeId, setSelectedActivityTypeId] = useState<string | null>(null);
+  const bookingRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch(`/api/places/by-slug/${params.slug}`)
@@ -223,17 +227,44 @@ function PlaceContent() {
               )}
             </Paper>
 
-            {/* Activities offered */}
+            {/* Activities offered — clickable to filter booking */}
             <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Activities</Typography>
               <Stack spacing={1}>
-                {place.activityTypes.map((at) => (
-                  <Box key={at.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {at.icon && <Typography sx={{ fontSize: '1.2rem' }}>{at.icon}</Typography>}
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{at.name}</Typography>
-                  </Box>
-                ))}
+                {place.activityTypes.map((at) => {
+                  const isSelected = selectedActivityTypeId === at.id;
+                  return (
+                    <Box
+                      key={at.id}
+                      onClick={() => {
+                        const next = isSelected ? null : at.id;
+                        setSelectedActivityTypeId(next);
+                        setTimeout(() => bookingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+                      }}
+                      sx={{
+                        display: 'flex', alignItems: 'center', gap: 1,
+                        px: 1.5, py: 1, borderRadius: 2, cursor: 'pointer',
+                        border: '1.5px solid',
+                        borderColor: isSelected ? (at.color ?? 'primary.main') : 'transparent',
+                        bgcolor: isSelected ? ((at.color ?? '#2d5a27') + '18') : 'transparent',
+                        transition: 'all 0.15s',
+                        '&:hover': { bgcolor: (at.color ?? '#2d5a27') + '12', borderColor: at.color ?? 'primary.light' },
+                      }}
+                    >
+                      {at.icon && <Typography sx={{ fontSize: '1.2rem', lineHeight: 1 }}>{at.icon}</Typography>}
+                      <Typography variant="body2" sx={{ fontWeight: 600, flex: 1 }}>{at.name}</Typography>
+                      {isSelected && (
+                        <Chip label="Book" size="small" sx={{ bgcolor: at.color ?? 'primary.main', color: 'white', fontWeight: 700, height: 20, fontSize: '0.65rem' }} />
+                      )}
+                    </Box>
+                  );
+                })}
               </Stack>
+              {place.activityTypes.length > 1 && (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5, lineHeight: 1.4 }}>
+                  Click an activity to filter the booking widget
+                </Typography>
+              )}
             </Paper>
 
             {/* Location instructions — only when at least one location has coords AND instructions */}
@@ -258,10 +289,23 @@ function PlaceContent() {
           </Box>
 
           {/* Right: booking widget */}
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
-              Book a Spot
-            </Typography>
+          <Box ref={bookingRef} sx={{ flex: 1, minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                Book a Spot
+              </Typography>
+              {selectedActivityTypeId && (() => {
+                const at = place.activityTypes.find((a) => a.id === selectedActivityTypeId);
+                return at ? (
+                  <Chip
+                    label={`${at.icon ?? ''} ${at.name}`.trim()}
+                    onDelete={() => setSelectedActivityTypeId(null)}
+                    size="small"
+                    sx={{ bgcolor: at.color ?? 'primary.main', color: 'white', fontWeight: 700 }}
+                  />
+                ) : null;
+              })()}
+            </Box>
 
             {bookingLoading && (
               <Box sx={{ textAlign: 'center', py: 6 }}>
@@ -289,6 +333,7 @@ function PlaceContent() {
                 <RegistrationStepper
                   location={locs[0] as Loc}
                   locations={locs}
+                  initialActivityTypeId={selectedActivityTypeId}
                 />
               );
             })()}
