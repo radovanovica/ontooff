@@ -636,7 +636,13 @@ export default function RegistrationStepper({
                     <Box>
                       <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{at.name}</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {allLocations.filter((l) => l.activityTypeId === at.id).length} {tc('stepper.locationsAvailable')}
+                        {allLocations.filter((l) => {
+                          if (l.activityTypeId === at.id) return true;
+                          const extras = (l as unknown as Record<string, unknown>).additionalActivityTypes as
+                            | Array<{ activityTypeId: string }>
+                            | undefined;
+                          return extras?.some((e) => e.activityTypeId === at.id) ?? false;
+                        }).length} {tc('stepper.locationsAvailable')}
                       </Typography>
                     </Box>
                   </Box>
@@ -909,6 +915,16 @@ export default function RegistrationStepper({
             <Grid container spacing={1.5} sx={{ mb: 2.5 }}>
               {availableLocations.map((loc) => {
                 const selected = selectedLocationId === loc.id;
+                // Determine which activity type label to show: prefer the selected one if it's an additional match
+                const extras = (loc as unknown as Record<string, unknown>).additionalActivityTypes as
+                  | Array<{ activityTypeId: string; activityType: { name: string } }>
+                  | undefined;
+                const isAdditionalMatch = selectedActivityTypeId
+                  && loc.activityTypeId !== selectedActivityTypeId
+                  && extras?.some((e) => e.activityTypeId === selectedActivityTypeId);
+                const displayActivityName = isAdditionalMatch
+                  ? (extras?.find((e) => e.activityTypeId === selectedActivityTypeId)?.activityType.name ?? loc.activityType?.name ?? 'Activity')
+                  : (loc.activityType?.name ?? 'Activity');
                 return (
                   <Grid size={{ xs: 12, sm: 6 }} key={loc.id}>
                     <Card
@@ -922,7 +938,7 @@ export default function RegistrationStepper({
                       <CardActionArea onClick={() => setSelectedLocationId(loc.id)}>
                         <CardContent>
                           <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                            {(loc.activityType?.name ?? 'Activity')} — {loc.name}
+                            {displayActivityName} — {loc.name}
                           </Typography>
                           {loc.description && (
                             <Typography variant="caption" color="text.secondary">{loc.description}</Typography>
@@ -963,14 +979,25 @@ export default function RegistrationStepper({
                     </Typography>
                   )}
                   <LocationMap
-                    pins={gpsLocations.map((loc) => ({
-                      id: loc.id,
-                      name: `${loc.activityType?.name ?? 'Activity'} — ${loc.name}`,
-                      description: loc.description ?? undefined,
-                      latitude: loc.latitude,
-                      longitude: loc.longitude,
-                      color: selectedLocationId === loc.id ? '#0d47a1' : '#1b5e20',
-                    }))}
+                    pins={gpsLocations.map((loc) => {
+                      const locExtras = (loc as unknown as Record<string, unknown>).additionalActivityTypes as
+                        | Array<{ activityTypeId: string; activityType: { name: string } }>
+                        | undefined;
+                      const isAdditional = selectedActivityTypeId
+                        && loc.activityTypeId !== selectedActivityTypeId
+                        && locExtras?.some((e) => e.activityTypeId === selectedActivityTypeId);
+                      const pinActivityName = isAdditional
+                        ? (locExtras?.find((e) => e.activityTypeId === selectedActivityTypeId)?.activityType.name ?? loc.activityType?.name ?? 'Activity')
+                        : (loc.activityType?.name ?? 'Activity');
+                      return {
+                        id: loc.id,
+                        name: `${pinActivityName} — ${loc.name}`,
+                        description: loc.description ?? undefined,
+                        latitude: loc.latitude,
+                        longitude: loc.longitude,
+                        color: selectedLocationId === loc.id ? '#0d47a1' : '#1b5e20',
+                      };
+                    })}
                     height={360}
                     onPinClick={(id) => setSelectedLocationId(id)}
                   />
