@@ -26,17 +26,41 @@ import {
   FormControlLabel,
   Divider,
   Stack,
-  MenuItem,
 } from '@mui/material';
-import { Add, Edit, Delete, OpenInNew, MyLocation } from '@mui/icons-material';
-import { useState, useEffect, useCallback } from 'react';
+import {
+  Add,
+  Edit,
+  Delete,
+  OpenInNew,
+  CloudUpload,
+  PinDrop,
+  Close,
+  Star,
+  StarBorder,
+  Collections,
+} from '@mui/icons-material';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import dynamic from 'next/dynamic';
 import PageHeader from '@/components/ui/PageHeader';
+import { uploadFileToS3 } from '@/lib/upload';
 import type { ActivityTag } from '@/types';
+import type MapPickerType from '@/components/map/MapPicker';
+
+const MapPicker = dynamic(() => import('@/components/map/MapPicker'), {
+  ssr: false,
+  loading: () => (
+    <Box sx={{ height: 420, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <CircularProgress />
+    </Box>
+  ),
+}) as unknown as typeof MapPickerType;
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface FreeLocationRow {
   id: string;
@@ -48,6 +72,8 @@ interface FreeLocationRow {
   createdAt: string;
   tags: { tag: ActivityTag }[];
 }
+
+// ─── Schema ───────────────────────────────────────────────────────────────────
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -71,6 +97,8 @@ function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function AdminFreeLocationsPage() {
   const [locations, setLocations] = useState<FreeLocationRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,13 +110,28 @@ export default function AdminFreeLocationsPage() {
   const [editing, setEditing] = useState<FreeLocationRow | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [geocoding, setGeocoding] = useState(false);
+
+  // Map picker
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
+
+  // Images
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [coverIdx, setCoverIdx] = useState<number | null>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const { register, handleSubmit, reset, setValue, control, watch, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
   });
 
   const watchName = watch('name');
+  const watchLat = watch('latitude');
+  const watchLng = watch('longitude');
+
+  // ─── Load ─────────────────────────────────────────────────────────────────
 
   const load = useCallback(() => {
     setLoading(true);
@@ -106,17 +149,29 @@ export default function AdminFreeLocationsPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // ─── Dialog helpers ────────────────────────────────────────────────────────
+
+  const resetImageState = () => {
+    setCoverUrl(null);
+    setGalleryImages([]);
+    setCoverIdx(null);
+  };
+
   const openAdd = () => {
     setEditing(null);
     setSelectedTagIds([]);
-    reset({ name: '', slug: '', description: '', address: '', city: '', country: '', latitude: '', longitude: '', phone: '', email: '', website: '', instructions: '', isActive: true });
+    resetImageState();
+    reset({
+      name: '', slug: '', description: '', address: '', city: '', country: '',
+      latitude: '', longitude: '', phone: '', email: '', website: '', instructions: '', isActive: true,
+    });
     setOpen(true);
   };
 
   const openEdit = (loc: FreeLocationRow) => {
     setEditing(loc);
     setSelectedTagIds(loc.tags.map((t) => t.tag.id));
-    // Fetch full data
+    resetImageState();
     fetch(`/api/free-locations/${loc.id}`)
       .then((r) => r.json())
       .then((d) => {
@@ -136,6 +191,9 @@ export default function AdminFreeLocationsPage() {
           instructions: full.instructions ?? '',
           isActive: full.isActive,
         });
+        setCoverUrl(full.coverUrl ?? null);
+        try { setGalleryImages(JSON.parse(full.gallery ?? '[]')); } catch { setGalleryImages([]); }
+        setCoverIdx(full.coverImageIndex ?? null);
       });
     setOpen(true);
   };
@@ -146,24 +204,59 @@ export default function AdminFreeLocationsPage() {
     load();
   };
 
-  const handleGeocode = async () => {
-    const city = (document.querySelector('input[name="city"]') as HTMLInputElement)?.value ?? '';
-    const country = (document.querySelector('input[name="country"]') as HTMLInputElement)?.value ?? '';
-    const address = (document.querySelector('input[name="address"]') as HTMLInputElement)?.value ?? '';
-    const q = [address, city, country].filter(Boolean).join(', ');
-    if (!q) return;
-    setGeocoding(true);
+  // ─── Image uploads ─────────────────────────────────────────────────────────
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingCover(true);
+    setSaveError(null);
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`);
-      const results = await res.json();
-      if (results[0]) {
-        setValue('latitude', Number(results[0].lat));
-        setValue('longitude', Number(results[0].lon));
-      }
+      const url = await uploadFileToS3(file, 'images/free-locations');
+      setCoverUrl(url);
+    } catch {
+      setSaveError('Cover image upload failed');
     } finally {
-      setGeocoding(false);
+      setUploadingCover(false);
+      e.target.value = '';
     }
   };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    const remaining = 10 - galleryImages.length;
+    const toUpload = files.slice(0, remaining);
+    setUploadingGallery(true);
+    setSaveError(null);
+    try {
+      const urls = await Promise.all(toUpload.map((f) => uploadFileToS3(f, 'images/free-locations')));
+      setGalleryImages((prev) => [...prev, ...urls]);
+    } catch {
+      setSaveError('Gallery upload failed');
+    } finally {
+      setUploadingGallery(false);
+      e.target.value = '';
+    }
+  };
+
+  const removeGalleryImage = (idx: number) => {
+    setGalleryImages((prev) => prev.filter((_, i) => i !== idx));
+    if (coverIdx === idx) setCoverIdx(null);
+    else if (coverIdx !== null && coverIdx > idx) setCoverIdx(coverIdx - 1);
+  };
+
+  const toggleGalleryCover = (idx: number) => setCoverIdx((prev) => (prev === idx ? null : idx));
+
+  // ─── Map picker ────────────────────────────────────────────────────────────
+
+  const handleMapConfirm = (lat: number, lng: number) => {
+    setValue('latitude', lat);
+    setValue('longitude', lng);
+    setMapPickerOpen(false);
+  };
+
+  // ─── Submit ────────────────────────────────────────────────────────────────
 
   const onSubmit = async (data: FormValues) => {
     setSaving(true);
@@ -176,6 +269,9 @@ export default function AdminFreeLocationsPage() {
         email: data.email || null,
         website: data.website || null,
         tagIds: selectedTagIds,
+        coverUrl: coverUrl || null,
+        gallery: JSON.stringify(galleryImages),
+        coverImageIndex: coverIdx,
       };
       const url = editing ? `/api/free-locations/${editing.id}` : '/api/free-locations';
       const method = editing ? 'PATCH' : 'POST';
@@ -190,9 +286,10 @@ export default function AdminFreeLocationsPage() {
     }
   };
 
-  const toggleTag = (id: string) => {
+  const toggleTag = (id: string) =>
     setSelectedTagIds((prev) => prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]);
-  };
+
+  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <Box>
@@ -204,7 +301,12 @@ export default function AdminFreeLocationsPage() {
           { label: 'Free Locations' },
         ]}
         action={
-          <Button variant="contained" startIcon={<Add />} onClick={openAdd} sx={{ bgcolor: '#7b3f00', '&:hover': { bgcolor: '#5a2e00' } }}>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={openAdd}
+            sx={{ bgcolor: '#7b3f00', '&:hover': { bgcolor: '#5a2e00' } }}
+          >
             Add Location
           </Button>
         }
@@ -212,6 +314,7 @@ export default function AdminFreeLocationsPage() {
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
+      {/* Table */}
       <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
@@ -293,13 +396,15 @@ export default function AdminFreeLocationsPage() {
         </Table>
       </TableContainer>
 
-      {/* Add / Edit Dialog */}
+      {/* ─── Add / Edit Dialog ─────────────────────────────────────────────── */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>{editing ? `Edit: ${editing.name}` : 'Add Free Location'}</DialogTitle>
         <DialogContent dividers>
           {saveError && <Alert severity="error" sx={{ mb: 2 }}>{saveError}</Alert>}
           <Box component="form" id="free-loc-form" onSubmit={handleSubmit(onSubmit)}>
             <Grid container spacing={2}>
+
+              {/* Basic info */}
               <Grid size={{ xs: 12, sm: 8 }}>
                 <TextField
                   {...register('name')}
@@ -319,12 +424,146 @@ export default function AdminFreeLocationsPage() {
                   label="Slug (URL)"
                   fullWidth
                   error={!!errors.slug}
-                  helperText={errors.slug?.message ?? `Preview: /locations/${watchName ? slugify(String(watchName)) : '...'}`}
+                  helperText={
+                    errors.slug?.message ??
+                    `Preview: /locations/${watchName ? slugify(String(watchName)) : '...'}`
+                  }
                 />
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField {...register('description')} label="Description" fullWidth multiline rows={3} />
               </Grid>
+
+              {/* ── Images ── */}
+              <Grid size={{ xs: 12 }}>
+                <Divider><Typography variant="caption">Images</Typography></Divider>
+              </Grid>
+
+              {/* Cover image */}
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75, fontWeight: 600 }}>
+                  Cover Image
+                </Typography>
+                <Box
+                  onClick={() => coverInputRef.current?.click()}
+                  sx={{
+                    width: '100%',
+                    aspectRatio: '16/9',
+                    borderRadius: 2,
+                    border: '2px dashed',
+                    borderColor: coverUrl ? '#7b3f00' : 'divider',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    bgcolor: 'grey.50',
+                    cursor: 'pointer',
+                    '&:hover .cover-overlay': { opacity: 1 },
+                  }}
+                >
+                  {coverUrl ? (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={coverUrl} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <Box
+                        className="cover-overlay"
+                        sx={{
+                          position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.45)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          opacity: 0, transition: 'opacity 0.2s',
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ color: 'white', fontWeight: 700 }}>Replace</Typography>
+                      </Box>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => { e.stopPropagation(); setCoverUrl(null); }}
+                        sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'rgba(0,0,0,0.5)', color: 'white', '&:hover': { bgcolor: 'rgba(0,0,0,0.75)' } }}
+                      >
+                        <Close fontSize="small" />
+                      </IconButton>
+                    </>
+                  ) : uploadingCover ? (
+                    <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <CircularProgress size={28} />
+                    </Box>
+                  ) : (
+                    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, color: 'text.disabled' }}>
+                      <CloudUpload sx={{ fontSize: 28 }} />
+                      <Typography variant="caption">Upload cover</Typography>
+                    </Box>
+                  )}
+                </Box>
+                <input ref={coverInputRef} type="file" accept="image/*" hidden onChange={handleCoverUpload} />
+              </Grid>
+
+              {/* Gallery */}
+              <Grid size={{ xs: 12, sm: 8 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75, fontWeight: 600 }}>
+                  Gallery Photos ({galleryImages.length}/10) — hover to set cover ★ or remove
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(84px, 1fr))', gap: 1 }}>
+                  {galleryImages.map((src, idx) => (
+                    <Box
+                      key={idx}
+                      sx={{
+                        position: 'relative',
+                        aspectRatio: '1',
+                        borderRadius: 1.5,
+                        overflow: 'hidden',
+                        border: coverIdx === idx ? '2.5px solid #7b3f00' : '1.5px solid #ddd',
+                        '&:hover .ga': { opacity: 1 },
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src} alt={`Photo ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      <Box
+                        className="ga"
+                        sx={{
+                          position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.42)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5,
+                          opacity: 0, transition: 'opacity 0.2s',
+                        }}
+                      >
+                        <IconButton size="small" sx={{ color: coverIdx === idx ? '#ffca28' : 'white', p: 0.25 }} onClick={() => toggleGalleryCover(idx)}>
+                          {coverIdx === idx ? <Star sx={{ fontSize: 17 }} /> : <StarBorder sx={{ fontSize: 17 }} />}
+                        </IconButton>
+                        <IconButton size="small" sx={{ color: '#ff5252', p: 0.25 }} onClick={() => removeGalleryImage(idx)}>
+                          <Close sx={{ fontSize: 17 }} />
+                        </IconButton>
+                      </Box>
+                    </Box>
+                  ))}
+
+                  {/* Add more tile */}
+                  {galleryImages.length < 10 && (
+                    <Box
+                      onClick={() => galleryInputRef.current?.click()}
+                      sx={{
+                        aspectRatio: '1',
+                        borderRadius: 1.5,
+                        border: '2px dashed',
+                        borderColor: 'divider',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: 'text.disabled',
+                        bgcolor: 'grey.50',
+                        '&:hover': { borderColor: '#7b3f00', color: '#7b3f00' },
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {uploadingGallery
+                        ? <CircularProgress size={20} />
+                        : <><Collections sx={{ fontSize: 20 }} /><Typography variant="caption" sx={{ fontSize: '0.6rem', mt: 0.25 }}>Add</Typography></>
+                      }
+                    </Box>
+                  )}
+                </Box>
+                <input ref={galleryInputRef} type="file" accept="image/*" multiple hidden onChange={handleGalleryUpload} />
+              </Grid>
+
+              {/* Location details */}
               <Grid size={{ xs: 12 }}>
                 <Divider><Typography variant="caption">Location Details</Typography></Divider>
               </Grid>
@@ -337,10 +576,12 @@ export default function AdminFreeLocationsPage() {
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField {...register('country')} label="Country" fullWidth />
               </Grid>
+
+              {/* GPS */}
               <Grid size={{ xs: 12 }}>
                 <Divider><Typography variant="caption">GPS Coordinates</Typography></Divider>
               </Grid>
-              <Grid size={{ xs: 12, sm: 5 }}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   {...register('latitude')}
                   label="Latitude"
@@ -350,7 +591,7 @@ export default function AdminFreeLocationsPage() {
                   slotProps={{ htmlInput: { step: 'any' } }}
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 5 }}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   {...register('longitude')}
                   label="Longitude"
@@ -360,18 +601,20 @@ export default function AdminFreeLocationsPage() {
                   slotProps={{ htmlInput: { step: 'any' } }}
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 2 }} sx={{ display: 'flex', alignItems: 'flex-start', pt: 1 }}>
+              <Grid size={{ xs: 12, sm: 4 }} sx={{ display: 'flex', alignItems: 'flex-start', pt: 1 }}>
                 <Button
                   variant="outlined"
                   size="small"
-                  startIcon={<MyLocation />}
-                  onClick={handleGeocode}
-                  disabled={geocoding}
+                  startIcon={<PinDrop />}
+                  onClick={() => setMapPickerOpen(true)}
                   fullWidth
+                  sx={{ borderColor: '#7b3f00', color: '#7b3f00', '&:hover': { borderColor: '#5a2e00', bgcolor: '#7b3f0010' } }}
                 >
-                  {geocoding ? '...' : 'Auto-fill'}
+                  Pin on Map
                 </Button>
               </Grid>
+
+              {/* Contact */}
               <Grid size={{ xs: 12 }}>
                 <Divider><Typography variant="caption">Contact</Typography></Divider>
               </Grid>
@@ -384,6 +627,8 @@ export default function AdminFreeLocationsPage() {
               <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField {...register('website')} label="Website" fullWidth placeholder="https://" />
               </Grid>
+
+              {/* Instructions */}
               <Grid size={{ xs: 12 }}>
                 <Divider><Typography variant="caption">Additional Info</Typography></Divider>
               </Grid>
@@ -397,6 +642,8 @@ export default function AdminFreeLocationsPage() {
                   helperText="Directions, parking info, access notes"
                 />
               </Grid>
+
+              {/* Tags */}
               <Grid size={{ xs: 12 }}>
                 <Divider><Typography variant="caption">Categories / Tags</Typography></Divider>
               </Grid>
@@ -425,6 +672,8 @@ export default function AdminFreeLocationsPage() {
                   })}
                 </Stack>
               </Grid>
+
+              {/* Active */}
               <Grid size={{ xs: 12 }}>
                 <Controller
                   name="isActive"
@@ -452,6 +701,28 @@ export default function AdminFreeLocationsPage() {
             {saving ? 'Saving…' : editing ? 'Save Changes' : 'Create Location'}
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* ─── Map Picker Dialog ─────────────────────────────────────────────── */}
+      <Dialog open={mapPickerOpen} onClose={() => setMapPickerOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          Pin Location on Map
+          <IconButton
+            size="small"
+            onClick={() => setMapPickerOpen(false)}
+            sx={{ position: 'absolute', right: 12, top: 12 }}
+          >
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, height: 520 }}>
+          <MapPicker
+            initialLat={watchLat ? Number(watchLat) : undefined}
+            initialLng={watchLng ? Number(watchLng) : undefined}
+            onConfirm={handleMapConfirm}
+            onCancel={() => setMapPickerOpen(false)}
+          />
+        </DialogContent>
       </Dialog>
     </Box>
   );

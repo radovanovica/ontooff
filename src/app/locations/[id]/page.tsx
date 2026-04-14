@@ -13,9 +13,11 @@ import {
   Chip,
   Stack,
   Divider,
-  ImageList,
-  ImageListItem,
   Paper,
+  Dialog,
+  DialogContent,
+  IconButton,
+  Fade,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -25,6 +27,10 @@ import {
   Language,
   Info,
   Public,
+  Close,
+  ChevronLeft,
+  ChevronRight,
+  PhotoLibrary,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -65,6 +71,10 @@ function LocationContent() {
   const [location, setLocation] = useState<FreeLocationDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Gallery lightbox
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState(0);
 
   useEffect(() => {
     fetch(`/api/free-locations/${slug}`)
@@ -199,25 +209,198 @@ function LocationContent() {
             {/* Gallery */}
             {galleryImages.length > 0 && (
               <Paper elevation={1} sx={{ p: 3, borderRadius: 3, mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Photos</Typography>
-                <ImageList
-                  sx={{ width: '100%', borderRadius: 2, overflow: 'hidden' }}
-                  cols={Math.min(galleryImages.length, 3)}
-                  rowHeight={180}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>Photos</Typography>
+                  {galleryImages.length > 3 && (
+                    <Button
+                      size="small"
+                      startIcon={<PhotoLibrary />}
+                      onClick={() => { setLightboxIdx(0); setLightboxOpen(true); }}
+                      sx={{ color: '#7b3f00' }}
+                    >
+                      View all {galleryImages.length} photos
+                    </Button>
+                  )}
+                </Box>
+
+                {/* Preview: first 2 or 3 images in a grid */}
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: galleryImages.length === 1 ? '1fr' : galleryImages.length === 2 ? '1fr 1fr' : '2fr 1fr',
+                    gridTemplateRows: galleryImages.length >= 3 ? '200px 200px' : '220px',
+                    gap: 1,
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                  }}
                 >
-                  {galleryImages.map((src, i) => (
-                    <ImageListItem key={i}>
+                  {/* First image — always shown, spans 2 rows if 3+ images */}
+                  <Box
+                    onClick={() => { setLightboxIdx(0); setLightboxOpen(true); }}
+                    sx={{
+                      gridRow: galleryImages.length >= 3 ? 'span 2' : 'auto',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      '&:hover img': { transform: 'scale(1.04)' },
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={galleryImages[0]}
+                      alt={`${location.name} photo 1`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }}
+                    />
+                  </Box>
+
+                  {/* Second image */}
+                  {galleryImages.length >= 2 && (
+                    <Box
+                      onClick={() => { setLightboxIdx(1); setLightboxOpen(true); }}
+                      sx={{
+                        position: 'relative',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        '&:hover img': { transform: 'scale(1.04)' },
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={src}
-                        alt={`${location.name} photo ${i + 1}`}
-                        loading="lazy"
-                        style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                        src={galleryImages[1]}
+                        alt={`${location.name} photo 2`}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }}
                       />
-                    </ImageListItem>
-                  ))}
-                </ImageList>
+                    </Box>
+                  )}
+
+                  {/* Third image — may show "+N more" overlay */}
+                  {galleryImages.length >= 3 && (
+                    <Box
+                      onClick={() => { setLightboxIdx(2); setLightboxOpen(true); }}
+                      sx={{
+                        position: 'relative',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        '&:hover img': { transform: 'scale(1.04)' },
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={galleryImages[2]}
+                        alt={`${location.name} photo 3`}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }}
+                      />
+                      {/* "+N more" overlay when there are more than 3 */}
+                      {galleryImages.length > 3 && (
+                        <Box
+                          sx={{
+                            position: 'absolute', inset: 0,
+                            bgcolor: 'rgba(0,0,0,0.52)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}
+                        >
+                          <Typography variant="h5" sx={{ color: 'white', fontWeight: 800 }}>
+                            +{galleryImages.length - 3}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  )}
+                </Box>
               </Paper>
             )}
+
+            {/* Lightbox dialog */}
+            <Dialog
+              open={lightboxOpen}
+              onClose={() => setLightboxOpen(false)}
+              maxWidth={false}
+              slotProps={{ paper: { sx: { bgcolor: 'rgba(0,0,0,0.95)', borderRadius: 0, m: 0, maxWidth: '100vw', width: '100vw', height: '100vh', maxHeight: '100vh' } } }}
+            >
+              <DialogContent sx={{ p: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', position: 'relative' }}>
+                {/* Close */}
+                <IconButton
+                  onClick={() => setLightboxOpen(false)}
+                  sx={{ position: 'absolute', top: 16, right: 16, color: 'white', bgcolor: 'rgba(255,255,255,0.12)', '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' }, zIndex: 10 }}
+                >
+                  <Close />
+                </IconButton>
+
+                {/* Counter */}
+                <Typography
+                  variant="caption"
+                  sx={{ position: 'absolute', top: 22, left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,255,255,0.7)', zIndex: 10 }}
+                >
+                  {lightboxIdx + 1} / {galleryImages.length}
+                </Typography>
+
+                {/* Prev */}
+                {galleryImages.length > 1 && (
+                  <IconButton
+                    onClick={() => setLightboxIdx((i) => (i - 1 + galleryImages.length) % galleryImages.length)}
+                    sx={{ position: 'absolute', left: 16, color: 'white', bgcolor: 'rgba(255,255,255,0.12)', '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' }, zIndex: 10 }}
+                  >
+                    <ChevronLeft sx={{ fontSize: 36 }} />
+                  </IconButton>
+                )}
+
+                {/* Image */}
+                <Fade in key={lightboxIdx}>
+                  <Box sx={{ maxWidth: '90vw', maxHeight: '90vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={galleryImages[lightboxIdx]}
+                      alt={`${location.name} photo ${lightboxIdx + 1}`}
+                      style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', borderRadius: 8 }}
+                    />
+                  </Box>
+                </Fade>
+
+                {/* Next */}
+                {galleryImages.length > 1 && (
+                  <IconButton
+                    onClick={() => setLightboxIdx((i) => (i + 1) % galleryImages.length)}
+                    sx={{ position: 'absolute', right: 16, color: 'white', bgcolor: 'rgba(255,255,255,0.12)', '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' }, zIndex: 10 }}
+                  >
+                    <ChevronRight sx={{ fontSize: 36 }} />
+                  </IconButton>
+                )}
+
+                {/* Thumbnail strip */}
+                {galleryImages.length > 1 && (
+                  <Stack
+                    direction="row"
+                    spacing={0.75}
+                    sx={{
+                      position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
+                      maxWidth: '80vw', overflowX: 'auto', pb: 0.5,
+                      '&::-webkit-scrollbar': { height: 4 },
+                      '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(255,255,255,0.3)', borderRadius: 2 },
+                    }}
+                  >
+                    {galleryImages.map((src, i) => (
+                      <Box
+                        key={i}
+                        onClick={() => setLightboxIdx(i)}
+                        sx={{
+                          width: 54, height: 40, flexShrink: 0,
+                          borderRadius: 1,
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          border: i === lightboxIdx ? '2px solid white' : '2px solid transparent',
+                          opacity: i === lightboxIdx ? 1 : 0.55,
+                          transition: 'all 0.15s',
+                          '&:hover': { opacity: 0.9 },
+                        }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      </Box>
+                    ))}
+                  </Stack>
+                )}
+              </DialogContent>
+            </Dialog>
 
             {/* Map */}
             {location.latitude != null && location.longitude != null && (
