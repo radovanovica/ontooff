@@ -55,7 +55,14 @@ export async function GET(req: NextRequest) {
   const to = searchParams.get('to') ?? '';
   const location = searchParams.get('location') ?? '';
   const page = Number(searchParams.get('page') ?? 1);
-  const pageSize = Number(searchParams.get('pageSize') ?? 12);
+  const pageSize = Number(searchParams.get('pageSize') ?? 50);
+
+  // Bounding box (map viewport) filtering
+  const minLat = searchParams.get('minLat') ? Number(searchParams.get('minLat')) : null;
+  const maxLat = searchParams.get('maxLat') ? Number(searchParams.get('maxLat')) : null;
+  const minLng = searchParams.get('minLng') ? Number(searchParams.get('minLng')) : null;
+  const maxLng = searchParams.get('maxLng') ? Number(searchParams.get('maxLng')) : null;
+  const hasBbox = minLat !== null && maxLat !== null && minLng !== null && maxLng !== null;
 
   const tagSlugs = tagsParam ? tagsParam.split(',').filter(Boolean) : [];
 
@@ -87,10 +94,29 @@ export async function GET(req: NextRequest) {
       }
     : {};
 
+  // Build bbox filter — place must have at least one activityLocation within bounds
+  const bboxFilter = hasBbox
+    ? {
+        activityTypes: {
+          some: {
+            isActive: true,
+            activityLocations: {
+              some: {
+                isActive: true,
+                latitude: { gte: minLat!, lte: maxLat! },
+                longitude: { gte: minLng!, lte: maxLng! },
+              },
+            },
+          },
+        },
+      }
+    : {};
+
   const where = {
     isActive: true,
     ...activityTypeFilter,
     ...locationFilter,
+    ...bboxFilter,
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -205,6 +231,10 @@ export async function GET(req: NextRequest) {
       { city: { contains: location, mode: 'insensitive' } },
       { country: { contains: location, mode: 'insensitive' } },
     ];
+  }
+  if (hasBbox) {
+    freeWhere.latitude = { gte: minLat!, lte: maxLat! };
+    freeWhere.longitude = { gte: minLng!, lte: maxLng! };
   }
   const freeLocations = await prisma.freeLocation.findMany({
     where: freeWhere,

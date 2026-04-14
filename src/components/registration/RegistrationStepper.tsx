@@ -28,6 +28,7 @@ import {
   Checkbox,
   Stack,
 } from '@mui/material';
+import DateRangePicker from '@/components/ui/DateRangePicker';
 import {
   CalendarMonth,
   Group,
@@ -827,42 +828,17 @@ export default function RegistrationStepper({
             </Alert>
           )}
 
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Controller
-                name="startDate"
-                control={control1}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label={t('fields.startDate')}
-                    type="date"
-                    fullWidth
-                    slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: today } }}
-                    error={!!errors1.startDate}
-                    helperText={errors1.startDate?.message}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Controller
-                name="endDate"
-                control={control1}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label={t('fields.endDate')}
-                    type="date"
-                    fullWidth
-                    slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: startDate || today } }}
-                    error={!!errors1.endDate}
-                    helperText={errors1.endDate?.message}
-                  />
-                )}
-              />
-            </Grid>
-          </Grid>
+          <Box sx={{ mb: 3 }}>
+            <DateRangePicker
+              fromValue={startDate}
+              toValue={endDate}
+              onFromChange={(v) => setValue1('startDate', v, { shouldValidate: true })}
+              onToChange={(v) => setValue1('endDate', v, { shouldValidate: true })}
+              fromError={errors1.startDate?.message}
+              toError={errors1.endDate?.message}
+              minFrom={today}
+            />
+          </Box>
 
           {selectedLocation?.requiresSpot && (
             <Box sx={{ mb: 3 }}>
