@@ -372,6 +372,19 @@ export async function POST(req: NextRequest) {
         editToken: registration.editToken,
       }).catch(console.error);
     }
+
+    return NextResponse.json(
+      {
+        success: true,
+        registrationNumber,
+        data: {
+          registrationNumber,
+          editToken: registration.editToken,
+          totalAmount: pricingData.totalAmount,
+        },
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });

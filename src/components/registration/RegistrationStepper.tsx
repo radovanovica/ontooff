@@ -74,11 +74,7 @@ const step1Schema = z
   });
 
 const step2Schema = z.object({
-  guestCounts: z
-    .record(z.string(), z.number().int().min(0))
-    .refine((counts) => Object.values(counts).some((value) => value > 0), {
-      message: 'At least one guest is required',
-    }),
+  guestCounts: z.record(z.string(), z.number().int().min(0)),
   pricingRuleId: z.string().optional(),
   paymentMethod: z.nativeEnum(PaymentMethod).optional(),
   notes: z.string().optional(),
@@ -366,7 +362,15 @@ export default function RegistrationStepper({
   };
 
   const onStep2Submit = (values: Step2Values) => {
-    const submittedRule = pricingRules.find((rule) => rule.id === values.pricingRuleId) ?? null;
+    // Normalize empty pricingRuleId to undefined
+    const normalizedRuleId = values.pricingRuleId || undefined;
+    const submittedRule = pricingRules.find((rule) => rule.id === normalizedRuleId) ?? null;
+
+    // Client-side payment method validation
+    if (submittedRule?.requiresPayment && !values.paymentMethod) {
+      return; // ToggleButtonGroup already shows the options; this guards accidental bypass
+    }
+
     const submittedGuestCounts = { ...(values.guestCounts ?? {}) };
 
     if (submittedRule?.pricingTiers?.length) {
@@ -398,6 +402,7 @@ export default function RegistrationStepper({
     setFormData((prev) => ({
       ...prev,
       ...values,
+      pricingRuleId: normalizedRuleId,
       guestCounts: submittedGuestCounts,
       pricing: submittedPricing ?? undefined,
     }));
@@ -990,6 +995,12 @@ export default function RegistrationStepper({
             />
           )}
 
+          {pricingRules.length > 0 && selectedRule && !selectedRule.requiresPayment && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              ✅ No payment required for this activity. You can proceed to confirm your booking.
+            </Alert>
+          )}
+
           {pricingRules.length === 0 && (
             <Alert severity="info" sx={{ mb: 2 }}>
               No pricing rule configured for this activity yet.
@@ -1114,7 +1125,21 @@ export default function RegistrationStepper({
                     {(formData.pricing ?? livePricing)?.totalAmount?.toFixed(2)}
                   </Typography>
                 </Box>
+                {formData.paymentMethod && (
+                  <Box sx={{ mt: 1 }}>
+                    <Typography variant="caption" color="text.secondary">Payment method: </Typography>
+                    <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                      {formData.paymentMethod === PaymentMethod.CASH ? '💵 Cash' : '💳 Card'}
+                    </Typography>
+                  </Box>
+                )}
               </>
+            )}
+
+            {summaryRule && !summaryRule.requiresPayment && (
+              <Alert severity="success" sx={{ mt: 1.5 }}>
+                ✅ No payment required — your booking is free of charge.
+              </Alert>
             )}
           </Paper>
 
