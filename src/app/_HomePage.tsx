@@ -160,7 +160,7 @@ export default function HomePage() {
                   {t('home.search.selectActivity', 'Select Activity')}
                 </Typography>
                 <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75, mb: 2.5 }}>
-                  {tags.slice(0, 10).map((tag) => {
+                  {tags.map((tag) => {
                     const active = selectedTags.includes(tag.slug);
                     return (
                       <Chip
