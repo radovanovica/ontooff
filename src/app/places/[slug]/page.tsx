@@ -14,22 +14,13 @@ import {
   Stack,
   Paper,
   Divider,
-  ImageList,
-  ImageListItem,
   Avatar,
-  Rating,
 } from '@mui/material';
 import { ArrowBack, LocationOn, Phone, Email, Language, Info } from '@mui/icons-material';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import Navbar from '@/components/layout/Navbar';
 import RegistrationStepper from '@/components/registration/RegistrationStepper';
 import ReviewList from '@/components/reviews/ReviewList';
-
-const LocationMap = dynamic(
-  () => import('@/components/map/LocationMap'),
-  { ssr: false, loading: () => null }
-);
 
 interface PlaceDetail {
   id: string;
@@ -268,61 +259,6 @@ function PlaceContent() {
 
           {/* Right: booking widget */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            {/* Gallery */}
-            {(() => {
-              const allImages = place.activityTypes
-                .flatMap((at) => at.activityLocations)
-                .flatMap((loc) => {
-                  if (!loc.gallery) return [];
-                  try { return JSON.parse(loc.gallery) as string[]; } catch { return []; }
-                });
-              if (allImages.length === 0) return null;
-              return (
-                <Box sx={{ mb: 4 }}>
-                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Photos</Typography>
-                  <ImageList
-                    sx={{ width: '100%', height: allImages.length > 3 ? 380 : 220, borderRadius: 2, overflow: 'hidden' }}
-                    variant="quilted"
-                    cols={allImages.length === 1 ? 1 : Math.min(allImages.length, 3)}
-                    rowHeight={allImages.length > 3 ? 180 : 210}
-                  >
-                    {allImages.map((src, idx) => (
-                      <ImageListItem key={idx} cols={idx === 0 && allImages.length > 2 ? 2 : 1} rows={idx === 0 && allImages.length > 2 ? 2 : 1}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={src}
-                          alt={`Location photo ${idx + 1}`}
-                          loading="lazy"
-                          style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                        />
-                      </ImageListItem>
-                    ))}
-                  </ImageList>
-                </Box>
-              );
-            })()}
-
-            {/* Location Map */}
-            {(() => {
-              const pins = place.activityTypes
-                .flatMap((at) => at.activityLocations)
-                .filter((loc) => loc.latitude != null && loc.longitude != null)
-                .map((loc) => ({
-                  id: loc.id,
-                  name: loc.name,
-                  description: loc.description ?? undefined,
-                  latitude: loc.latitude as number,
-                  longitude: loc.longitude as number,
-                }));
-              if (pins.length === 0) return null;
-              return (
-                <Box sx={{ mb: 4 }}>
-                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Location</Typography>
-                  <LocationMap pins={pins} height="360px" />
-                </Box>
-              );
-            })()}
-
             <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
               Book a Spot
             </Typography>
