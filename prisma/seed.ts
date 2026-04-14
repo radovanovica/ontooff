@@ -1,6 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-// @ts-expect-error Prisma enums are available at runtime; tsconfig.seed.json uses moduleResolution:node which causes false TS errors
-import { PrismaClient, UserRole } from '@prisma/client';
+const { PrismaClient } = require('@prisma/client');
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -17,7 +16,7 @@ async function main() {
       email: 'radovanovica1993@gmail.com',
       password: adminPassword,
       emailVerified: new Date(),
-      role: UserRole.SUPER_ADMIN,
+      role: 'SUPER_ADMIN',
       isActive: true,
     },
   });
