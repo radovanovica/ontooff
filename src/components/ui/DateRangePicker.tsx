@@ -46,60 +46,60 @@ export default function DateRangePicker({
         variant="outlined"
         sx={{
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'stretch',
           borderRadius: 2,
           overflow: 'hidden',
-          height: 40,
           minWidth: 260,
         }}
       >
-        <DateRange sx={{ fontSize: 18, color: 'text.secondary', ml: 1.2, mr: 0.5, flexShrink: 0 }} />
-        <TextField
-          size="small"
-          type="date"
-          value={fromValue}
-          onChange={(e) => {
-            onFromChange(e.target.value);
-            // Auto-correct: end must be after start
-            if (toValue && e.target.value && e.target.value >= toValue) {
-              onToChange('');
-            }
-          }}
-          slotProps={{
-            inputLabel: { shrink: true },
-            htmlInput: { min: minStart },
-          }}
-          sx={{
-            flex: 1,
-            '& .MuiOutlinedInput-root': { border: 'none', borderRadius: 0 },
-            '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-            '& input': { py: '8px', px: 1, fontSize: 13 },
-          }}
-        />
-        <Box
-          sx={{
-            width: 1,
-            bgcolor: 'divider',
-            alignSelf: 'stretch',
-            flexShrink: 0,
-          }}
-        />
-        <TextField
-          size="small"
-          type="date"
-          value={toValue}
-          onChange={(e) => onToChange(e.target.value)}
-          slotProps={{
-            inputLabel: { shrink: true },
-            htmlInput: { min: fromValue || minStart },
-          }}
-          sx={{
-            flex: 1,
-            '& .MuiOutlinedInput-root': { border: 'none', borderRadius: 0 },
-            '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-            '& input': { py: '8px', px: 1, fontSize: 13 },
-          }}
-        />
+        {/* Check-in */}
+        <Box sx={{ flex: 1, px: 1.5, py: 0.75, borderRight: '1px solid', borderColor: 'divider' }}>
+          <Typography variant="caption" sx={{ display: 'block', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.4, fontSize: 10, mb: 0.25 }}>
+            Check-in
+          </Typography>
+          <TextField
+            size="small"
+            type="date"
+            value={fromValue}
+            onChange={(e) => {
+              onFromChange(e.target.value);
+              if (toValue && e.target.value && e.target.value >= toValue) {
+                onToChange('');
+              }
+            }}
+            slotProps={{
+              inputLabel: { shrink: true },
+              htmlInput: { min: minStart },
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': { border: 'none', borderRadius: 0, p: 0 },
+              '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+              '& input': { py: 0, px: 0, fontSize: 13, height: 24 },
+            }}
+          />
+        </Box>
+
+        {/* Check-out */}
+        <Box sx={{ flex: 1, px: 1.5, py: 0.75 }}>
+          <Typography variant="caption" sx={{ display: 'block', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.4, fontSize: 10, mb: 0.25 }}>
+            Check-out
+          </Typography>
+          <TextField
+            size="small"
+            type="date"
+            value={toValue}
+            onChange={(e) => onToChange(e.target.value)}
+            slotProps={{
+              inputLabel: { shrink: true },
+              htmlInput: { min: fromValue || minStart },
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': { border: 'none', borderRadius: 0, p: 0 },
+              '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+              '& input': { py: 0, px: 0, fontSize: 13, height: 24 },
+            }}
+          />
+        </Box>
       </Paper>
     );
   }

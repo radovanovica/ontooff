@@ -186,6 +186,7 @@ export default function HomePage() {
                 {/* Date range */}
                 <Box sx={{ mb: 2 }}>
                   <DateRangePicker
+                    inline
                     fromValue={dateFrom}
                     toValue={dateTo}
                     onFromChange={(v) => {
@@ -193,7 +194,6 @@ export default function HomePage() {
                       if (dateTo && v && v >= dateTo) setDateTo('');
                     }}
                     onToChange={setDateTo}
-                    size="small"
                   />
                 </Box>
 
