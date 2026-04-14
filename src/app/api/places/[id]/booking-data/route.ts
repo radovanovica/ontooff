@@ -34,7 +34,7 @@ export async function GET(
     },
     orderBy: { sortOrder: 'asc' },
   });
-  const locations = rawLocations as LocationWithPricing[];
+  const locations = (rawLocations as unknown) as LocationWithPricing[];
 
   const activityTypeIds = [...new Set(locations.map((loc) => loc.activityTypeId))];
   const pricingRules = await prisma.pricingRule.findMany({
