@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { sendOrgRegistrationEmail } from '@/lib/email';
+import { sendOrgRegistrationEmail, sendAdminNewOrgNotification } from '@/lib/email';
 
 const schema = z.object({
   name: z.string().min(2, 'Organization name must be at least 2 characters'),
@@ -54,8 +54,22 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Send confirmation email (non-blocking)
+    // Send confirmation email to the registering org (non-blocking)
     sendOrgRegistrationEmail(normalizedEmail, name).catch(console.error);
+
+    // Notify super admin (non-blocking)
+    const superAdminEmail = process.env.SUPER_ADMIN_EMAIL ?? process.env.SMTP_USER;
+    if (superAdminEmail) {
+      sendAdminNewOrgNotification(superAdminEmail, {
+        name,
+        email: normalizedEmail,
+        phone: phone || null,
+        city: city || null,
+        country: country || null,
+        website: website || null,
+        description: description || null,
+      }).catch(console.error);
+    }
 
     return NextResponse.json(
       { success: true, message: 'Organization registered! We will review your application and contact you.', id: org.id },

@@ -68,10 +68,10 @@ export async function PATCH(req: NextRequest) {
     let temporaryPassword: string | null = null;
 
     if (!user) {
-      // Generate a readable temporary password
-      temporaryPassword = crypto.randomBytes(6).toString('hex').toUpperCase().slice(0, 3) +
-        '-' + crypto.randomBytes(6).toString('hex').toLowerCase().slice(0, 3) +
-        '-' + Math.floor(10 + Math.random() * 90);
+      // Generate a readable temporary password (letters + numbers only, no special chars)
+      const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+      const randomChar = () => CHARS[crypto.randomInt(CHARS.length)];
+      temporaryPassword = Array.from({ length: 12 }, randomChar).join('');
 
       const hashed = await bcrypt.hash(temporaryPassword, 12);
       user = await prisma.user.create({

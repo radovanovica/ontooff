@@ -444,6 +444,45 @@ export async function sendOrgApprovedWithCredentials(
   });
 }
 
+export async function sendAdminNewOrgNotification(adminEmail: string, org: {
+  name: string;
+  email: string;
+  phone?: string | null;
+  city?: string | null;
+  country?: string | null;
+  website?: string | null;
+  description?: string | null;
+}): Promise<void> {
+  const reviewUrl = `${APP_URL}/admin/organizations`;
+  const html = baseTemplate(`
+    <h2 style="color:#2d5a27;margin:0 0 8px;">New Organization Registration 🏢</h2>
+    <p style="color:#8b7355;font-size:14px;margin:0 0 24px;">A new organization has submitted a registration and is pending your review.</p>
+
+    <div style="background:#f0f7f0;border-left:4px solid #2d5a27;border-radius:4px;padding:20px;margin:0 0 24px;">
+      <p style="color:#4a4a4a;font-size:15px;font-weight:700;margin:0 0 12px;">📋 Organization Details</p>
+      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>Name:</strong> ${org.name}</p>
+      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>✉️ Email:</strong> <a href="mailto:${org.email}" style="color:#4a7c59;">${org.email}</a></p>
+      ${org.phone ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📞 Phone:</strong> ${org.phone}</p>` : ''}
+      ${org.city || org.country ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📍 Location:</strong> ${[org.city, org.country].filter(Boolean).join(', ')}</p>` : ''}
+      ${org.website ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>🌐 Website:</strong> <a href="${org.website}" style="color:#4a7c59;">${org.website}</a></p>` : ''}
+      ${org.description ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📝 Description:</strong> ${org.description}</p>` : ''}
+    </div>
+
+    <div style="text-align:center;">
+      <a href="${reviewUrl}" style="${btnStyle()}">Review in Admin Panel</a>
+    </div>
+    <p style="color:#8b7355;font-size:12px;text-align:center;margin-top:8px;">
+      Log in to approve or reject this organization registration.
+    </p>
+  `);
+  await transporter.sendMail({
+    from: FROM,
+    to: adminEmail,
+    subject: `New Organization Registration: ${org.name} – ${APP_NAME}`,
+    html,
+  });
+}
+
 export async function sendOrgRejectionEmail(email: string, orgName: string, reason?: string): Promise<void> {
   const html = baseTemplate(`
     <h2 style="color:#c0392b;margin:0 0 16px;">Organization Application Update</h2>
