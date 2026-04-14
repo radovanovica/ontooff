@@ -31,12 +31,23 @@ export async function GET(
       activityType: { select: { id: true, name: true, icon: true, color: true } },
       spots: { where: { status: 'AVAILABLE' }, orderBy: { sortOrder: 'asc' } },
       _count: { select: { spots: true } },
+      additionalActivityTypes: {
+        include: { activityType: { select: { id: true, name: true, icon: true, color: true } } },
+      },
     },
     orderBy: { sortOrder: 'asc' },
   });
   const locations = (rawLocations as unknown) as LocationWithPricing[];
 
-  const activityTypeIds = [...new Set(locations.map((loc) => loc.activityTypeId))];
+  // Collect all activity type IDs (primary + additional) for pricing lookup
+  const activityTypeIds = [
+    ...new Set(
+      locations.flatMap((loc) => [
+        loc.activityTypeId,
+        ...(loc.additionalActivityTypes ?? []).map((a: Record<string, any>) => a.activityTypeId as string),
+      ])
+    ),
+  ];
   const pricingRules = await prisma.pricingRule.findMany({
     where: { isActive: true, activityTypeId: { in: activityTypeIds } },
     include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } },

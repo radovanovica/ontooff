@@ -179,6 +179,9 @@
     "maxPeople": "Maximum {{count}} people allowed.",
     "minPeople": "Minimum {{count}} people required."
   },
+  "validation": {
+    "spotRequired": "Please select at least one spot to continue."
+  },
   "review": {
     "title": "Leave a Review",
     "subtitle": "Share your experience with this activity",

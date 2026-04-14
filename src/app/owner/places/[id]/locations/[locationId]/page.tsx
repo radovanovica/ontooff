@@ -74,6 +74,10 @@ interface LocationData {
   instructions: string | null;       // How to find the place
   svgMapData: string | null;
   activityType: { id: string; name: string; icon: string | null };
+  additionalActivityTypes: Array<{
+    activityTypeId: string;
+    activityType: { id: string; name: string; icon: string | null; color: string | null };
+  }>;
   place: { id: string; name: string };
   spots: SpotData[];
 }
@@ -131,6 +135,12 @@ function SettingsTab({ location, locationId, placeId, onUpdated }: { location: L
   const [error, setError] = useState<string | null>(null);
   const [mapPickerOpen, setMapPickerOpen] = useState(false);
 
+  // Additional activity types state
+  const [allActivityTypes, setAllActivityTypes] = useState<Array<{ id: string; name: string; icon: string | null }>>([]);
+  const [additionalActivityTypeIds, setAdditionalActivityTypeIds] = useState<string[]>(
+    location.additionalActivityTypes.map((a) => a.activityTypeId)
+  );
+
   // Virtual map zone state
   const [placeMap, setPlaceMap] = useState<PlaceMapData | null>(null);
   const [pickingZone, setPickingZone] = useState(false);
@@ -144,15 +154,25 @@ function SettingsTab({ location, locationId, placeId, onUpdated }: { location: L
   const svgRef = useRef<SVGSVGElement>(null);
   const [savingZone, setSavingZone] = useState(false);
 
-  // Load place map data for virtual zone editor
+  // Load place map data for virtual zone editor + all activity types for place
   useEffect(() => {
     fetch(`/api/places/${placeId}`)
       .then((r) => r.json())
       .then((d) => {
-        if (d.success) setPlaceMap(d.data);
+        if (d.success) {
+          setPlaceMap(d.data);
+          // d.data.activityTypes is the list of activity types for this place
+          if (Array.isArray(d.data.activityTypes)) {
+            setAllActivityTypes(
+              (d.data.activityTypes as Array<{ id: string; name: string; icon: string | null }>).filter(
+                (at) => at.id !== location.activityType.id // exclude primary
+              )
+            );
+          }
+        }
       })
       .catch(() => null);
-  }, [placeId]);
+  }, [placeId, location.activityType.id]);
 
   const mapWidth = placeMap?.mapWidth ?? 900;
   const mapHeight = placeMap?.mapHeight ?? 600;
@@ -232,6 +252,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated }: { location: L
           mapHeight: data.mapHeight === '' ? null : Number(data.mapHeight) || null,
           latitude: data.latitude === '' ? null : data.latitude === undefined ? null : Number(data.latitude),
           longitude: data.longitude === '' ? null : data.longitude === undefined ? null : Number(data.longitude),
+          additionalActivityTypeIds,
         }),
       });
       if (!res.ok) throw new Error(t('locations.errors.saveFailed'));
@@ -285,6 +306,36 @@ function SettingsTab({ location, locationId, placeId, onUpdated }: { location: L
             helperText={t('locations.form.instructionsHint')}
           />
         </Grid>
+        {/* Additional Activity Types */}
+        {allActivityTypes.length > 0 && (
+          <Grid size={{ xs: 12 }}>
+            <Typography variant="subtitle2" gutterBottom>
+              Also available for
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+              This location will appear under the selected activity types in addition to its primary activity ({location.activityType.name}).
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {allActivityTypes.map((at) => {
+                const selected = additionalActivityTypeIds.includes(at.id);
+                return (
+                  <Chip
+                    key={at.id}
+                    label={`${at.icon ?? ''} ${at.name}`.trim()}
+                    onClick={() =>
+                      setAdditionalActivityTypeIds((prev) =>
+                        selected ? prev.filter((id) => id !== at.id) : [...prev, at.id]
+                      )
+                    }
+                    color={selected ? 'primary' : 'default'}
+                    variant={selected ? 'filled' : 'outlined'}
+                    clickable
+                  />
+                );
+              })}
+            </Box>
+          </Grid>
+        )}
         <Grid size={{ xs: 12, sm: 4 }}>
           <TextField
             {...register('maxCapacity')}

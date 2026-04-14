@@ -142,10 +142,11 @@ export default function RegistrationStepper({
   const [mapSubMode, setMapSubMode] = useState<'virtual' | 'real'>('virtual');
   const allLocations = locations && locations.length > 0 ? locations : [location];
 
-  // Derive unique activity types from all locations
+  // Derive unique activity types from all locations (primary + additional)
   const activityTypes = useMemo(() => {
     const seen = new Map<string, { id: string; name: string; icon: string | null; color: string | null }>();
     for (const loc of allLocations) {
+      // Primary activity type
       if (loc.activityType && !seen.has(loc.activityTypeId)) {
         seen.set(loc.activityTypeId, {
           id: loc.activityTypeId,
@@ -153,6 +154,22 @@ export default function RegistrationStepper({
           icon: (loc.activityType as { icon?: string | null }).icon ?? null,
           color: (loc.activityType as { color?: string | null }).color ?? null,
         });
+      }
+      // Additional activity types via join table
+      const extras = (loc as unknown as Record<string, unknown>).additionalActivityTypes as
+        | Array<{ activityTypeId: string; activityType: { name: string; icon?: string | null; color?: string | null } }>
+        | undefined;
+      if (extras) {
+        for (const extra of extras) {
+          if (!seen.has(extra.activityTypeId)) {
+            seen.set(extra.activityTypeId, {
+              id: extra.activityTypeId,
+              name: extra.activityType.name,
+              icon: extra.activityType.icon ?? null,
+              color: extra.activityType.color ?? null,
+            });
+          }
+        }
       }
     }
     return Array.from(seen.values());
@@ -173,10 +190,16 @@ export default function RegistrationStepper({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialActivityTypeId]);
 
-  // Filter locations by selected activity type
+  // Filter locations by selected activity type (primary or additional)
   const availableLocations = useMemo(
     () => selectedActivityTypeId
-      ? allLocations.filter((loc) => loc.activityTypeId === selectedActivityTypeId)
+      ? allLocations.filter((loc) => {
+          if (loc.activityTypeId === selectedActivityTypeId) return true;
+          const extras = (loc as unknown as Record<string, unknown>).additionalActivityTypes as
+            | Array<{ activityTypeId: string }>
+            | undefined;
+          return extras?.some((e) => e.activityTypeId === selectedActivityTypeId) ?? false;
+        })
       : allLocations,
     [allLocations, selectedActivityTypeId]
   );
@@ -205,6 +228,7 @@ export default function RegistrationStepper({
     handleSubmit: handleSubmit1,
     watch: watch1,
     setValue: setValue1,
+    setError: setError1,
     formState: { errors: errors1 },
   } = useForm<Step1Values>({
     resolver: zodResolver(step1Schema),
@@ -404,6 +428,10 @@ export default function RegistrationStepper({
 
   const onStep1Submit = (values: Step1Values) => {
     if (!selectedLocation) return;
+    if (selectedLocation.requiresSpot && (!values.spotIds || values.spotIds.length === 0)) {
+      setError1('spotIds', { message: t('validation.spotRequired') });
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
       ...values,
@@ -1127,6 +1155,7 @@ export default function RegistrationStepper({
                 {t('steps.spotSelection')}
               </Typography>
               {availabilityError && <Alert severity="error" sx={{ mb: 1.5 }}>{availabilityError}</Alert>}
+              {errors1.spotIds && <Alert severity="warning" sx={{ mb: 1.5 }}>{errors1.spotIds.message}</Alert>}
               {availabilityLoading ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <CircularProgress size={18} />
@@ -1163,7 +1192,7 @@ export default function RegistrationStepper({
             </Box>
           )}
 
-          <Button type="submit" variant="contained" fullWidth size="large" disabled={!selectedLocation || availabilityLoading}>
+          <Button type="submit" variant="contained" fullWidth size="large" disabled={!selectedLocation || availabilityLoading || !!(selectedLocation?.requiresSpot && (selectedSpotIds ?? []).length === 0)}>
             {t('actions.continue')}
           </Button>
         </Box>

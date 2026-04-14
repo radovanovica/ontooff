@@ -22,6 +22,7 @@ const updateSchema = z.object({
   instructions: z.string().optional(),    // How to find this location
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
+  additionalActivityTypeIds: z.array(z.string()).optional(), // IDs of additional activity types
 });
 
 async function getLocationWithAccess(id: string, userId: string, role: UserRole) {
@@ -46,6 +47,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       activityType: true,
       place: { select: { id: true, name: true, slug: true, timezone: true } },
       spots: { orderBy: { sortOrder: 'asc' } },
+      additionalActivityTypes: {
+        include: { activityType: { select: { id: true, name: true, icon: true, color: true } } },
+      },
     },
   });
 
@@ -85,8 +89,33 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, { status: 422 });
   }
 
-  const updated = await prisma.activityLocation.update({ where: { id }, data: result.data });
-  return NextResponse.json({ success: true, data: updated });
+  const { additionalActivityTypeIds, ...locationData } = result.data;
+  const updated = await prisma.activityLocation.update({ where: { id }, data: locationData });
+
+  // Sync additional activity types in join table
+  if (additionalActivityTypeIds !== undefined) {
+    await prisma.activityLocationActivity.deleteMany({ where: { activityLocationId: id } });
+    if (additionalActivityTypeIds.length > 0) {
+      await prisma.activityLocationActivity.createMany({
+        data: additionalActivityTypeIds.map((atId) => ({
+          activityLocationId: id,
+          activityTypeId: atId,
+        })),
+        skipDuplicates: true,
+      });
+    }
+  }
+
+  const updatedWithExtras = await prisma.activityLocation.findUnique({
+    where: { id },
+    include: {
+      additionalActivityTypes: {
+        include: { activityType: { select: { id: true, name: true, icon: true, color: true } } },
+      },
+    },
+  });
+
+  return NextResponse.json({ success: true, data: updatedWithExtras });
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

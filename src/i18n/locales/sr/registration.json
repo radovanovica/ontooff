@@ -179,6 +179,9 @@
     "maxPeople": "Dozvoljeno je maksimalno {{count}} osoba.",
     "minPeople": "Potrebno je minimum {{count}} osoba."
   },
+  "validation": {
+    "spotRequired": "Molimo izaberite bar jedno mesto da biste nastavili."
+  },
   "review": {
     "title": "Ostavite recenziju",
     "subtitle": "Podelite iskustvo sa ovom aktivnošću",

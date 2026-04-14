@@ -205,10 +205,24 @@ model ActivityType {
   activityLocations ActivityLocation[]
   pricingRules      PricingRule[]
   tags              ActivityTypeTag[]
+  additionalLocations ActivityLocationActivity[]
 
   @@index([placeId])
   @@index([isActive])
   @@map("activity_types")
+}
+
+model ActivityLocationActivity {
+  activityLocationId String
+  activityTypeId     String
+
+  activityLocation ActivityLocation @relation(fields: [activityLocationId], references: [id], onDelete: Cascade)
+  activityType     ActivityType     @relation(fields: [activityTypeId], references: [id], onDelete: Cascade)
+
+  @@id([activityLocationId, activityTypeId])
+  @@index([activityLocationId])
+  @@index([activityTypeId])
+  @@map("activity_location_activities")
 }
 
 model ActivityLocation {
@@ -240,6 +254,7 @@ model ActivityLocation {
   pricingRules PricingRule[]
   embedTokens  EmbedToken[]
   reviews      Review[]
+  additionalActivityTypes ActivityLocationActivity[]
 
   @@index([placeId])
   @@index([activityTypeId])
