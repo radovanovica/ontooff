@@ -44,7 +44,6 @@ interface PlaceDetail {
   website: string | null;
   logoUrl: string | null;
   coverUrl: string | null;
-  embedToken: string | null;
   activityTypes: {
     id: string;
     name: string;
@@ -71,12 +70,11 @@ function PlaceContent() {
   const [error, setError] = useState<string | null>(null);
 
   // For the booking widget
-  const [embedData, setEmbedData] = useState<{
-    location: unknown;
+  const [bookingData, setBookingData] = useState<{
     locations: unknown[];
   } | null>(null);
-  const [embedLoading, setEmbedLoading] = useState(false);
-  const [embedError, setEmbedError] = useState<string | null>(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/places/by-slug/${params.slug}`)
@@ -90,17 +88,17 @@ function PlaceContent() {
   }, [params.slug]);
 
   useEffect(() => {
-    if (!place?.embedToken) return;
-    setEmbedLoading(true);
-    fetch(`/api/embed/${place.embedToken}`)
+    if (!place?.id) return;
+    setBookingLoading(true);
+    fetch(`/api/places/${place.id}/booking-data`)
       .then((r) => r.json())
       .then((d) => {
         if (!d.success) throw new Error(d.error ?? 'Booking not available');
-        setEmbedData(d.data);
+        setBookingData(d.data);
       })
-      .catch((e) => setEmbedError(e.message))
-      .finally(() => setEmbedLoading(false));
-  }, [place?.embedToken]);
+      .catch((e) => setBookingError(e.message))
+      .finally(() => setBookingLoading(false));
+  }, [place?.id]);
 
   if (loading) {
     return (
@@ -329,30 +327,35 @@ function PlaceContent() {
               Book a Spot
             </Typography>
 
-            {embedLoading && (
+            {bookingLoading && (
               <Box sx={{ textAlign: 'center', py: 6 }}>
                 <CircularProgress />
               </Box>
             )}
 
-            {embedError && (
+            {bookingError && (
               <Alert severity="info">
                 Online booking is not available for this place yet. Please contact them directly.
               </Alert>
             )}
 
-            {!place.embedToken && !embedLoading && (
+            {bookingData && bookingData.locations && (bookingData.locations as unknown[]).length === 0 && (
               <Alert severity="info">
-                Online booking is not available for this place yet. Please contact them directly.
+                No active locations found. Please add a location and spots in the owner dashboard.
               </Alert>
             )}
 
-            {embedData && (
-              <RegistrationStepper
-                location={embedData.location as Parameters<typeof RegistrationStepper>[0]['location']}
-                locations={embedData.locations as Parameters<typeof RegistrationStepper>[0]['locations']}
-              />
-            )}
+            {bookingData && (bookingData.locations as unknown[]).length > 0 && (() => {
+              type Loc = Parameters<typeof RegistrationStepper>[0]['location'];
+              type Locs = Parameters<typeof RegistrationStepper>[0]['locations'];
+              const locs = bookingData.locations as NonNullable<Locs>;
+              return (
+                <RegistrationStepper
+                  location={locs[0] as Loc}
+                  locations={locs}
+                />
+              );
+            })()}
 
             {/* Reviews */}
             <Box sx={{ mt: 5 }}>
