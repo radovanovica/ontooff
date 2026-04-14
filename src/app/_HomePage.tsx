@@ -165,7 +165,7 @@ export default function HomePage() {
                     return (
                       <Chip
                         key={tag.slug}
-                        label={`${tag.icon ?? ''} ${tag.name}`}
+                        label={`${tag.icon ?? ''} ${t(`tags.${tag.slug}`, tag.name)}`}
                         size="small"
                         onClick={() => toggleTag(tag.slug)}
                         sx={{

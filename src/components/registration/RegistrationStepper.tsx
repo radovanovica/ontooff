@@ -112,6 +112,7 @@ export default function RegistrationStepper({
   onSuccess,
 }: RegistrationStepperProps) {
   const { t } = useTranslation('registration');
+  const { t: tc } = useTranslation('common');
 
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState<Partial<RegistrationFormData>>({
@@ -596,8 +597,8 @@ export default function RegistrationStepper({
               }}
               size="small"
             >
-              <ToggleButton value="list"><ViewList sx={{ mr: 0.75 }} fontSize="small" /> Selection List</ToggleButton>
-              <ToggleButton value="map"><MapIcon sx={{ mr: 0.75 }} fontSize="small" /> Select on Map</ToggleButton>
+              <ToggleButton value="list"><ViewList sx={{ mr: 0.75 }} fontSize="small" /> {tc('stepper.selectionList')}</ToggleButton>
+              <ToggleButton value="map"><MapIcon sx={{ mr: 0.75 }} fontSize="small" /> {tc('stepper.selectOnMap')}</ToggleButton>
             </ToggleButtonGroup>
           </Box>
 
@@ -623,7 +624,7 @@ export default function RegistrationStepper({
                           {loc.description && (
                             <Typography variant="caption" color="text.secondary">{loc.description}</Typography>
                           )}
-                          {selected && <Chip size="small" color="primary" label="Selected" sx={{ mt: 1 }} />}
+                          {selected && <Chip size="small" color="primary" label={tc('stepper.selected')} sx={{ mt: 1 }} />}
                         </CardContent>
                       </CardActionArea>
                     </Card>
@@ -644,8 +645,8 @@ export default function RegistrationStepper({
                     onChange={(_, v) => v && setMapSubMode(v)}
                     size="small"
                   >
-                    <ToggleButton value="virtual">Virtual Map</ToggleButton>
-                    <ToggleButton value="real">Real Map</ToggleButton>
+                    <ToggleButton value="virtual">{tc('stepper.virtualMap')}</ToggleButton>
+                    <ToggleButton value="real">{tc('stepper.realMap')}</ToggleButton>
                   </ToggleButtonGroup>
                 </Box>
               )}
@@ -655,7 +656,7 @@ export default function RegistrationStepper({
                 <Box>
                   {!hasVirtualMap && (
                     <Typography variant="caption" sx={{ display: 'block', px: 1.5, py: 0.75, color: 'text.secondary', borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-                      Click a pin to select a location
+                      {tc('stepper.clickPinToSelect')}
                     </Typography>
                   )}
                   <LocationMap
@@ -697,11 +698,11 @@ export default function RegistrationStepper({
                     }}
                   >
                     <Typography variant="caption" sx={{ fontWeight: 700, mr: 0.5 }}>
-                      Legend:
+                      {tc('stepper.legend')}
                     </Typography>
                     <Chip
                       size="small"
-                      label="Selectable"
+                      label={tc('stepper.selectable')}
                       sx={{
                         bgcolor: '#1b5e20',
                         color: 'white',
@@ -711,7 +712,7 @@ export default function RegistrationStepper({
                     />
                     <Chip
                       size="small"
-                      label="Selected"
+                      label={tc('stepper.selected')}
                       sx={{
                         bgcolor: '#0d47a1',
                         color: 'white',
@@ -791,7 +792,7 @@ export default function RegistrationStepper({
                             strokeWidth={4}
                             paintOrder="stroke"
                           >
-                            {selected ? `Selected: ${loc.name}` : loc.name}
+                            {selected ? `${tc('stepper.selected')}: ${loc.name}` : loc.name}
                           </text>
                         </g>
                       );
@@ -804,7 +805,7 @@ export default function RegistrationStepper({
               {!hasVirtualMap && !hasRealMap && (
                 <Box sx={{ p: 3, textAlign: 'center' }}>
                   <Typography variant="body2" color="text.secondary">
-                    No map available for these locations. Use the Selection List instead.
+                    {tc('stepper.noMapAvailable')}
                   </Typography>
                 </Box>
               )}
@@ -859,7 +860,7 @@ export default function RegistrationStepper({
               ) : (
                 <Stack spacing={1}>
                   {availableSpots.filter((s) => s.isAvailable !== false).length === 0 ? (
-                    <Alert severity="info">No available spots for selected dates.</Alert>
+                    <Alert severity="info">{tc('stepper.noAvailableSpots')}</Alert>
                   ) : (
                     availableSpots
                       .filter((s) => s.isAvailable !== false)
@@ -873,7 +874,7 @@ export default function RegistrationStepper({
                                   <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                                     {spot.name}{spot.code ? ` (${spot.code})` : ''}
                                   </Typography>
-                                  <Typography variant="caption" color="text.secondary">Max {spot.maxPeople} people</Typography>
+                                  <Typography variant="caption" color="text.secondary">{tc('stepper.maxPeople', { count: spot.maxPeople })}</Typography>
                                 </Box>
                                 <Checkbox checked={checked} />
                               </CardContent>
@@ -947,7 +948,7 @@ export default function RegistrationStepper({
             </Grid>
           ) : (
             <Alert severity="info" sx={{ mb: 3 }}>
-              This pricing rule is fixed-rate. Guest counts are applied automatically.
+              {tc('stepper.fixedRatePricing')}
             </Alert>
           )}
 
@@ -997,13 +998,13 @@ export default function RegistrationStepper({
 
           {pricingRules.length > 0 && selectedRule && !selectedRule.requiresPayment && (
             <Alert severity="success" sx={{ mb: 2 }}>
-              ✅ No payment required for this activity. You can proceed to confirm your booking.
+              ✅ {tc('stepper.noPaymentRequired')}
             </Alert>
           )}
 
           {pricingRules.length === 0 && (
             <Alert severity="info" sx={{ mb: 2 }}>
-              No pricing rule configured for this activity yet.
+              {tc('stepper.noPricingRule')}
             </Alert>
           )}
 
@@ -1101,7 +1102,7 @@ export default function RegistrationStepper({
                   </Typography>
                 ) : (
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                    Fixed-rate pricing rule (not based on guest count)
+                    {tc('stepper.fixedRatePricing')}
                   </Typography>
                 )}
                 {(formData.pricing ?? livePricing)?.breakdown?.map((item, index) => (
@@ -1138,7 +1139,7 @@ export default function RegistrationStepper({
 
             {summaryRule && !summaryRule.requiresPayment && (
               <Alert severity="success" sx={{ mt: 1.5 }}>
-                ✅ No payment required — your booking is free of charge.
+                ✅ {tc('stepper.noPaymentRequired')}
               </Alert>
             )}
           </Paper>

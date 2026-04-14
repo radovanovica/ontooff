@@ -41,6 +41,7 @@ import {
 import { ActivityTag } from '@/types';
 import DateRangePicker from '@/components/ui/DateRangePicker';
 import Navbar from '@/components/layout/Navbar';
+import { useTranslation } from '@/i18n/client';
 
 // Dynamically import the interactive map (no SSR)
 const SearchMap = dynamic(() => import('@/components/map/SearchMap'), {
@@ -153,6 +154,7 @@ export default function SearchPageWrapper() {
 function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useTranslation('common');
 
   // Read URL params on mount only
   const initialTags = useMemo(
@@ -404,7 +406,7 @@ function SearchPage() {
                 <TextField
                   size="small"
                   fullWidth
-                  placeholder="City, country or keyword…"
+                  placeholder={t('search.locationPlaceholder')}
                   value={locationInput}
                   onChange={(e) => setLocationInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -490,12 +492,12 @@ function SearchPage() {
                 disabled={loading}
                 sx={{ flexShrink: 0 }}
               >
-                Search
+                {t('search.search')}
               </Button>
 
               {/* Clear */}
               {hasFilters && (
-                <Tooltip title="Clear all filters">
+                <Tooltip title={t('search.clearAll')}>
                   <IconButton onClick={handleClear}>
                     <Clear />
                   </IconButton>
@@ -530,10 +532,10 @@ function SearchPage() {
                   }}
                 >
                   <ToggleButton value="list">
-                    <Tooltip title="List view"><ViewList /></Tooltip>
+                    <Tooltip title={t('search.listView')}><ViewList /></Tooltip>
                   </ToggleButton>
                   <ToggleButton value="map">
-                    <Tooltip title="Map view"><MapIcon /></Tooltip>
+                    <Tooltip title={t('search.mapView')}><MapIcon /></Tooltip>
                   </ToggleButton>
                 </ToggleButtonGroup>
               </Box>
@@ -546,7 +548,7 @@ function SearchPage() {
                 {allTags.map((tag) => (
                   <Chip
                     key={tag.slug}
-                    label={`${tag.icon ?? ''} ${tag.name}`.trim()}
+                    label={`${tag.icon ?? ''} ${t(`tags.${tag.slug}`, tag.name)}`.trim()}
                     size="small"
                     variant={selectedTags.includes(tag.slug) ? 'filled' : 'outlined'}
                     color={selectedTags.includes(tag.slug) ? 'primary' : 'default'}
@@ -566,17 +568,19 @@ function SearchPage() {
         <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
           <Typography variant="body2" color="text.secondary">
             {loading
-              ? 'Searching…'
-              : `${total} result${total !== 1 ? 's' : ''}${
-                  mapBbox ? ' in this area' : locationQuery ? ` for "${locationQuery}"` : ''
-                }`}
+              ? t('search.searching')
+              : mapBbox
+                ? t('search.resultsInArea', { count: total })
+                : locationQuery
+                  ? t('search.resultsForQuery', { count: total, query: locationQuery })
+                  : t('search.results', { count: total })}
           </Typography>
 
           {mapBbox && (
             <Chip
               size="small"
               icon={<MyLocation fontSize="small" />}
-              label="Filtered by map area"
+              label={t('search.filteredByArea')}
               onDelete={() => {
                 setMapBbox(null);
                 setCurrentPage(1);
@@ -630,14 +634,14 @@ function SearchPage() {
               <Box sx={{ textAlign: 'center', py: 10 }}>
                 <LocationOn sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No results found
+                  {t('search.noResults')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Try different tags, dates or location
+                  {t('search.noResultsHint')}
                 </Typography>
                 {hasFilters && (
                   <Button sx={{ mt: 2 }} onClick={handleClear} startIcon={<Clear />}>
-                    Clear filters
+                    {t('search.clearFilters')}
                   </Button>
                 )}
               </Box>
@@ -667,7 +671,7 @@ function SearchPage() {
                       startIcon={loadingMore ? <CircularProgress size={18} /> : undefined}
                       sx={{ minWidth: 180 }}
                     >
-                      {loadingMore ? 'Loading…' : `Load More (${total - places.length} more)`}
+                      {loadingMore ? t('search.loadingMore') : t('search.loadMore', { count: total - places.length })}
                     </Button>
                   </Box>
                 )}
@@ -707,8 +711,8 @@ function SearchPage() {
               ) : places.length === 0 ? (
                 <Box sx={{ p: 3, textAlign: 'center' }}>
                   <Typography variant="body2" color="text.secondary">
-                    No results in this area.
-                    <br />Pan or zoom the map.
+                    {t('search.noResults')}
+                    <br />{t('search.noResultsHint')}
                   </Typography>
                 </Box>
               ) : (
@@ -783,6 +787,7 @@ function PlaceCard({
 
   const uniqueTags = Array.from(new Map(tags.map((t) => [t.id, t])).values()).slice(0, 4);
   const href = place.isFree ? `/locations/${place.slug}` : `/places/${place.slug}`;
+  const { t } = useTranslation('common');
 
   return (
     <Card
@@ -805,7 +810,7 @@ function PlaceCard({
       {place.isFree && (
         <Chip
           icon={<Public sx={{ fontSize: '13px !important' }} />}
-          label="Community"
+          label={t('search.community')}
           size="small"
           sx={{
             position: 'absolute',
@@ -873,7 +878,7 @@ function PlaceCard({
             {uniqueTags.map((tag) => (
               <Chip
                 key={tag.id}
-                label={`${tag.icon ?? ''} ${tag.name}`.trim()}
+                label={`${tag.icon ?? ''} ${t(`tags.${tag.slug}`, tag.name)}`.trim()}
                 size="small"
                 variant="outlined"
                 sx={{ fontSize: 11, height: 22 }}
@@ -893,7 +898,7 @@ function PlaceCard({
             color={place.isFree ? 'inherit' : 'primary'}
             tabIndex={-1}
           >
-            {place.isFree ? 'View Location' : 'Book Now'}
+            {place.isFree ? t('search.viewLocation') : t('search.bookNow')}
           </Button>
         </Box>
       </CardContent>
@@ -915,6 +920,7 @@ function PlaceCardCompact({
   onMouseLeave: () => void;
 }) {
   const href = place.isFree ? `/locations/${place.slug}` : `/places/${place.slug}`;
+  const { t } = useTranslation('common');
 
   return (
     <Card
@@ -974,7 +980,7 @@ function PlaceCardCompact({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.25 }}>
           {place.isFree && (
             <Chip
-              label="Free"
+              label={t('common.free')}
               size="small"
               sx={{ bgcolor: '#7b3f00', color: 'white', fontSize: 10, height: 16, flexShrink: 0 }}
             />
