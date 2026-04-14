@@ -409,8 +409,22 @@ function SearchPage() {
                   onChange={(e) => setLocationInput(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      setLocationQuery(locationInput);
-                      handleFilterSearch();
+                      const loc = locationInput;
+                      setLocationQuery(loc);
+                      setMapBbox(null);
+                      setCurrentPage(1);
+                      setTotalPages(1);
+                      suppressNextBboxSearch.current = true;
+                      fetchResults({
+                        tags: selectedTags,
+                        location: loc,
+                        from,
+                        to,
+                        bbox: null,
+                        page: 1,
+                        append: false,
+                        updateUrl: true,
+                      });
                     }
                   }}
                   slotProps={{
@@ -456,8 +470,22 @@ function SearchPage() {
                 variant="contained"
                 startIcon={<Search />}
                 onClick={() => {
-                  setLocationQuery(locationInput);
-                  handleFilterSearch();
+                  const loc = locationInput;
+                  setLocationQuery(loc);
+                  setMapBbox(null);
+                  setCurrentPage(1);
+                  setTotalPages(1);
+                  suppressNextBboxSearch.current = true;
+                  fetchResults({
+                    tags: selectedTags,
+                    location: loc,
+                    from,
+                    to,
+                    bbox: null,
+                    page: 1,
+                    append: false,
+                    updateUrl: true,
+                  });
                 }}
                 disabled={loading}
                 sx={{ flexShrink: 0 }}
@@ -853,6 +881,9 @@ function PlaceCard({
             ))}
           </Box>
         )}
+
+        {/* Spacer pushes button to bottom regardless of content height */}
+        <Box sx={{ flexGrow: 1 }} />
 
         <Box sx={{ mt: 1.5 }}>
           <Button

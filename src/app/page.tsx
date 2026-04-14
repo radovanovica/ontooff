@@ -10,8 +10,6 @@ import {
   CardContent,
   Chip,
   Stack,
-  TextField,
-  InputAdornment,
   Paper,
 } from '@mui/material';
 import {
@@ -23,11 +21,11 @@ import {
   PinDrop,
   CheckCircleOutlined,
   Business,
-  CalendarToday,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/layout/Navbar';
+import DateRangePicker from '@/components/ui/DateRangePicker';
 import { useTranslation } from '@/i18n/client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -186,48 +184,18 @@ export default function HomePage() {
                 </Stack>
 
                 {/* Date range */}
-                <Grid container spacing={1.5} sx={{ mb: 2 }}>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      label={t('home.search.dateFrom', 'Check-in')}
-                      type="date"
-                      size="small"
-                      fullWidth
-                      value={dateFrom}
-                      onChange={(e) => setDateFrom(e.target.value)}
-                      slotProps={{
-                        inputLabel: { shrink: true },
-                        input: {
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <CalendarToday sx={{ fontSize: 16, color: 'text.secondary' }} />
-                            </InputAdornment>
-                          ),
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      label={t('home.search.dateTo', 'Check-out')}
-                      type="date"
-                      size="small"
-                      fullWidth
-                      value={dateTo}
-                      onChange={(e) => setDateTo(e.target.value)}
-                      slotProps={{
-                        inputLabel: { shrink: true },
-                        input: {
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <CalendarToday sx={{ fontSize: 16, color: 'text.secondary' }} />
-                            </InputAdornment>
-                          ),
-                        },
-                      }}
-                    />
-                  </Grid>
-                </Grid>
+                <Box sx={{ mb: 2 }}>
+                  <DateRangePicker
+                    fromValue={dateFrom}
+                    toValue={dateTo}
+                    onFromChange={(v) => {
+                      setDateFrom(v);
+                      if (dateTo && v && v >= dateTo) setDateTo('');
+                    }}
+                    onToChange={setDateTo}
+                    size="small"
+                  />
+                </Box>
 
                 <Button
                   variant="contained"
