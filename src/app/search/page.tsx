@@ -864,7 +864,7 @@ function PlaceCard({
           </Box>
         )}
 
-        {!place.isFree && place.averageRating !== null && (
+        {place.averageRating !== null && place.reviewCount > 0 && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
             <Star sx={{ fontSize: 13, color: 'warning.main' }} />
             <Typography variant="caption" color="text.secondary">
@@ -996,7 +996,7 @@ function PlaceCardCompact({
           </Typography>
         )}
 
-        {!place.isFree && place.averageRating !== null && (
+        {place.averageRating !== null && place.reviewCount > 0 && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
             <Star sx={{ fontSize: 12, color: 'warning.main' }} />
             <Typography variant="caption" color="text.secondary">

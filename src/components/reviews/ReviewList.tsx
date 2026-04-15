@@ -35,15 +35,17 @@ interface ReviewListProps {
   placeId?: string;
   locationId?: string;
   freeLocationId?: string;
+  refreshTrigger?: number;
 }
 
-export default function ReviewList({ placeId, locationId, freeLocationId }: ReviewListProps) {
+export default function ReviewList({ placeId, locationId, freeLocationId, refreshTrigger = 0 }: ReviewListProps) {
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [meta, setMeta] = useState<ReviewMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setLoading(true);
     const params = new URLSearchParams();
     if (placeId) params.set('placeId', placeId);
     if (locationId) params.set('locationId', locationId);
@@ -58,7 +60,7 @@ export default function ReviewList({ placeId, locationId, freeLocationId }: Revi
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [placeId, locationId, freeLocationId]);
+  }, [placeId, locationId, freeLocationId, refreshTrigger]);
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>;
   if (error) return <Alert severity="error">{error}</Alert>;

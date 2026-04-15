@@ -84,6 +84,7 @@ function LocationContent() {
   // Reviews
   const [reviewMeta, setReviewMeta] = useState<{ averageRating: number | null; totalRatings: number } | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewRefresh, setReviewRefresh] = useState(0);
 
   useEffect(() => {
     fetch(`/api/free-locations/${slug}`)
@@ -566,6 +567,7 @@ function LocationContent() {
                 freeLocationId={location.id}
                 onSubmitted={() => {
                   setShowReviewForm(false);
+                  setReviewRefresh((n) => n + 1);
                   // Refresh review meta
                   fetch(`/api/reviews?freeLocationId=${location.id}&pageSize=1`)
                     .then((r) => r.json())
@@ -575,7 +577,7 @@ function LocationContent() {
               />
             </Box>
           )}
-          <ReviewList freeLocationId={location.id} />
+          <ReviewList freeLocationId={location.id} refreshTrigger={reviewRefresh} />
         </Box>
       </Container>
     </>

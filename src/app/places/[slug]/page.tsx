@@ -67,6 +67,7 @@ function PlaceContent() {
   // Reviews
   const [reviewMeta, setReviewMeta] = useState<{ averageRating: number | null; totalRatings: number } | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewRefresh, setReviewRefresh] = useState(0);
 
   useEffect(() => {
     fetch(`/api/places/by-slug/${params.slug}`)
@@ -360,11 +361,11 @@ function PlaceContent() {
                 <Box sx={{ mb: 3 }}>
                   <ReviewForm
                     placeId={place.id}
-                    onSubmitted={() => { setShowReviewForm(false); }}
+                    onSubmitted={() => { setShowReviewForm(false); setReviewRefresh((n) => n + 1); }}
                   />
                 </Box>
               )}
-              <ReviewList placeId={place.id} />
+              <ReviewList placeId={place.id} refreshTrigger={reviewRefresh} />
             </Box>
           </Box>
         </Box>

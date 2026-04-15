@@ -287,9 +287,29 @@ async function runSearch({
   });
   const freeTotal = await prisma.freeLocation.count({ where: freeWhere });
 
-  // Shape free locations into the same search result format
+  // Shape free locations into the same search result format — with real review aggregates
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const freeItems = freeLocations.map((loc: any) => ({
+  // Fetch review aggregates for free locations
+  const freeLocationIds = freeLocations.map((l: { id: string }) => l.id);
+  const freeRatingsRaw = freeLocationIds.length
+    ? await prisma.review.groupBy({
+        by: ['freeLocationId'],
+        where: { freeLocationId: { in: freeLocationIds }, isApproved: true, isRejected: false },
+        _avg: { rating: true },
+        _count: { rating: true },
+      })
+    : [];
+  type FreeRatingEntry = { avg: number | null; count: number };
+  type FreeGroupResult = { freeLocationId: string | null; _avg: { rating: number | null }; _count: { rating: number } };
+  const freeRatingMap = new Map<string, FreeRatingEntry>(
+    (freeRatingsRaw as FreeGroupResult[])
+      .filter((r) => r.freeLocationId !== null)
+      .map((r) => [r.freeLocationId!, { avg: r._avg.rating ?? null, count: r._count.rating }])
+  );
+
+  const freeItems = freeLocations.map((loc: any) => {
+    const freeRating = freeRatingMap.get(loc.id);
+    return {
     id: loc.id,
     name: loc.name,
     slug: loc.slug,
@@ -301,8 +321,8 @@ async function runSearch({
     phone: loc.phone,
     email: loc.email,
     website: loc.website,
-    averageRating: null,
-    reviewCount: 0,
+    averageRating: freeRating?.avg ?? null,
+    reviewCount: freeRating?.count ?? 0,
     isFree: true,
     activityTypes: [] as {
       id: string;
@@ -326,7 +346,7 @@ async function runSearch({
       latitude: loc.latitude,
       longitude: loc.longitude,
     }],
-  }));
+  };});
 
   const combinedTotal = (fromDate ? filtered.length : results.length) + freeTotal;
   const allItems = [...filtered, ...freeItems];
