@@ -73,6 +73,12 @@ enum OrgStatus {
   SUSPENDED
 }
 
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // ─────────────────────────────────────────
 // AUTH ENTITIES (NextAuth compatible)
 // ─────────────────────────────────────────
@@ -180,6 +186,7 @@ model Place {
   activityTypes     ActivityType[]
   activityLocations ActivityLocation[]
   embedTokens       EmbedToken[]
+  pricingRules      PricingRule[]
   reviews           Review[]
 
   @@index([ownerId])
@@ -312,11 +319,13 @@ model PricingRule {
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
+  place            Place?            @relation(fields: [placeId], references: [id], onDelete: SetNull)
   activityType     ActivityType?     @relation(fields: [activityTypeId], references: [id], onDelete: SetNull)
   activityLocation ActivityLocation? @relation(fields: [activityLocationId], references: [id], onDelete: SetNull)
   pricingTiers     PricingTier[]
   registrations    Registration[]
 
+  @@index([placeId])
   @@index([activityTypeId])
   @@index([activityLocationId])
   @@index([isActive])
@@ -391,9 +400,12 @@ model Registration {
   paymentBreakdown  PaymentBreakdownItem[]
   review            Review?
 
+  @@index([activityLocationId, status, startDate, endDate])
   @@index([activityLocationId])
   @@index([userId])
   @@index([status])
+  @@index([paymentStatus])
+  @@index([embedTokenId])
   @@index([startDate, endDate])
   @@index([email])
   @@index([editToken])
@@ -427,6 +439,8 @@ model PaymentBreakdownItem {
   sortOrder      Int           @default(0)
 
   registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 
   @@index([registrationId])
   @@map("payment_breakdown_items")
@@ -482,6 +496,7 @@ model Organization {
 
   places Place[]
 
+  @@index([ownerId])
   @@index([status])
   @@index([email])
   @@map("organizations")
@@ -507,8 +522,7 @@ model Review {
   title              String?
   body               String    @db.Text
 
-  isApproved         Boolean   @default(false)
-  isRejected         Boolean   @default(false)
+  status             ReviewStatus @default(PENDING)
 
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
@@ -524,7 +538,9 @@ model Review {
   @@index([activityLocationId])
   @@index([registrationId])
   @@index([userId])
-  @@index([isApproved])
+  @@index([status])
+  @@index([placeId, status])
+  @@index([freeLocationId, status])
   @@map("reviews")
 }
 

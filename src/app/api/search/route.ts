@@ -212,7 +212,7 @@ async function runSearch({
   const placeIds = places.map((p: SearchPlaceRaw) => p.id);
   const ratingsRaw = await prisma.review.groupBy({
     by: ['placeId'],
-    where: { placeId: { in: placeIds }, isApproved: true, isRejected: false },
+    where: { placeId: { in: placeIds }, status: 'APPROVED' },
     _avg: { rating: true },
     _count: { rating: true },
   });
@@ -294,7 +294,7 @@ async function runSearch({
   const freeRatingsRaw = freeLocationIds.length
     ? await prisma.review.groupBy({
         by: ['freeLocationId'],
-        where: { freeLocationId: { in: freeLocationIds }, isApproved: true, isRejected: false },
+        where: { freeLocationId: { in: freeLocationIds }, status: 'APPROVED' },
         _avg: { rating: true },
         _count: { rating: true },
       })

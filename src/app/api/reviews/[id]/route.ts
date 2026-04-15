@@ -43,8 +43,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const updated = await prisma.review.update({
     where: { id },
     data: {
-      isApproved: action === 'approve',
-      isRejected: action === 'reject',
+      status: action === 'approve' ? 'APPROVED' : 'REJECTED',
     },
   });
 
@@ -82,9 +81,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   const where: Record<string, unknown> = { placeId: id };
-  if (status === 'pending') { where.isApproved = false; where.isRejected = false; }
-  if (status === 'approved') { where.isApproved = true; where.isRejected = false; }
-  if (status === 'rejected') { where.isRejected = true; }
+  if (status === 'pending') { where.status = 'PENDING'; }
+  if (status === 'approved') { where.status = 'APPROVED'; }
+  if (status === 'rejected') { where.status = 'REJECTED'; }
 
   const reviews = await prisma.review.findMany({
     where,

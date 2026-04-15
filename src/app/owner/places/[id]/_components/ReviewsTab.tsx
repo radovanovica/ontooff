@@ -36,8 +36,7 @@ interface ReviewData {
   rating: number;
   title: string | null;
   body: string;
-  isApproved: boolean;
-  isRejected: boolean;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
   createdAt: string;
   activityLocation: { id: string; name: string } | null;
   registration: { registrationNumber: string; startDate: string; endDate: string } | null;
@@ -175,7 +174,7 @@ export default function ReviewsTab({ placeId }: ReviewsTabProps) {
       {!loading && !error && reviews.length > 0 && (
         <Stack spacing={2}>
           {reviews.map((review) => (
-            <Paper key={review.id} variant="outlined" sx={{ p: 2.5, borderRadius: 2, borderLeft: 4, borderLeftColor: review.isRejected ? 'error.main' : review.isApproved ? 'success.main' : 'warning.main' }}>
+            <Paper key={review.id} variant="outlined" sx={{ p: 2.5, borderRadius: 2, borderLeft: 4, borderLeftColor: review.status === 'REJECTED' ? 'error.main' : review.status === 'APPROVED' ? 'success.main' : 'warning.main' }}>
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                 <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40, fontSize: '0.9rem' }}>
                   {review.guestName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
@@ -186,8 +185,8 @@ export default function ReviewsTab({ placeId }: ReviewsTabProps) {
                     <Rating value={review.rating} readOnly size="small" />
                     <Chip
                       size="small"
-                      label={review.isRejected ? t('reviews.rejected') : review.isApproved ? t('reviews.approved') : t('reviews.pending')}
-                      color={review.isRejected ? 'error' : review.isApproved ? 'success' : 'warning'}
+                      label={review.status === 'REJECTED' ? t('reviews.rejected') : review.status === 'APPROVED' ? t('reviews.approved') : t('reviews.pending')}
+                      color={review.status === 'REJECTED' ? 'error' : review.status === 'APPROVED' ? 'success' : 'warning'}
                     />
                     {review.activityLocation && (
                       <Chip size="small" label={review.activityLocation.name} variant="outlined" />
@@ -216,7 +215,7 @@ export default function ReviewsTab({ placeId }: ReviewsTabProps) {
               <Divider sx={{ my: 1.5 }} />
 
               <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
-                {!review.isApproved && !review.isRejected && (
+                {review.status === 'PENDING' && (
                   <>
                     <Button
                       size="small"
@@ -238,7 +237,7 @@ export default function ReviewsTab({ placeId }: ReviewsTabProps) {
                     </Button>
                   </>
                 )}
-                {review.isApproved && (
+                {review.status === 'APPROVED' && (
                   <Button
                     size="small"
                     variant="outlined"
@@ -249,7 +248,7 @@ export default function ReviewsTab({ placeId }: ReviewsTabProps) {
                     {t('reviews.reject')}
                   </Button>
                 )}
-                {review.isRejected && (
+                {review.status === 'REJECTED' && (
                   <Button
                     size="small"
                     variant="outlined"

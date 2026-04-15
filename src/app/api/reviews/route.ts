@@ -70,8 +70,7 @@ export async function POST(req: NextRequest) {
         rating,
         title: title ?? null,
         body: reviewBody,
-        isApproved: true,   // community reviews are auto-approved
-        isRejected: false,
+        status: 'APPROVED', // community reviews are auto-approved
       },
     });
 
@@ -154,8 +153,7 @@ export async function POST(req: NextRequest) {
       rating,
       title: title ?? null,
       body: reviewBody,
-      isApproved: false,
-      isRejected: false,
+      status: 'PENDING',
     },
   });
 
@@ -172,7 +170,7 @@ export async function GET(req: NextRequest) {
   const page = Number(searchParams.get('page') ?? 1);
   const pageSize = Math.min(Number(searchParams.get('pageSize') ?? 20), 50);
 
-  const where: Record<string, unknown> = { isApproved: true, isRejected: false };
+  const where: Record<string, unknown> = { status: 'APPROVED' };
   if (placeId) where.placeId = placeId;
   if (locationId) where.activityLocationId = locationId;
   if (freeLocationId) where.freeLocationId = freeLocationId;

@@ -595,8 +595,7 @@ export interface Review {
   rating: number;           // 1–5
   title: string | null;
   body: string;
-  isApproved: boolean;
-  isRejected: boolean;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
   createdAt: Date;
   updatedAt: Date;
   place?: Place;
