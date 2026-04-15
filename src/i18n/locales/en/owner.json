@@ -89,8 +89,11 @@
       "imageSaveFailed": "Failed to save image",
       "uploadFailed": "Upload failed",
       "imageSizeExceeded": "Image must be under 5 MB",
-      "fileReadFailed": "Failed to read file"
-    }
+      "fileReadFailed": "Failed to read file",
+      "mapFileTooLarge": "Map image must be under 10 MB"
+    },
+    "locationsCount": "{{count}} location",
+    "locationsCount_plural": "{{count}} locations"
   },
   "activityTypes": {
     "title": "Activity Types",
@@ -124,13 +127,16 @@
       "oneTierRequired": "At least one tier is required",
       "uniqueNonCustomTier": "Each non-custom age group can only be added once per rule",
       "pricingCreateFailed": "Failed to create pricing rule",
-      "pricingDeleteFailed": "Failed to delete pricing rule"
+      "pricingDeleteFailed": "Failed to delete pricing rule",
+      "tierLabelRequired": "Tier #{{n}}: label is required",
+      "tierPriceInvalid": "Tier #{{n}}: price must be 0 or greater"
     },
     "form": {
       "name": "Activity name",
       "description": "Description",
       "icon": "Icon (emoji)",
-      "color": "Color"
+      "color": "Color",
+      "tags": "Tags"
     },
     "examples": "e.g. Fishing, Camping, Hiking, Kayaking…"
   },
@@ -148,7 +154,20 @@
       "maxCapacity": "Max capacity",
       "requiresSpot": "Guests must select a specific spot",
       "mapWidth": "Map width (px)",
-      "mapHeight": "Map height (px)"
+      "mapHeight": "Map height (px)",
+      "activityTypesLabel": "Activity Types",
+      "activityTypesHint": "Select all activity types available at this location.",
+      "virtualMapZone": "Virtual Map Zone",
+      "zoneOnPlaceMap": "Zone on Place Map",
+      "noZonePlaced": "No zone placed on virtual map yet",
+      "moveZone": "Move Zone",
+      "placeOnMap": "Place on Map",
+      "saveZone": "Save Zone",
+      "mapPinLocation": "Map Pin Location",
+      "noPinSet": "No pin set yet",
+      "repositionPin": "Reposition Pin",
+      "pinOnMap": "Pin on Map",
+      "pinOnMapDialogTitle": "Pin Location on Map"
     },
     "gallery": {
       "title": "Gallery",
@@ -179,8 +198,15 @@
     "clickToMarkPosition": "Click to mark location position",
     "mapManagedHint": "Map image is managed at Place level. This location is positioned on the place map, and spot shapes are edited in the Spots → Map Editor tab.",
     "noActivityTypes": "No activity types configured yet. Add activity types from the place settings first.",
+    "spotsCount": "{{count}} spot",
+    "spotsCount_plural": "{{count}} spots",
+    "maxCapacityLabel": "Max {{count}} person",
+    "maxCapacityLabel_plural": "Max {{count}} persons",
     "errors": {
-      "saveFailed": "Save failed"
+      "saveFailed": "Save failed",
+      "loadFailed": "Failed to load locations",
+      "createFailed": "Failed to create location",
+      "activityTypeRequired": "At least one activity type is required"
     }
   },
   "spots": {
@@ -193,7 +219,12 @@
       "description": "Description",
       "maxPeople": "Max people",
       "amenities": "Amenities",
-      "status": "Status"
+      "status": "Status",
+      "minDays": "Min days per booking (optional)",
+      "maxDays": "Max days per booking (optional)",
+      "activityType": "Activity type (optional)",
+      "activityTypeHint": "Leave blank to show this spot for all activity types at this location",
+      "allActivities": "All activities"
     },
     "amenitiesOptions": {
       "electricity": "Electricity",
@@ -218,7 +249,9 @@
     "errors": {
       "saveFailed": "Save failed",
       "createFailed": "Create failed"
-    }
+    },
+    "timeslotCount": "{{count}} timeslot",
+    "timeslotCount_plural": "{{count}} timeslots"
   },
   "pricing": {
     "title": "Pricing Rules",
@@ -374,7 +407,17 @@
       "fetchFailed": "Failed to fetch bookings",
       "loadFailed": "Failed to load bookings.",
       "updateStatusFailed": "Failed to update status."
-    }
+    },
+    "manual": {
+      "errors": {
+        "fillRequired": "Please fill in all required fields.",
+        "selectDates": "Please select start and end dates.",
+        "createFailed": "Error creating booking",
+        "networkError": "Network error"
+      }
+    },
+    "confirmed": "Booking confirmed! The guest has been notified by email.",
+    "alreadyConfirmed": "This booking was already confirmed."
   },
   "reviews": {
     "title": "Reviews",
@@ -399,5 +442,25 @@
     "averageRating": "Avg. rating",
     "totalReviews": "Total reviews",
     "pendingCount": "{{count}} pending"
+  },
+  "timeslots": {
+    "dialogTitle": "Timeslots — {{name}}",    "wholeDay": "Whole day",    "multiDayNote": "This spot has maxDays \u003e 1, so only whole-day timeslots are allowed.",
+    "empty": "No timeslots yet. Timeslots let visitors choose a specific time window when booking this spot.",
+    "requiredForMultiDay": "Required for multi-day spots",
+    "startTime": "Start time",
+    "endTime": "End time",
+    "sortOrder": "Sort order",
+    "nameLabel": "Name (e.g. Morning, 09:00\u201312:00)",
+    "addTitle": "Add Timeslot",
+    "editTitle": "Edit Timeslot",
+    "deleteConfirm": "Delete this timeslot?",
+    "errors": {
+      "updateFailed": "Failed to update timeslot",
+      "createFailed": "Failed to create timeslot"
+    }
+  },
+  "org": {
+    "notLinked": "Your account is not linked to an organization. Please contact support.",
+    "pending": "Your organization \"{{name}}\" is pending admin approval. You will be able to create places once approved.",
+    "statusBad": "Your organization \"{{name}}\" is {{status}}. Please contact support."
   }
-}

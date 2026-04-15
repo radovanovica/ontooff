@@ -100,7 +100,7 @@ export default function OwnerPlacesPage() {
                       {place.name}
                     </Typography>
                     <Chip
-                      label={place.isActive ? 'Active' : 'Inactive'}
+                      label={place.isActive ? t('common.active') : t('common.inactive')}
                       color={place.isActive ? 'success' : 'default'}
                       size="small"
                     />
@@ -126,7 +126,7 @@ export default function OwnerPlacesPage() {
                   )}
                   {place._count && (
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                      {place._count.activityLocations} locations
+                      {t('places.locationsCount', { count: place._count.activityLocations })}
                     </Typography>
                   )}
                 </CardContent>

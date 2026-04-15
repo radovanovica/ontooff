@@ -196,7 +196,12 @@
     "community": "Community",
     "loadMore": "Load more ({{count}} more)",
     "loadingMore": "Loading more…",
-    "noMore": "No more results"
+    "noMore": "No more results",
+    "favorites": "Favorites",
+    "noFavorites": "No favorites yet",
+    "noFavoritesHint": "Click the heart icon on any place to save it as a favorite",
+    "noCommunity": "No community places found",
+    "noCommunityHint": "No community-contributed places match your current search"
   },
   "tags": {
     "camping": "Camping",
@@ -236,6 +241,10 @@
     "selectActivityHint": "This place offers multiple activities. Please select the one you want to book.",
     "locationsAvailable": "locations available",
     "changeActivity": "Change activity",
-    "photos": "Photos"
+    "photos": "Photos",
+    "selectTimeslot": "Select timeslot",
+    "wholeDay": "Whole day",
+    "timeslotRequired": "Please select a timeslot",
+    "checkingAvailability": "Checking spot availability…"
   }
 }

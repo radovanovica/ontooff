@@ -39,7 +39,7 @@ export default function LocationsTab({ placeId }: { placeId: string }) {
     fetch(`/api/activity-locations?placeId=${placeId}`)
       .then((r) => r.json())
       .then((d) => setLocations(d.data ?? []))
-      .catch(() => setError('Failed to load locations'))
+      .catch(() => setError(t('locations.errors.loadFailed')))
       .finally(() => setLoading(false));
   }, [placeId]);
 
@@ -83,7 +83,7 @@ export default function LocationsTab({ placeId }: { placeId: string }) {
                       {loc.name}
                     </Typography>
                     <Chip
-                      label={loc.isActive ? 'Active' : 'Inactive'}
+                      label={loc.isActive ? t('common.active') : t('common.inactive')}
                       color={loc.isActive ? 'success' : 'default'}
                       size="small"
                       sx={{ ml: 'auto' }}
@@ -102,12 +102,12 @@ export default function LocationsTab({ placeId }: { placeId: string }) {
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                     {loc._count && (
                       <Typography variant="caption" color="text.secondary">
-                        {loc._count.spots} spots
+                        {t('locations.spotsCount', { count: loc._count.spots })}
                       </Typography>
                     )}
                     {loc.maxCapacity && (
                       <Typography variant="caption" color="text.secondary">
-                        · Max {loc.maxCapacity} persons
+                        · {t('locations.maxCapacityLabel', { count: loc.maxCapacity })}
                       </Typography>
                     )}
                   </Box>

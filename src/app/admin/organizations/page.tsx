@@ -92,7 +92,7 @@ export default function AdminOrganizationsPage() {
       setTotal(data.data?.total ?? 0);
       setTotalPages(data.data?.totalPages ?? Math.ceil((data.data?.total ?? 0) / PAGE_SIZE));
     } catch {
-      setError('Failed to load organizations');
+      setError(t('organizations.errors.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -122,7 +122,7 @@ export default function AdminOrganizationsPage() {
       setRejectionReason('');
       fetchOrgs();
     } catch {
-      setError('Action failed');
+      setError(t('organizations.errors.actionFailed'));
     } finally {
       setActioning(false);
     }
@@ -137,7 +137,7 @@ export default function AdminOrganizationsPage() {
       setDeleteTarget(null);
       fetchOrgs();
     } catch {
-      setError('Delete failed');
+      setError(t('organizations.errors.deleteFailed'));
     } finally {
       setDeleting(false);
     }
@@ -294,7 +294,7 @@ export default function AdminOrganizationsPage() {
       {totalPages > 1 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3 }}>
           <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
-            {total} total organizations
+            {t('organizations.totalCount', { count: total })}
           </Typography>
           <Pagination
             count={totalPages}
@@ -315,9 +315,9 @@ export default function AdminOrganizationsPage() {
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
-            {actionType === 'APPROVED' && `Approve "${actionTarget?.name}"? A PLACE_OWNER account will be created and login credentials will be sent to ${actionTarget?.email}.`}
-            {actionType === 'REJECTED' && `Reject "${actionTarget?.name}"? A notification email will be sent to ${actionTarget?.email}.`}
-            {actionType === 'SUSPENDED' && `Suspend "${actionTarget?.name}"? Their places will remain but they will not be able to create new ones.`}
+          {actionType === 'APPROVED' && t('organizations.approveConfirmText', { name: actionTarget?.name, email: actionTarget?.email })}
+          {actionType === 'REJECTED' && t('organizations.rejectConfirmText', { name: actionTarget?.name, email: actionTarget?.email })}
+          {actionType === 'SUSPENDED' && t('organizations.suspendConfirmText', { name: actionTarget?.name })}
           </Typography>
           {actionType === 'REJECTED' && (
             <TextField
@@ -346,14 +346,13 @@ export default function AdminOrganizationsPage() {
       </Dialog>
       {/* Hard delete confirmation dialog */}
       <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ color: 'error.main' }}>Delete Organization Permanently</DialogTitle>
+        <DialogTitle sx={{ color: 'error.main' }}>{t('organizations.deleteTitle')}</DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 1 }}>
-            Permanently delete <strong>{deleteTarget?.name}</strong>?
+            {t('organizations.deleteConfirmText', { name: deleteTarget?.name })}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            This removes the organization record from the database completely, freeing up the email address <strong>{deleteTarget?.email}</strong> for re-registration.
-            Any linked places will be kept but unlinked from this organization.
+            {t('organizations.deleteWarning', { email: deleteTarget?.email })}
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -365,7 +364,7 @@ export default function AdminOrganizationsPage() {
             onClick={handleDelete}
             startIcon={deleting ? <CircularProgress size={16} color="inherit" /> : <DeleteForever />}
           >
-            {deleting ? 'Deleting…' : 'Delete Permanently'}
+            {deleting ? t('organizations.deletingLabel') : t('organizations.deletePermanently')}
           </Button>
         </DialogActions>
       </Dialog>

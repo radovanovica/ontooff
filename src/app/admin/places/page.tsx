@@ -59,7 +59,7 @@ export default function AdminPlacesPage() {
       setTotal(data.data?.total ?? 0);
       setTotalPages(data.data?.totalPages ?? Math.ceil((data.data?.total ?? 0) / PAGE_SIZE));
     } catch {
-      setError('Failed to load places');
+      setError(t('places.errors.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -91,7 +91,7 @@ export default function AdminPlacesPage() {
         <TextField
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Search places…"
+          placeholder={t('places.searchPlaceholder')}
           size="small"
           sx={{ minWidth: 280 }}
           slotProps={{
@@ -146,7 +146,7 @@ export default function AdminPlacesPage() {
                   <TableCell align="center">{place._count?.registrations ?? 0}</TableCell>
                   <TableCell>
                     <Chip
-                      label={place.isActive ? 'Active' : 'Inactive'}
+                      label={place.isActive ? t('common.active') : t('common.inactive')}
                       color={place.isActive ? 'success' : 'default'}
                       size="small"
                     />
@@ -157,7 +157,7 @@ export default function AdminPlacesPage() {
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Tooltip title="Manage">
+                    <Tooltip title={t('places.manage')}>
                       <IconButton size="small" component={Link} href={`/owner/places/${place.id}`}>
                         <OpenInNew fontSize="small" />
                       </IconButton>
@@ -174,7 +174,7 @@ export default function AdminPlacesPage() {
       {totalPages > 1 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3 }}>
           <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
-            {total} total places
+            {t('places.totalCount', { count: total })}
           </Typography>
           <Pagination
             count={totalPages}

@@ -2,9 +2,11 @@
 
 import { Alert, Collapse } from '@mui/material';
 import { useSearchParams } from 'next/navigation';
+import { useTranslation } from '@/i18n/client';
 
 export default function ApprovalBanner() {
   const params = useSearchParams();
+  const { t } = useTranslation('owner');
   const confirmed = params.get('confirmed') === '1';
   const alreadyConfirmed = params.get('alreadyConfirmed') === '1';
 
@@ -14,8 +16,8 @@ export default function ApprovalBanner() {
     <Collapse in>
       <Alert severity={confirmed ? 'success' : 'info'} sx={{ mb: 2 }}>
         {confirmed
-          ? '✅ Booking confirmed! The guest has been notified by email.'
-          : 'ℹ️ This booking was already confirmed.'}
+          ? t('bookings.confirmed')
+          : t('bookings.alreadyConfirmed')}
       </Alert>
     </Collapse>
   );

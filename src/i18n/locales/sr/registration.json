@@ -180,7 +180,8 @@
     "minPeople": "Potrebno je minimum {{count}} osoba."
   },
   "validation": {
-    "spotRequired": "Molimo izaberite bar jedno mesto da biste nastavili."
+    "spotRequired": "Molimo izaberite bar jedno mesto da biste nastavili.",
+    "timeslotRequired": "Molimo izaberite termin za svako izabrano mesto"
   },
   "review": {
     "title": "Ostavite recenziju",

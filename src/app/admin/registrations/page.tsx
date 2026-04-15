@@ -64,7 +64,7 @@ export default function AdminRegistrationsPage() {
       setTotal(data.data?.total ?? 0);
       setTotalPages(data.data?.totalPages ?? 1);
     } catch {
-      setError('Failed to load registrations');
+      setError(t('registrations.errors.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -189,7 +189,7 @@ export default function AdminRegistrationsPage() {
       {totalPages > 1 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3 }}>
           <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
-            {total} total registrations
+            {t('registrations.totalCount', { count: total })}
           </Typography>
           <Pagination
             count={totalPages}

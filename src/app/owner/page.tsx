@@ -91,15 +91,15 @@ export default async function OwnerDashboardPage() {
           sx={{ mb: 3 }}
         >
           {!org
-            ? 'Your account is not linked to an organization. Please contact support.'
+            ? t('org.notLinked')
             : org.status === 'PENDING'
-            ? `Your organization "${org.name}" is pending admin approval. You will be able to create places once approved.`
-            : `Your organization "${org.name}" is ${org.status.toLowerCase()}. Please contact support.`}
+            ? t('org.pending', { name: org.name })
+            : t('org.statusBad', { name: org.name, status: org.status.toLowerCase() })}
         </Alert>
       )}
       {org && org.status === 'APPROVED' && (
         <Alert severity="success" icon={<Business />} sx={{ mb: 3 }}>
-          Organization: <strong>{org.name}</strong> — Approved ✓
+          Organization: <strong>{org.name}</strong> {'\u2014'} Approved {'\u2713'}
         </Alert>
       )}
 

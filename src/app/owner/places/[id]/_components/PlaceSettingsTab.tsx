@@ -93,10 +93,10 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Save failed');
+      if (!res.ok) throw new Error(t('places.errors.mapSaveFailed'));
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error');
+      setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setSaving(false);
     }
@@ -145,7 +145,7 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
       if (!res.ok) throw new Error(t('places.errors.mapSaveFailed', 'Failed to save map'));
       setMapSuccess(true);
     } catch (err) {
-      setMapError(err instanceof Error ? err.message : 'Error');
+      setMapError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setMapUploading(false);
     }
@@ -161,10 +161,10 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mapImageUrl: null }),
       });
-      if (!res.ok) throw new Error('Failed to remove map');
+      if (!res.ok) throw new Error(t('places.errors.mapSaveFailed', 'Failed to remove map'));
       setMapSuccess(true);
     } catch (err) {
-      setMapError(err instanceof Error ? err.message : 'Error');
+      setMapError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setMapUploading(false);
     }
@@ -181,14 +181,14 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
   ) => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) { setErr('Image must be under 10 MB'); return; }
+    if (file.size > 10 * 1024 * 1024) { setErr(t('places.errors.mapFileTooLarge')); return; }
     setUploading(true);
     setErr(null);
     try {
       const url = await uploadFileToS3(file, folder);
       setUrl(url);
     } catch (err) {
-      setErr(err instanceof Error ? err.message : 'Upload failed');
+      setErr(err instanceof Error ? err.message : t('places.errors.uploadFailed'));
     } finally {
       setUploading(false);
     }
@@ -210,10 +210,10 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: url }),
       });
-      if (!res.ok) throw new Error('Save failed');
+      if (!res.ok) throw new Error(t('places.errors.mapSaveFailed'));
       setSuccess(true);
     } catch (err) {
-      setErr(err instanceof Error ? err.message : 'Error');
+      setErr(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setUploading(false);
     }

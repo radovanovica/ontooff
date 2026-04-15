@@ -50,6 +50,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import dynamic from 'next/dynamic';
 import PageHeader from '@/components/ui/PageHeader';
+import { useTranslation } from '@/i18n/client';
 import { uploadFileToS3 } from '@/lib/upload';
 import type { ActivityTag } from '@/types';
 import type MapPickerType from '@/components/map/MapPicker';
@@ -103,6 +104,7 @@ function slugify(name: string) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminFreeLocationsPage() {
+  const { t } = useTranslation('admin');
   const [locations, setLocations] = useState<FreeLocationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -155,7 +157,7 @@ export default function AdminFreeLocationsPage() {
         setTotalPages(loc.totalPages ?? 1);
         setTags(tag.data ?? []);
       })
-      .catch(() => setError('Failed to load'))
+      .catch(() => setError(t('freeLocations.errors.loadFailed')))
       .finally(() => setLoading(false));
   }, [page, search]);
 
@@ -227,7 +229,7 @@ export default function AdminFreeLocationsPage() {
       const url = await uploadFileToS3(file, 'images/free-locations');
       setCoverUrl(url);
     } catch {
-      setSaveError('Cover image upload failed');
+      setSaveError(t('freeLocations.errors.coverUploadFailed'));
     } finally {
       setUploadingCover(false);
       e.target.value = '';
@@ -245,7 +247,7 @@ export default function AdminFreeLocationsPage() {
       const urls = await Promise.all(toUpload.map((f) => uploadFileToS3(f, 'images/free-locations')));
       setGalleryImages((prev) => [...prev, ...urls]);
     } catch {
-      setSaveError('Gallery upload failed');
+      setSaveError(t('freeLocations.errors.galleryUploadFailed'));
     } finally {
       setUploadingGallery(false);
       e.target.value = '';
@@ -288,11 +290,11 @@ export default function AdminFreeLocationsPage() {
       const url = editing ? `/api/free-locations/${editing.id}` : '/api/free-locations';
       const method = editing ? 'PATCH' : 'POST';
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      if (!res.ok) throw new Error('Save failed');
+      if (!res.ok) throw new Error(t('freeLocations.errors.saveFailed'));
       setOpen(false);
       load();
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Save failed');
+      setSaveError(err instanceof Error ? err.message : t('freeLocations.errors.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -306,8 +308,8 @@ export default function AdminFreeLocationsPage() {
   return (
     <Box>
       <PageHeader
-        title="Free / Community Locations"
-        subtitle="Public locations not tied to any business or booking system"
+        title={t('freeLocations.title')}
+        subtitle={t('freeLocations.subtitle')}
         breadcrumbs={[
           { label: 'Admin', href: '/admin' },
           { label: 'Free Locations' },
@@ -319,7 +321,7 @@ export default function AdminFreeLocationsPage() {
             onClick={openAdd}
             sx={{ bgcolor: '#7b3f00', '&:hover': { bgcolor: '#5a2e00' } }}
           >
-            Add Location
+            {t('freeLocations.addNew')}
           </Button>
         }
       />
@@ -331,7 +333,7 @@ export default function AdminFreeLocationsPage() {
         <TextField
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Search locations…"
+          placeholder={t('freeLocations.searchPlaceholder')}
           size="small"
           sx={{ minWidth: 280 }}
           slotProps={{
@@ -345,11 +347,11 @@ export default function AdminFreeLocationsPage() {
         <Table size="small">
           <TableHead>
             <TableRow sx={{ bgcolor: 'grey.50' }}>
-              <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Location</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Tags</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Created</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('freeLocations.table.name')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('freeLocations.table.location')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('freeLocations.table.tags')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('freeLocations.table.status')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('freeLocations.table.created')}</TableCell>
               <TableCell />
             </TableRow>
           </TableHead>
@@ -363,7 +365,7 @@ export default function AdminFreeLocationsPage() {
             ) : locations.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                  <Typography color="text.secondary">No free locations yet. Add one!</Typography>
+                  <Typography color="text.secondary">{t('freeLocations.empty')}</Typography>
                 </TableCell>
               </TableRow>
             ) : (
@@ -391,24 +393,24 @@ export default function AdminFreeLocationsPage() {
                     </Stack>
                   </TableCell>
                   <TableCell>
-                    <Chip label={loc.isActive ? 'Active' : 'Inactive'} color={loc.isActive ? 'success' : 'default'} size="small" />
+                    <Chip label={loc.isActive ? t('common.active') : t('common.inactive')} color={loc.isActive ? 'success' : 'default'} size="small" />
                   </TableCell>
                   <TableCell>
                     <Typography variant="caption">{format(new Date(loc.createdAt), 'dd.MM.yyyy')}</Typography>
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
-                      <Tooltip title="View public page">
+                      <Tooltip title={t('freeLocations.actions.viewPublic')}>
                         <IconButton size="small" component={Link} href={`/locations/${loc.slug}`} target="_blank">
                           <OpenInNew fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Edit">
+                      <Tooltip title={t('freeLocations.actions.edit')}>
                         <IconButton size="small" onClick={() => openEdit(loc)}>
                           <Edit fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Delete">
+                      <Tooltip title={t('freeLocations.actions.delete')}>
                         <IconButton size="small" color="error" onClick={() => handleDelete(loc.id, loc.name)}>
                           <Delete fontSize="small" />
                         </IconButton>
@@ -426,7 +428,7 @@ export default function AdminFreeLocationsPage() {
       {totalPages > 1 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3 }}>
           <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
-            {total} total locations
+            {t('freeLocations.totalCount', { count: total })}
           </Typography>
           <Pagination
             count={totalPages}
@@ -440,7 +442,7 @@ export default function AdminFreeLocationsPage() {
 
       {/* ─── Add / Edit Dialog ─────────────────────────────────────────────── */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>{editing ? `Edit: ${editing.name}` : 'Add Free Location'}</DialogTitle>
+        <DialogTitle>{editing ? t('freeLocations.dialog.editTitle', { name: editing.name }) : t('freeLocations.dialog.addTitle')}</DialogTitle>
         <DialogContent dividers>
           {saveError && <Alert severity="error" sx={{ mb: 2 }}>{saveError}</Alert>}
           <Box component="form" id="free-loc-form" onSubmit={handleSubmit(onSubmit)}>
@@ -450,7 +452,7 @@ export default function AdminFreeLocationsPage() {
               <Grid size={{ xs: 12, sm: 8 }}>
                 <TextField
                   {...register('name')}
-                  label="Name"
+                  label={t('freeLocations.form.name')}
                   fullWidth
                   error={!!errors.name}
                   helperText={errors.name?.message}
@@ -463,7 +465,7 @@ export default function AdminFreeLocationsPage() {
               <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   {...register('slug')}
-                  label="Slug (URL)"
+                  label={t('freeLocations.form.slug')}
                   fullWidth
                   error={!!errors.slug}
                   helperText={
@@ -473,18 +475,18 @@ export default function AdminFreeLocationsPage() {
                 />
               </Grid>
               <Grid size={{ xs: 12 }}>
-                <TextField {...register('description')} label="Description" fullWidth multiline rows={3} />
+                <TextField {...register('description')} label={t('freeLocations.form.description')} fullWidth multiline rows={3} />
               </Grid>
 
               {/* ── Images ── */}
               <Grid size={{ xs: 12 }}>
-                <Divider><Typography variant="caption">Images</Typography></Divider>
+                <Divider><Typography variant="caption">{t('freeLocations.form.images')}</Typography></Divider>
               </Grid>
 
               {/* Cover image */}
               <Grid size={{ xs: 12, sm: 4 }}>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75, fontWeight: 600 }}>
-                  Cover Image
+                  {t('freeLocations.form.coverImage')}
                 </Typography>
                 <Box
                   onClick={() => coverInputRef.current?.click()}
@@ -513,7 +515,7 @@ export default function AdminFreeLocationsPage() {
                           opacity: 0, transition: 'opacity 0.2s',
                         }}
                       >
-                        <Typography variant="caption" sx={{ color: 'white', fontWeight: 700 }}>Replace</Typography>
+                        <Typography variant="caption" sx={{ color: 'white', fontWeight: 700 }}>{t('freeLocations.form.replace')}</Typography>
                       </Box>
                       <IconButton
                         size="small"
@@ -530,7 +532,7 @@ export default function AdminFreeLocationsPage() {
                   ) : (
                     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5, color: 'text.disabled' }}>
                       <CloudUpload sx={{ fontSize: 28 }} />
-                      <Typography variant="caption">Upload cover</Typography>
+                      <Typography variant="caption">{t('freeLocations.form.uploadCover')}</Typography>
                     </Box>
                   )}
                 </Box>
@@ -540,7 +542,7 @@ export default function AdminFreeLocationsPage() {
               {/* Gallery */}
               <Grid size={{ xs: 12, sm: 8 }}>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75, fontWeight: 600 }}>
-                  Gallery Photos ({galleryImages.length}/10) — hover to set cover ★ or remove
+                  {t('freeLocations.form.galleryPhotos', { count: galleryImages.length, max: 10 })}
                 </Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(84px, 1fr))', gap: 1 }}>
                   {galleryImages.map((src, idx) => (
@@ -597,7 +599,7 @@ export default function AdminFreeLocationsPage() {
                     >
                       {uploadingGallery
                         ? <CircularProgress size={20} />
-                        : <><Collections sx={{ fontSize: 20 }} /><Typography variant="caption" sx={{ fontSize: '0.6rem', mt: 0.25 }}>Add</Typography></>
+                        : <><Collections sx={{ fontSize: 20 }} /><Typography variant="caption" sx={{ fontSize: '0.6rem', mt: 0.25 }}>{t('freeLocations.form.add')}</Typography></>
                       }
                     </Box>
                   )}
@@ -607,26 +609,26 @@ export default function AdminFreeLocationsPage() {
 
               {/* Location details */}
               <Grid size={{ xs: 12 }}>
-                <Divider><Typography variant="caption">Location Details</Typography></Divider>
+                <Divider><Typography variant="caption">{t('freeLocations.form.locationDetails')}</Typography></Divider>
               </Grid>
               <Grid size={{ xs: 12 }}>
-                <TextField {...register('address')} label="Address" fullWidth />
+                <TextField {...register('address')} label={t('freeLocations.form.address')} fullWidth />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField {...register('city')} label="City" fullWidth />
+                <TextField {...register('city')} label={t('freeLocations.form.city')} fullWidth />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField {...register('country')} label="Country" fullWidth />
+                <TextField {...register('country')} label={t('freeLocations.form.country')} fullWidth />
               </Grid>
 
               {/* GPS */}
               <Grid size={{ xs: 12 }}>
-                <Divider><Typography variant="caption">GPS Coordinates</Typography></Divider>
+                <Divider><Typography variant="caption">{t('freeLocations.form.gpsCoordinates')}</Typography></Divider>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   {...register('latitude')}
-                  label="Latitude"
+                  label={t('freeLocations.form.latitude')}
                   type="number"
                   fullWidth
                   helperText="e.g. 44.8176"
@@ -636,7 +638,7 @@ export default function AdminFreeLocationsPage() {
               <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   {...register('longitude')}
-                  label="Longitude"
+                  label={t('freeLocations.form.longitude')}
                   type="number"
                   fullWidth
                   helperText="e.g. 20.4633"
@@ -652,49 +654,49 @@ export default function AdminFreeLocationsPage() {
                   fullWidth
                   sx={{ borderColor: '#7b3f00', color: '#7b3f00', '&:hover': { borderColor: '#5a2e00', bgcolor: '#7b3f0010' } }}
                 >
-                  Pin on Map
+                  {t('freeLocations.form.pinOnMap')}
                 </Button>
               </Grid>
 
               {/* Contact */}
               <Grid size={{ xs: 12 }}>
-                <Divider><Typography variant="caption">Contact</Typography></Divider>
+                <Divider><Typography variant="caption">{t('freeLocations.form.contact')}</Typography></Divider>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField {...register('phone')} label="Phone" fullWidth />
+                <TextField {...register('phone')} label={t('freeLocations.form.phone')} fullWidth />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField {...register('email')} label="Email" fullWidth />
+                <TextField {...register('email')} label={t('freeLocations.form.email')} fullWidth />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField {...register('website')} label="Website" fullWidth placeholder="https://" />
+                <TextField {...register('website')} label={t('freeLocations.form.website')} fullWidth placeholder="https://" />
               </Grid>
 
               {/* Instructions */}
               <Grid size={{ xs: 12 }}>
-                <Divider><Typography variant="caption">Additional Info</Typography></Divider>
+                <Divider><Typography variant="caption">{t('freeLocations.form.additionalInfo')}</Typography></Divider>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField
                   {...register('instructions')}
-                  label="How to Find It / Instructions"
+                  label={t('freeLocations.form.howToFind')}
                   fullWidth
                   multiline
                   rows={3}
-                  helperText="Directions, parking info, access notes"
+                  helperText={t('freeLocations.form.directionsHint')}
                 />
               </Grid>
 
               {/* Tags */}
               <Grid size={{ xs: 12 }}>
-                <Divider><Typography variant="caption">Categories / Tags</Typography></Divider>
+                <Divider><Typography variant="caption">{t('freeLocations.form.tagsSection')}</Typography></Divider>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                  Select applicable activity categories:
+                  {t('freeLocations.form.tagsHint')}
                 </Typography>
                 <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75 }}>
-                  {tags.filter((t) => t.isActive).map((tag) => {
+                  {tags.filter((tag) => tag.isActive).map((tag) => {
                     const selected = selectedTagIds.includes(tag.id);
                     return (
                       <Chip
@@ -723,7 +725,7 @@ export default function AdminFreeLocationsPage() {
                   render={({ field }) => (
                     <FormControlLabel
                       control={<Switch checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />}
-                      label="Active (visible in search)"
+                    label={t('freeLocations.form.activeSwitch')}
                     />
                   )}
                 />
@@ -732,7 +734,7 @@ export default function AdminFreeLocationsPage() {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={() => setOpen(false)}>{t('common.cancel')}</Button>
           <Button
             type="submit"
             form="free-loc-form"
@@ -740,7 +742,7 @@ export default function AdminFreeLocationsPage() {
             disabled={saving}
             sx={{ bgcolor: '#7b3f00', '&:hover': { bgcolor: '#5a2e00' } }}
           >
-            {saving ? 'Saving…' : editing ? 'Save Changes' : 'Create Location'}
+            {saving ? t('common.saving') : editing ? t('freeLocations.form.saveChanges') : t('freeLocations.form.createLocation')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -748,7 +750,7 @@ export default function AdminFreeLocationsPage() {
       {/* ─── Map Picker Dialog ─────────────────────────────────────────────── */}
       <Dialog open={mapPickerOpen} onClose={() => setMapPickerOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>
-          Pin Location on Map
+          {t('freeLocations.dialog.pinMapTitle')}
           <IconButton
             size="small"
             onClick={() => setMapPickerOpen(false)}

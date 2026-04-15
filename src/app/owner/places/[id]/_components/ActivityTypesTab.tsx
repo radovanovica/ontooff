@@ -283,8 +283,8 @@ export default function ActivityTypesTab({ placeId }: Props) {
 
     const normalizedTiers = pricingTiersDraft.map((tier, idx) => {
       const price = Number(tier.pricePerUnit);
-      if (!tier.label.trim()) throw new Error(`Tier #${idx + 1}: label is required`);
-      if (Number.isNaN(price) || price < 0) throw new Error(`Tier #${idx + 1}: price must be 0 or greater`);
+        if (!tier.label.trim()) throw new Error(t('activityTypes.errors.tierLabelRequired', { n: idx + 1 }));
+        if (Number.isNaN(price) || price < 0) throw new Error(t('activityTypes.errors.tierPriceInvalid', { n: idx + 1 }));
       return {
         ageGroup: tier.ageGroup,
         label: tier.label.trim(),

@@ -89,8 +89,11 @@
       "imageSaveFailed": "Neuspešno čuvanje slike",
       "uploadFailed": "Otpremanje nije uspelo",
       "imageSizeExceeded": "Slika mora biti manja od 5 MB",
-      "fileReadFailed": "Neuspešno čitanje fajla"
-    }
+      "fileReadFailed": "Neuspešno čitanje fajla",
+      "mapFileTooLarge": "Slika mape mora biti manja od 10 MB"
+    },
+    "locationsCount": "{{count}} lokacija",
+    "locationsCount_plural": "{{count}} lokacija"
   },
   "activityTypes": {
     "title": "Tipovi aktivnosti",
@@ -123,13 +126,16 @@
       "oneTierRequired": "Potreban je bar jedan nivo",
       "uniqueNonCustomTier": "Svaka ne-prilagođena grupa može biti dodata samo jednom po pravilu",
       "pricingCreateFailed": "Neuspešno kreiranje pravila cenovnika",
-      "pricingDeleteFailed": "Neuspešno brisanje pravila cenovnika"
+      "pricingDeleteFailed": "Neuspešno brisanje pravila cenovnika",
+      "tierLabelRequired": "Nivo #{{n}}: naziv je obavezan",
+      "tierPriceInvalid": "Nivo #{{n}}: cena mora biti 0 ili više"
     },
     "form": {
       "name": "Naziv aktivnosti",
       "description": "Opis",
       "icon": "Ikona (emoji)",
-      "color": "Boja"
+      "color": "Boja",
+      "tags": "Oznake"
     },
     "examples": "npr. Ribolov, Kampovanje, Planinarenje, Kajak…"
   },
@@ -147,7 +153,20 @@
       "maxCapacity": "Maksimalni kapacitet",
       "requiresSpot": "Gosti moraju izabrati specifično mesto",
       "mapWidth": "Širina mape (px)",
-      "mapHeight": "Visina mape (px)"
+      "mapHeight": "Visina mape (px)",
+      "activityTypesLabel": "Tipovi aktivnosti",
+      "activityTypesHint": "Izaberite sve tipove aktivnosti dostupnih na ovoj lokaciji.",
+      "virtualMapZone": "Zona na virtualnoj mapi",
+      "zoneOnPlaceMap": "Zona na mapi mesta",
+      "noZonePlaced": "Zona nije postavljena na virtualnoj mapi",
+      "moveZone": "Pomeri zonu",
+      "placeOnMap": "Postavi na mapu",
+      "saveZone": "Sačuvaj zonu",
+      "mapPinLocation": "Označi na mapi",
+      "noPinSet": "Pin nije postavljen",
+      "repositionPin": "Premeste pin",
+      "pinOnMap": "Pin na mapi",
+      "pinOnMapDialogTitle": "Označi lokaciju na mapi"
     },
     "gallery": {
       "title": "Galerija",
@@ -178,8 +197,15 @@
     "clickToMarkPosition": "Kliknite da označite poziciju lokacije",
     "mapManagedHint": "Slika mape se upravlja na nivou mesta. Ova lokacija se pozicionira na mapi mesta, a oblici mesta uređuju se u kartici Mesta → Uređivač mape.",
     "noActivityTypes": "Još nema podešenih tipova aktivnosti. Prvo dodajte tipove aktivnosti u podešavanjima mesta.",
+    "spotsCount": "{{count}} mesto",
+    "spotsCount_plural": "{{count}} mesta",
+    "maxCapacityLabel": "Maks. {{count}} osoba",
+    "maxCapacityLabel_plural": "Maks. {{count}} osoba",
     "errors": {
-      "saveFailed": "Čuvanje nije uspelo"
+      "saveFailed": "Čuva nije uspelo",
+      "loadFailed": "Učitavanje lokacija nije uspelo",
+      "createFailed": "Kreiranje lokacije nije uspelo",
+      "activityTypeRequired": "Potrebna je najmanje jedna vrsta aktivnosti"
     }
   },
   "spots": {
@@ -192,7 +218,12 @@
       "description": "Opis",
       "maxPeople": "Maks. osoba",
       "amenities": "Sadržaj",
-      "status": "Status"
+      "status": "Status",
+      "minDays": "Min. dana po rezervaciji (opciono)",
+      "maxDays": "Maks. dana po rezervaciji (opciono)",
+      "activityType": "Tip aktivnosti (opciono)",
+      "activityTypeHint": "Ostavite prazno da prikažete ovo mesto za sve tipove aktivnosti",
+      "allActivities": "Sve aktivnosti"
     },
     "amenitiesOptions": {
       "electricity": "Struja",
@@ -216,7 +247,9 @@
     "errors": {
       "saveFailed": "Čuvanje nije uspelo",
       "createFailed": "Kreiranje nije uspelo"
-    }
+    },
+    "timeslotCount": "{{count}} termin",
+    "timeslotCount_plural": "{{count}} termina"
   },
   "pricing": {
     "title": "Pravila cenovnika",
@@ -372,7 +405,17 @@
       "fetchFailed": "Neuspešno preuzimanje rezervacija",
       "loadFailed": "Neuspešno učitavanje rezervacija.",
       "updateStatusFailed": "Neuspešno ažuriranje statusa."
-    }
+    },
+    "manual": {
+      "errors": {
+        "fillRequired": "Molimo popunite sva obavezna polja.",
+        "selectDates": "Molimo izaberite datume dolaska i odlaska.",
+        "createFailed": "Greška pri kreiranju rezervacije",
+        "networkError": "Greška mreže"
+      }
+    },
+    "confirmed": "Rezervacija potvrđena! Gost je obavešten emailom.",
+    "alreadyConfirmed": "Ova rezervacija je već bila potvrđena."
   },
   "reviews": {
     "title": "Recenzije",
@@ -397,5 +440,25 @@
     "averageRating": "Prosečna ocena",
     "totalReviews": "Ukupno recenzija",
     "pendingCount": "{{count}} na čekanju"
+  },
+  "timeslots": {
+    "dialogTitle": "Termini — {{name}}",    "wholeDay": "Ceo dan",    "multiDayNote": "Ovo mesto ima maxDays \u003e 1, pa su dozvoljeni samo termini celog dana.",
+    "empty": "Nema termina. Termini omogućavaju posetiocima da izaberu vremenski slot pri rezervaciji.",
+    "requiredForMultiDay": "Obavezno za višednevna mesta",
+    "startTime": "Vreme početka",
+    "endTime": "Vreme kraja",
+    "sortOrder": "Redosled",
+    "nameLabel": "Naziv (npr. Jutro, 09:00\u201312:00)",
+    "addTitle": "Dodaj termin",
+    "editTitle": "Izmeni termin",
+    "deleteConfirm": "Obrisati ovaj termin?",
+    "errors": {
+      "updateFailed": "Ažuriranje termina nije uspelo",
+      "createFailed": "Kreiranje termina nije uspelo"
+    }
+  },
+  "org": {
+    "notLinked": "Vaš nalog nije povezan sa organizacijom. Kontaktirajte podršku.",
+    "pending": "Vaša organizacija \"{{name}}\" čeka odobrenje admina. Moći ćete da kreirate mesta kada bude odobreno.",
+    "statusBad": "Vaša organizacija \"{{name}}\" ima status {{status}}. Kontaktirajte podršku."
   }
-}

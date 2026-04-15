@@ -180,7 +180,8 @@
     "minPeople": "Minimum {{count}} people required."
   },
   "validation": {
-    "spotRequired": "Please select at least one spot to continue."
+    "spotRequired": "Please select at least one spot to continue.",
+    "timeslotRequired": "Please select a timeslot for each selected spot"
   },
   "review": {
     "title": "Leave a Review",

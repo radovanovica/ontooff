@@ -219,7 +219,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
       if (!res.ok) throw new Error('Save failed');
       onUpdated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error saving zone');
+      setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setSavingZone(false);
     }
@@ -315,10 +315,10 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
         {allActivityTypes.length > 0 && (
           <Grid size={{ xs: 12 }}>
             <Typography variant="subtitle2" gutterBottom>
-              Activity Types
+              {t('locations.form.activityTypesLabel')}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-              Select all activity types available at this location.
+              {t('locations.form.activityTypesHint')}
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
               {allActivityTypes.map((at) => {
@@ -371,7 +371,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
           </Alert>
         </Grid>
         <Grid size={{ xs: 12 }}>
-          <Divider sx={{ my: 1 }}>Map Pin Location</Divider>
+          <Divider sx={{ my: 1 }}>{t('locations.form.mapPinLocation')}</Divider>
         </Grid>
         <Grid size={{ xs: 12 }}>
           {/* Read-only lat/lng display + picker button */}
@@ -388,7 +388,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
                         📍 {Number(lat).toFixed(6)}, {Number(lng).toFixed(6)}
                       </Typography>
                     ) : (
-                      <Typography variant="body2" color="text.secondary">No pin set yet</Typography>
+                      <Typography variant="body2" color="text.secondary">{t('locations.form.noPinSet')}</Typography>
                     )}
                   </Box>
                   <Button
@@ -397,7 +397,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
                     startIcon={<PinDrop />}
                     onClick={() => setMapPickerOpen(true)}
                   >
-                    {hasCoords ? 'Reposition Pin' : 'Pin on Map'}
+                    {hasCoords ? t('locations.form.repositionPin') : t('locations.form.pinOnMap')}
                   </Button>
                   {hasCoords && (
                     <Button
@@ -407,7 +407,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
                       startIcon={<Close />}
                       onClick={() => { setValue('latitude', ''); setValue('longitude', ''); }}
                     >
-                      Clear
+                      {t('common.clear')}
                     </Button>
                   )}
                 </Box>
@@ -421,7 +421,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
 
           {/* Map picker dialog */}
           <Dialog open={mapPickerOpen} onClose={() => setMapPickerOpen(false)} maxWidth="md" fullWidth>
-            <DialogTitle sx={{ pb: 1 }}>Pin Location on Map</DialogTitle>
+            <DialogTitle sx={{ pb: 1 }}>{t('locations.form.pinOnMapDialogTitle')}</DialogTitle>
             <DialogContent sx={{ p: 0 }}>
               <MapPicker
                 initialLat={watch('latitude') !== '' ? Number(watch('latitude')) : undefined}
@@ -470,16 +470,16 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
       {/* ── Virtual Map Zone Placement ───────────────────────────────── */}
       {placeMap?.mapImageUrl && (
         <Box sx={{ mt: 4 }}>
-          <Divider sx={{ mb: 3 }}>Virtual Map Zone</Divider>
+          <Divider sx={{ mb: 3 }}>{t('locations.form.virtualMapZone')}</Divider>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                Zone on Place Map
+                {t('locations.form.zoneOnPlaceMap')}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {zonePosition
                   ? `Placed at cx=${zonePosition.cx}, cy=${zonePosition.cy}`
-                  : 'No zone placed on virtual map yet'}
+                  : t('locations.form.noZonePlaced')}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -489,7 +489,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
                 startIcon={<MyLocation />}
                 onClick={() => setPickingZone((v) => !v)}
               >
-                {pickingZone ? 'Click map to place…' : zonePosition ? 'Move Zone' : 'Place on Map'}
+                {pickingZone ? t('locations.clickMapToPlace') : zonePosition ? t('locations.form.moveZone') : t('locations.form.placeOnMap')}
               </Button>
               {zonePosition && (
                 <Button
@@ -502,7 +502,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
                   }}
                   disabled={savingZone}
                 >
-                  Remove
+                  {t('common.delete')}
                 </Button>
               )}
               {zonePosition && (
@@ -513,7 +513,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
                   onClick={() => handleSaveZone(zonePosition)}
                   disabled={savingZone}
                 >
-                  {savingZone ? 'Saving…' : 'Save Zone'}
+                  {savingZone ? t('common.saving') : t('locations.form.saveZone')}
                 </Button>
               )}
             </Box>
@@ -537,7 +537,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
                   zIndex: 10, pointerEvents: 'none',
                 }}
               >
-                <Chip label="Click to place zone" color="primary" size="small" icon={<MyLocation />} />
+                <Chip label={t('locations.clickMapToPlace')} color="primary" size="small" icon={<MyLocation />} />
               </Box>
             )}
             <svg
@@ -732,7 +732,7 @@ function SpotsTab({
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.75 }}>
                       <Schedule sx={{ fontSize: 13, color: 'text.secondary' }} />
                       <Typography variant="caption" color="text.secondary">
-                        {spot.timeslots.length} timeslot{spot.timeslots.length !== 1 ? 's' : ''}
+                        {t('spots.timeslotCount', { count: spot.timeslots.length })}
                       </Typography>
                     </Box>
                   )}
@@ -784,12 +784,12 @@ function SpotsTab({
                   <TextField
                     select
                     fullWidth
-                    label="Activity type (optional)"
+                    label={t('spots.form.activityType')}
                     value={watchSpot('activityTypeId') ?? ''}
                     onChange={(e) => setSpotValue('activityTypeId', e.target.value || null)}
-                    helperText="Leave blank to show this spot for all activity types at this location"
+                    helperText={t('spots.form.activityTypeHint')}
                   >
-                    <MenuItem value="">All activities</MenuItem>
+                    <MenuItem value="">{t('spots.form.allActivities')}</MenuItem>
                     {locationActivityTypes.map((at) => (
                       <MenuItem key={at.id} value={at.id}>
                         {at.icon ? `${at.icon} ` : ''}{at.name}
@@ -801,7 +801,7 @@ function SpotsTab({
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   {...register('minDays')}
-                  label="Min days per booking (optional)"
+                  label={t('spots.form.minDays')}
                   type="number"
                   fullWidth
                   slotProps={{ htmlInput: { min: 1 } }}
@@ -810,7 +810,7 @@ function SpotsTab({
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   {...register('maxDays')}
-                  label="Max days per booking (optional)"
+                  label={t('spots.form.maxDays')}
                   type="number"
                   fullWidth
                   slotProps={{ htmlInput: { min: 1 } }}
@@ -859,6 +859,7 @@ function TimeslotDialog({
   onClose: () => void;
   onUpdated: () => void;
 }) {
+  const { t } = useTranslation('owner');
   const [timeslots, setTimeslots] = useState<TimeslotData[]>(spot.timeslots);
   const [addOpen, setAddOpen] = useState(false);
   const [editTs, setEditTs] = useState<TimeslotData | null>(null);
@@ -900,7 +901,7 @@ function TimeslotDialog({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: editTs.id, ...payload }),
         });
-        if (!res.ok) throw new Error('Failed to update timeslot');
+        if (!res.ok) throw new Error(t('timeslots.errors.updateFailed'));
         const updated: TimeslotData = { ...editTs, ...payload };
         setTimeslots((prev) => prev.map((t) => (t.id === editTs.id ? updated : t)));
       } else {
@@ -909,21 +910,21 @@ function TimeslotDialog({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ spotId: spot.id, ...payload }),
         });
-        if (!res.ok) throw new Error('Failed to create timeslot');
+        if (!res.ok) throw new Error(t('timeslots.errors.createFailed'));
         const json = await res.json() as { data: TimeslotData };
         setTimeslots((prev) => [...prev, json.data]);
       }
       setAddOpen(false);
       onUpdated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error');
+      setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this timeslot?')) return;
+    if (!confirm(t('timeslots.deleteConfirm'))) return;
     await fetch('/api/timeslots', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -937,17 +938,17 @@ function TimeslotDialog({
     <>
       <Dialog open onClose={onClose} maxWidth="sm" fullWidth>
         <DialogTitle>
-          Timeslots — {spot.name}
+          {t('timeslots.dialogTitle', { name: spot.name })}
           {isMultiDay && (
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              This spot has maxDays &gt; 1, so only whole-day timeslots are allowed.
+              {t('timeslots.multiDayNote')}
             </Typography>
           )}
         </DialogTitle>
         <DialogContent>
           {timeslots.length === 0 ? (
             <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
-              No timeslots yet. Timeslots let visitors choose a specific time window when booking this spot.
+              {t('timeslots.empty')}
             </Typography>
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
@@ -968,7 +969,7 @@ function TimeslotDialog({
                   <Box sx={{ flex: 1 }}>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>{ts.name}</Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {ts.isWholeDay ? 'Whole day' : `${ts.startTime ?? '?'} – ${ts.endTime ?? '?'}`}
+                      {ts.isWholeDay ? t('timeslots.wholeDay') : `${ts.startTime ?? '?'} – ${ts.endTime ?? '?'}`}
                     </Typography>
                   </Box>
                   <Chip label={`#${ts.sortOrder}`} size="small" variant="outlined" sx={{ fontSize: 10 }} />
@@ -980,51 +981,51 @@ function TimeslotDialog({
           )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={onClose}>Close</Button>
-          <Button variant="contained" startIcon={<Add />} onClick={openAdd}>Add Timeslot</Button>
+          <Button onClick={onClose}>{t('common.close')}</Button>
+          <Button variant="contained" startIcon={<Add />} onClick={openAdd}>{t('timeslots.addTitle')}</Button>
         </DialogActions>
       </Dialog>
 
       {/* Add/Edit Timeslot sub-dialog */}
       <Dialog open={addOpen} onClose={() => setAddOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>{editTs ? 'Edit Timeslot' : 'Add Timeslot'}</DialogTitle>
+        <DialogTitle>{editTs ? t('timeslots.editTitle') : t('timeslots.addTitle')}</DialogTitle>
         <Box component="form" onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             <Grid container spacing={2}>
               <Grid size={{ xs: 12 }}>
-                <TextField {...register('name')} label="Name (e.g. Morning, 09:00–12:00)" fullWidth error={!!errors.name} helperText={errors.name?.message} />
+                <TextField {...register('name')} label={t('timeslots.nameLabel')} fullWidth error={!!errors.name} helperText={errors.name?.message} />
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <FormControlLabel
                   control={<Switch {...register('isWholeDay')} checked={isWholeDay} disabled={isMultiDay} />}
-                  label="Whole day"
+                  label={t('timeslots.wholeDay')}
                 />
                 {isMultiDay && (
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                    Required for multi-day spots
+                    {t('timeslots.requiredForMultiDay')}
                   </Typography>
                 )}
               </Grid>
               {!isWholeDay && (
                 <>
                   <Grid size={{ xs: 6 }}>
-                    <TextField {...register('startTime')} label="Start time" type="time" fullWidth slotProps={{ inputLabel: { shrink: true } }} />
+                    <TextField {...register('startTime')} label={t('timeslots.startTime')} type="time" fullWidth slotProps={{ inputLabel: { shrink: true } }} />
                   </Grid>
                   <Grid size={{ xs: 6 }}>
-                    <TextField {...register('endTime')} label="End time" type="time" fullWidth slotProps={{ inputLabel: { shrink: true } }} />
+                    <TextField {...register('endTime')} label={t('timeslots.endTime')} type="time" fullWidth slotProps={{ inputLabel: { shrink: true } }} />
                   </Grid>
                 </>
               )}
               <Grid size={{ xs: 12 }}>
-                <TextField {...register('sortOrder')} label="Sort order" type="number" fullWidth />
+                <TextField {...register('sortOrder')} label={t('timeslots.sortOrder')} type="number" fullWidth />
               </Grid>
             </Grid>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 3 }}>
-            <Button onClick={() => setAddOpen(false)}>Cancel</Button>
+            <Button onClick={() => setAddOpen(false)}>{t('common.cancel')}</Button>
             <Button type="submit" variant="contained" disabled={saving}>
-              {saving ? 'Saving…' : 'Save'}
+              {saving ? t('common.saving') : t('common.save')}
             </Button>
           </DialogActions>
         </Box>
@@ -1299,10 +1300,10 @@ export default function LocationDetailPage() {
     fetch(`/api/activity-locations/${locationId}`)
       .then((r) => r.json())
       .then((d) => {
-        if (!d.success) throw new Error(d.error ?? 'Failed to load location');
+        if (!d.success) throw new Error(d.error ?? t('locations.errors.loadFailed'));
         setLocation(d.data);
       })
-      .catch((e) => setError(e.message ?? 'Failed to load location'))
+      .catch((e) => setError(e.message ?? t('locations.errors.loadFailed')))
       .finally(() => setLoading(false));
   }, [locationId]);
 
@@ -1317,7 +1318,7 @@ export default function LocationDetailPage() {
   }
 
   if (error || !location) {
-    return <Alert severity="error">{error ?? 'Location not found'}</Alert>;
+    return <Alert severity="error">{error ?? t('locations.errors.loadFailed')}</Alert>;
   }
 
   return (
@@ -1343,7 +1344,7 @@ export default function LocationDetailPage() {
             {t('common.back')}
           </Button>
         }
-        badge={location.isActive ? 'Active' : 'Inactive'}
+        badge={location.isActive ? t('common.active') : t('common.inactive')}
       />
 
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ borderBottom: 1, borderColor: 'divider' }}>

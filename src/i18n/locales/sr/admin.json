@@ -17,8 +17,11 @@
       "confirmedRegistrations": "Potvrđene",
       "totalRevenue": "Ukupan prihod",
       "totalOrgs": "Organizacije",
-      "pendingOrgs": "Org na čekanju"
+      "pendingOrgs": "Org na čekanju",
+      "freeLocations": "Lokacije zajednice"
     },
+    "pendingOrgsButton": "{{count}} organizacija na odobrenju",
+    "pendingOrgsButton_plural": "{{count}} organizacija na odobrenju",
     "recentBookings": "Nedavne rezervacije",
     "quickLinks": "Brze veze"
   },
@@ -89,7 +92,14 @@
       "status": "Status",
       "created": "Kreirano"
     },
-    "confirmDelete": "Obrisati ovo mesto? Svi povezani podaci biće trajno uklonjeni."
+    "confirmDelete": "Obrisati ovo mesto? Svi povezani podaci biće trajno uklonjeni.",
+    "searchPlaceholder": "Pretraži mesta…",
+    "manage": "Upravljaj",
+    "totalCount": "{{count}} ukupno mesto",
+    "totalCount_plural": "{{count}} ukupno mesta",
+    "errors": {
+      "loadFailed": "Greška pri učitavanju mesta"
+    }
   },
   "organizations": {
     "title": "Organizacije",
@@ -120,7 +130,22 @@
     "confirmApprove": "Odobri organizaciju",
     "confirmReject": "Odbij organizaciju",
     "confirmSuspend": "Suspenduj organizaciju",
-    "rejectionReason": "Razlog (opciono)"
+    "rejectionReason": "Razlog (opciono)",
+    "approveConfirmText": "Odobriti \"{{name}}\"? Način za pristup biće poslat na {{email}}.",
+    "rejectConfirmText": "Odbiti \"{{name}}\"? Email obaveštenje biće poslato na {{email}}.",
+    "suspendConfirmText": "Suspendovati \"{{name}}\"? Njihova mesta će ostati, ali neće moći da kreiraju nova.",
+    "deleteTitle": "Trajno brisanje organizacije",
+    "deleteConfirmText": "Trajno obrisati {{name}}?",
+    "deleteWarning": "Ovo uklanja zapis organizacije iz baze, oslobođavajući email adresu {{email}} za ponovnu registraciju. Povezana mesta će ostati, ali biti odvojena od ove organizacije.",
+    "deletingLabel": "Brisanje…",
+    "deletePermanently": "Trajno obriši",
+    "errors": {
+      "loadFailed": "Greška pri učitavanju organizacija",
+      "actionFailed": "Akcija nije uspela",
+      "deleteFailed": "Brisanje nije uspelo"
+    },
+    "totalCount": "{{count}} ukupno organizacija",
+    "totalCount_plural": "{{count}} ukupno organizacija"
   },
   "registrations": {
     "title": "Sve rezervacije",
@@ -160,6 +185,75 @@
     },
     "confirmCancel": "Otkazati ovu rezervaciju? Gost će dobiti email obaveštenje.",
     "confirmConfirm": "Potvrditi ovu rezervaciju? Gost će biti obavešten.",
-    "confirmMarkPaid": "Označiti ovu rezervaciju kao potpuno plaćenu?"
+    "confirmMarkPaid": "Označiti ovu rezervaciju kao potpuno plaćenu?",
+    "errors": {
+      "loadFailed": "Greška pri učitavanju rezervacija"
+    },
+    "totalCount": "{{count}} ukupno rezervacija",
+    "totalCount_plural": "{{count}} ukupno rezervacija"
+  },
+  "freeLocations": {
+    "title": "Besplatne / lokacije zajednice",
+    "subtitle": "Javne lokacije koje nisu vezane za poslovanje ili sistem rezervacija",
+    "addNew": "Dodaj lokaciju",
+    "searchPlaceholder": "Pretraži lokacije…",
+    "empty": "Nema besplatnih lokacija. Dodajte jednu!",
+    "totalCount": "{{count}} ukupno lokacija",
+    "totalCount_plural": "{{count}} ukupno lokacija",
+    "table": {
+      "name": "Naziv",
+      "location": "Lokacija",
+      "tags": "Oznake",
+      "status": "Status",
+      "created": "Kreirano"
+    },
+    "actions": {
+      "viewPublic": "Vidi javnu stranicu",
+      "edit": "Uredi",
+      "delete": "Obriši"
+    },
+    "dialog": {
+      "addTitle": "Dodaj besplatnu lokaciju",
+      "editTitle": "Uredi: {{name}}",
+      "pinMapTitle": "Označi lokaciju na mapi"
+    },
+    "form": {
+      "images": "Slike",
+      "coverImage": "Naslovna slika",
+      "galleryPhotos": "Galerija ({{count}}/{{max}}) — pređite mišem da postavite naslovnu ★ ili uklonite",
+      "galleryHint": "Dodajte do {{max}} fotografija.",
+      "locationDetails": "Detalji lokacije",
+      "gpsCoordinates": "GPS koordinate",
+      "contact": "Kontakt",
+      "additionalInfo": "Dodatne informacije",
+      "tagsSection": "Kategorije / oznake",
+      "tagsHint": "Izaberite primenljive kategorije aktivnosti:",
+      "name": "Naziv",
+      "slug": "Slug (URL)",
+      "slugHint": "Koristi se u URL-u: /places/{{slug}}",
+      "description": "Opis",
+      "address": "Adresa",
+      "city": "Grad",
+      "country": "Država",
+      "latitude": "Geografska širina",
+      "longitude": "Geografska dužina",
+      "phone": "Telefon",
+      "email": "Email",
+      "website": "Web sajt",
+      "howToFind": "Kako pronaći / Uputstvo",
+      "directionsHint": "Uputstva, parking, napomene za pristup",
+      "saveChanges": "Sačuvaj izmene",
+      "createLocation": "Kreiraj lokaciju",
+      "activeSwitch": "Aktivno (vidljivo u pretrazi)",
+      "pinOnMap": "Oznaci na mapi",
+      "uploadCover": "Otpremi naslovnu",
+      "replace": "Zameni",
+      "add": "Dodaj"
+    },
+    "errors": {
+      "loadFailed": "Greška pri učitavanju",
+      "saveFailed": "Čuva nije uspelo",
+      "coverUploadFailed": "Otpremanje naslovne slike nije uspelo",
+      "galleryUploadFailed": "Otpremanje galerije nije uspelo"
+    }
   }
-}

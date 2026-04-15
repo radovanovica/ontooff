@@ -148,8 +148,8 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
   const handleSubmit = async () => {
     setFormError(null);
     if (!form.activityLocationId) { setFormError(t('bookings.manual.selectLocation')); return; }
-    if (!form.firstName || !form.lastName || !form.email) { setFormError('Please fill in all required fields.'); return; }
-    if (!form.startDate || !form.endDate) { setFormError('Please select start and end dates.'); return; }
+    if (!form.firstName || !form.lastName || !form.email) { setFormError(t('bookings.manual.errors.fillRequired')); return; }
+    if (!form.startDate || !form.endDate) { setFormError(t('bookings.manual.errors.selectDates')); return; }
 
     setSubmitting(true);
     try {
@@ -174,14 +174,14 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
       });
       const data = await res.json();
       if (!res.ok) {
-        setFormError(data.error ?? 'Error creating booking');
+        setFormError(data.error ?? t('bookings.manual.errors.createFailed'));
         return;
       }
       setDialogOpen(false);
       setSuccessMsg(t('bookings.manual.success'));
       fetchData();
     } catch {
-      setFormError('Network error');
+      setFormError(t('bookings.manual.errors.networkError'));
     } finally {
       setSubmitting(false);
     }
@@ -346,7 +346,7 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
             {/* Guest info */}
             <Stack direction="row" spacing={2}>
               <TextField
-                label={tReg('firstName')}
+              label={tReg('fields.firstName')}
                 size="small"
                 fullWidth
                 required
@@ -354,7 +354,7 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
                 onChange={handleField('firstName')}
               />
               <TextField
-                label={tReg('lastName')}
+                label={tReg('fields.lastName')}
                 size="small"
                 fullWidth
                 required
@@ -364,7 +364,7 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
             </Stack>
             <Stack direction="row" spacing={2}>
               <TextField
-                label={tReg('email')}
+                label={tReg('fields.email')}
                 type="email"
                 size="small"
                 fullWidth
@@ -373,7 +373,7 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
                 onChange={handleField('email')}
               />
               <TextField
-                label={tReg('phone')}
+                label={tReg('fields.phone')}
                 size="small"
                 fullWidth
                 value={form.phone}
@@ -386,7 +386,7 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
             {/* Dates + guests */}
             <Stack direction="row" spacing={2}>
               <TextField
-                label={tReg('startDate')}
+                label={tReg('fields.startDate')}
                 type="date"
                 size="small"
                 fullWidth
@@ -396,7 +396,7 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
                 slotProps={{ inputLabel: { shrink: true } }}
               />
               <TextField
-                label={tReg('endDate')}
+                label={tReg('fields.endDate')}
                 type="date"
                 size="small"
                 fullWidth

@@ -1318,7 +1318,7 @@ export default function RegistrationStepper({
               {availabilityLoading ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <CircularProgress size={18} />
-                  <Typography variant="body2" color="text.secondary">Checking spot availability…</Typography>
+                  <Typography variant="body2" color="text.secondary">{tc('stepper.checkingAvailability')}</Typography>
                 </Box>
               ) : (
                 <Stack spacing={1}>
@@ -1591,7 +1591,7 @@ export default function RegistrationStepper({
 
             {selectedLocation && (
               <Box sx={{ mb: 1.5 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>Location</Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{t('fields.location')}</Typography>
                 <Typography variant="body2">{selectedLocation.name}</Typography>
               </Box>
             )}
@@ -1650,9 +1650,9 @@ export default function RegistrationStepper({
                 </Box>
                 {formData.paymentMethod && (
                   <Box sx={{ mt: 1 }}>
-                    <Typography variant="caption" color="text.secondary">Payment method: </Typography>
+                    <Typography variant="caption" color="text.secondary">{t('fields.paymentMethod')}: </Typography>
                     <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                      {formData.paymentMethod === PaymentMethod.CASH ? '💵 Cash' : '💳 Card'}
+                      {formData.paymentMethod === PaymentMethod.CASH ? `💵 ${t('paymentMethods.cash')}` : `💳 ${t('paymentMethods.card')}`}
                     </Typography>
                   </Box>
                 )}

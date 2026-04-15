@@ -17,8 +17,11 @@
       "confirmedRegistrations": "Confirmed",
       "totalRevenue": "Total Revenue",
       "totalOrgs": "Organizations",
-      "pendingOrgs": "Pending Orgs"
+      "pendingOrgs": "Pending Orgs",
+      "freeLocations": "Community Locations"
     },
+    "pendingOrgsButton": "{{count}} org pending approval",
+    "pendingOrgsButton_plural": "{{count}} orgs pending approval",
     "recentBookings": "Recent Bookings",
     "quickLinks": "Quick Links"
   },
@@ -89,7 +92,14 @@
       "status": "Status",
       "created": "Created"
     },
-    "confirmDelete": "Delete this place? All associated data will be permanently removed."
+    "confirmDelete": "Delete this place? All associated data will be permanently removed.",
+    "searchPlaceholder": "Search places…",
+    "manage": "Manage",
+    "totalCount": "{{count}} total place",
+    "totalCount_plural": "{{count}} total places",
+    "errors": {
+      "loadFailed": "Failed to load places"
+    }
   },
   "organizations": {
     "title": "Organizations",
@@ -120,7 +130,22 @@
     "confirmApprove": "Approve Organization",
     "confirmReject": "Reject Organization",
     "confirmSuspend": "Suspend Organization",
-    "rejectionReason": "Reason (optional)"
+    "rejectionReason": "Reason (optional)",
+    "approveConfirmText": "Approve \"{{name}}\"? A PLACE_OWNER account will be created and login credentials will be sent to {{email}}.",
+    "rejectConfirmText": "Reject \"{{name}}\"? A notification email will be sent to {{email}}.",
+    "suspendConfirmText": "Suspend \"{{name}}\"? Their places will remain but they will not be able to create new ones.",
+    "deleteTitle": "Delete Organization Permanently",
+    "deleteConfirmText": "Permanently delete {{name}}?",
+    "deleteWarning": "This removes the organization record from the database completely, freeing up the email address {{email}} for re-registration. Any linked places will be kept but unlinked from this organization.",
+    "deletingLabel": "Deleting…",
+    "deletePermanently": "Delete Permanently",
+    "errors": {
+      "loadFailed": "Failed to load organizations",
+      "actionFailed": "Action failed",
+      "deleteFailed": "Delete failed"
+    },
+    "totalCount": "{{count}} total organization",
+    "totalCount_plural": "{{count}} total organizations"
   },
   "registrations": {
     "title": "All Bookings",
@@ -160,6 +185,76 @@
     },
     "confirmCancel": "Cancel this booking? The guest will receive an email notification.",
     "confirmConfirm": "Confirm this booking? The guest will be notified.",
-    "confirmMarkPaid": "Mark this booking as fully paid?"
+    "confirmMarkPaid": "Mark this booking as fully paid?",
+    "errors": {
+      "loadFailed": "Failed to load registrations"
+    },
+    "totalCount": "{{count}} total registration",
+    "totalCount_plural": "{{count}} total registrations"
+  },
+  "freeLocations": {
+    "title": "Free / Community Locations",
+    "subtitle": "Public locations not tied to any business or booking system",
+    "addNew": "Add Location",
+    "searchPlaceholder": "Search locations…",
+    "empty": "No free locations yet. Add one!",
+    "totalCount": "{{count}} total location",
+    "totalCount_plural": "{{count}} total locations",
+    "table": {
+      "name": "Name",
+      "location": "Location",
+      "tags": "Tags",
+      "status": "Status",
+      "created": "Created"
+    },
+    "actions": {
+      "viewPublic": "View public page",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "dialog": {
+      "addTitle": "Add Free Location",
+      "editTitle": "Edit: {{name}}",
+      "pinMapTitle": "Pin Location on Map"
+    },
+    "form": {
+      "images": "Images",
+      "coverImage": "Cover Image",
+      "galleryPhotos": "Gallery Photos ({{count}}/{{max}}) — hover to set cover ★ or remove",
+      "galleryHint": "Add up to {{max}} photos. First non-cover photo is shown in cards.",
+      "locationDetails": "Location Details",
+      "gpsCoordinates": "GPS Coordinates",
+      "contact": "Contact",
+      "additionalInfo": "Additional Info",
+      "tagsSection": "Categories / Tags",
+      "tagsHint": "Select applicable activity categories:",
+      "name": "Name",
+      "slug": "Slug (URL)",
+      "slugHint": "Used in URL: /places/{{slug}}",
+      "description": "Description",
+      "address": "Address",
+      "city": "City",
+      "country": "Country",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "phone": "Phone",
+      "email": "Email",
+      "website": "Website",
+      "howToFind": "How to Find It / Instructions",
+      "directionsHint": "Directions, parking info, access notes",
+      "saveChanges": "Save Changes",
+      "createLocation": "Create Location",
+      "activeSwitch": "Active (visible in search)",
+      "pinOnMap": "Pin on Map",
+      "uploadCover": "Upload cover",
+      "replace": "Replace",
+      "add": "Add"
+    },
+    "errors": {
+      "loadFailed": "Failed to load",
+      "saveFailed": "Save failed",
+      "coverUploadFailed": "Cover image upload failed",
+      "galleryUploadFailed": "Gallery upload failed"
+    }
   }
 }

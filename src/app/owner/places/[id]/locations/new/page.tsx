@@ -145,7 +145,7 @@ export default function NewLocationPage() {
 
   const onSubmit = async (data: FormOutputValues) => {
     if (selectedActivityTypeIds.length === 0) {
-      setError('At least one activity type is required');
+      setError(t('locations.errors.activityTypeRequired'));
       return;
     }
     setSaving(true);
@@ -176,12 +176,12 @@ export default function NewLocationPage() {
       });
       if (!res.ok) {
         const d = await res.json();
-        throw new Error(d.error ?? 'Create failed');
+        throw new Error(d.error ?? t('locations.errors.createFailed'));
       }
       const json = await res.json();
       router.push(`/owner/places/${placeId}/locations/${json.data.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error');
+      setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setSaving(false);
     }
@@ -269,7 +269,7 @@ export default function NewLocationPage() {
                   )}
                   {selectedActivityTypeIds.length === 0 && (
                     <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
-                      At least one activity type is required
+                      {t('locations.errors.activityTypeRequired')}
                     </Typography>
                   )}
                 </Grid>

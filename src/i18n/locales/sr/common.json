@@ -196,7 +196,12 @@
     "community": "Zajednica",
     "loadMore": "Učitaj još (još {{count}})",
     "loadingMore": "Učitavanje…",
-    "noMore": "Nema više rezultata"
+    "noMore": "Nema više rezultata",
+    "favorites": "Omiljeni",
+    "noFavorites": "Nema omiljenih",
+    "noFavoritesHint": "Kliknite na ikonu srca na bilo kom mestu da ga sačuvate kao omiljeno",
+    "noCommunity": "Nema mesta zajednice",
+    "noCommunityHint": "Nijedan doprinos zajednice ne odgovara vašoj pretrazi"
   },
   "tags": {
     "camping": "Kampovanje",
@@ -236,6 +241,10 @@
     "selectActivityHint": "Ovo mesto nudi više aktivnosti. Molimo odaberite aktivnost za rezervaciju.",
     "locationsAvailable": "lokacija dostupno",
     "changeActivity": "Promeni aktivnost",
-    "photos": "Fotografije"
+    "photos": "Fotografije",
+    "selectTimeslot": "Izaberi termin",
+    "wholeDay": "Ceo dan",
+    "timeslotRequired": "Molimo izaberite termin",
+    "checkingAvailability": "Proveravam dostupnost mesta\u2026"
   }
 }
