@@ -43,7 +43,7 @@ interface ActivityType {
   sortOrder: number;
   isActive: boolean;
   tags?: { tag: ActivityTag }[];
-  _count?: { activityLocations: number };
+  _count?: { locations: number };
 }
 
 interface FormState {
@@ -419,7 +419,7 @@ export default function ActivityTypesTab({ placeId }: Props) {
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Chip
-                    label={t('activityTypes.locationsCount', { count: at._count?.activityLocations ?? 0 })}
+                    label={t('activityTypes.locationsCount', { count: at._count?.locations ?? 0 })}
                     size="small"
                     variant="outlined"
                     sx={{ fontSize: '0.72rem', height: 20 }}
@@ -699,9 +699,9 @@ export default function ActivityTypesTab({ placeId }: Props) {
         <DialogContent>
           <Typography>
             {t('activityTypes.deleteConfirm', { name: deleteTarget?.name })}
-            {(deleteTarget?._count?.activityLocations ?? 0) > 0 && (
+            {(deleteTarget?._count?.locations ?? 0) > 0 && (
               <Alert severity="warning" sx={{ mt: 1.5 }}>
-                {t('activityTypes.deleteWithLocationsWarning', { count: deleteTarget?._count?.activityLocations ?? 0 })}
+                {t('activityTypes.deleteWithLocationsWarning', { count: deleteTarget?._count?.locations ?? 0 })}
               </Alert>
             )}
           </Typography>

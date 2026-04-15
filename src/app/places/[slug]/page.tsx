@@ -41,15 +41,6 @@ interface PlaceDetail {
     icon: string | null;
     color: string | null;
     tags: { tag: { id: string; name: string; slug: string; icon: string | null; color: string | null } }[];
-    activityLocations: {
-      id: string;
-      name: string;
-      description: string | null;
-      gallery: string | null;       // JSON: string[]
-      instructions: string | null;
-      latitude: number | null;
-      longitude: number | null;
-    }[];
   }[];
 }
 
