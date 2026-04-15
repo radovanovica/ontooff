@@ -464,3 +464,4 @@
     "pending": "Your organization \"{{name}}\" is pending admin approval. You will be able to create places once approved.",
     "statusBad": "Your organization \"{{name}}\" is {{status}}. Please contact support."
   }
+}
