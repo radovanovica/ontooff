@@ -165,6 +165,9 @@ function SearchPage() {
   const [favoritesFilter, setFavoritesFilter] = useState(false);
   const [favoritesLoading, setFavoritesLoading] = useState(false);
 
+  // ── Community filter
+  const [communityFilter, setCommunityFilter] = useState(false);
+
   useEffect(() => {
     if (!session) return;
     setFavoritesLoading(true);
@@ -424,10 +427,10 @@ function SearchPage() {
     [places, highlightedId]
   );
 
-  // Filter down to favorites when that toggle is active
-  const visiblePlaces = favoritesFilter
-    ? places.filter((p) => favoriteIds.has(p.id))
-    : places;
+  // Filter down to favorites / community when those toggles are active
+  const visiblePlaces = places
+    .filter((p) => !favoritesFilter || favoriteIds.has(p.id))
+    .filter((p) => !communityFilter || p.isFree);
 
   const hasFilters = selectedTags.length > 0 || locationQuery || from || to;
   const today = new Date().toISOString().split('T')[0];
@@ -597,9 +600,26 @@ function SearchPage() {
             </Box>
 
             {/* Row 2: tag chips */}
-            {(allTags.length > 0 || session) && (
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'nowrap', overflowX: 'auto', alignItems: 'center', '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none', pb: 0.5 }}>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'nowrap', overflowX: 'auto', alignItems: 'center', '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none', pb: 0.5 }}>
                 <FilterAlt fontSize="small" color="action" />
+                {/* Community filter */}
+                <Chip
+                  icon={<Public sx={{ fontSize: '14px !important' }} />}
+                  label={t('search.community', 'Community')}
+                  size="small"
+                  variant={communityFilter ? 'filled' : 'outlined'}
+                  onClick={() => setCommunityFilter((p) => !p)}
+                  sx={{
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    ...(communityFilter && {
+                      bgcolor: '#7b3f00',
+                      color: 'white',
+                      '& .MuiChip-icon': { color: 'white' },
+                      '&:hover': { bgcolor: '#5a2d00' },
+                    }),
+                  }}
+                />
                 {/* Favorites filter */}
                 {session && (
                   <Chip
@@ -640,7 +660,6 @@ function SearchPage() {
                   />
                 ))}
               </Box>
-            )}
           </Stack>
         </Container>
       </Box>
@@ -736,6 +755,16 @@ function SearchPage() {
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {t('search.noFavoritesHint', 'Click the heart icon on any place to save it as a favorite')}
+                </Typography>
+              </Box>
+            ) : visiblePlaces.length === 0 && communityFilter ? (
+              <Box sx={{ textAlign: 'center', py: 10 }}>
+                <Public sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  {t('search.noCommunity', 'No community places found')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t('search.noCommunityHint', 'No community-contributed places match your current search')}
                 </Typography>
               </Box>
             ) : (

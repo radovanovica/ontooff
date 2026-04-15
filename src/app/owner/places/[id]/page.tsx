@@ -92,10 +92,10 @@ export default function PlaceDetailPage() {
         <PlaceSettingsTab placeId={placeId} />
       </TabPanel>
       <TabPanel value={tab} index={1}>
-        <LocationsTab placeId={placeId} />
+         <ActivityTypesTab placeId={placeId} />
       </TabPanel>
       <TabPanel value={tab} index={2}>
-        <ActivityTypesTab placeId={placeId} />
+        <LocationsTab placeId={placeId} />
       </TabPanel>
       <TabPanel value={tab} index={3}>
         <EmbedTokensTab placeId={placeId} />
