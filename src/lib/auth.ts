@@ -28,6 +28,7 @@ export const authOptions: NextAuthOptions = {
           name: profile.name,
           email: profile.email,
           image: profile.picture,
+          emailVerified: profile.email_verified ? new Date() : null,
           role: UserRole.USER,
         };
       },
@@ -109,14 +110,20 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       // Allow OAuth sign-ins without email verification
       if (account?.provider !== 'credentials') {
-        // Auto-set emailVerified for OAuth users
+        // Ensure emailVerified and isActive are set for OAuth users (upsert handles both first and return visits)
         if (user.email) {
-          await prisma.user.update({
+          await prisma.user.upsert({
             where: { email: user.email },
-            data: { emailVerified: new Date() },
-          }).catch(() => {
-            // User might not exist yet (first sign-in), adapter handles it
-          });
+            update: { emailVerified: new Date() },
+            create: {
+              email: user.email,
+              name: user.name ?? null,
+              image: user.image ?? null,
+              emailVerified: new Date(),
+              role: UserRole.USER,
+              isActive: true,
+            },
+          }).catch(console.error);
         }
         return true;
       }

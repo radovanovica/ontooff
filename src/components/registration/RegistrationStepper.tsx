@@ -659,9 +659,7 @@ export default function RegistrationStepper({
                       gap: 1,
                       py: 3,
                       px: 2,
-                      background: at.color
-                        ? `linear-gradient(135deg, ${at.color}18 0%, ${at.color}08 100%)`
-                        : 'linear-gradient(135deg, #2d5a2710 0%, #2d5a2705 100%)',
+                      bgcolor: at.color ? `${at.color}22` : '#e8f5e9',
                       textAlign: 'center',
                     }}
                   >
@@ -674,10 +672,14 @@ export default function RegistrationStepper({
                           height: 52,
                           borderRadius: '50%',
                           bgcolor: at.color ?? '#2d5a27',
-                          opacity: 0.15,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
                           mb: 0.5,
                         }}
-                      />
+                      >
+                        <Typography sx={{ fontSize: '1.4rem', color: 'white', lineHeight: 1 }}>🌿</Typography>
+                      </Box>
                     )}
                     <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
                       {at.name}
@@ -690,10 +692,10 @@ export default function RegistrationStepper({
                         height: 22,
                         fontSize: '0.7rem',
                         fontWeight: 600,
-                        bgcolor: at.color ? `${at.color}22` : 'action.hover',
-                        color: at.color ?? 'text.secondary',
+                        bgcolor: at.color ? `${at.color}33` : '#2d5a2722',
+                        color: at.color ?? '#2d5a27',
                         border: '1px solid',
-                        borderColor: at.color ? `${at.color}44` : 'divider',
+                        borderColor: at.color ? `${at.color}55` : '#2d5a2744',
                       }}
                     />
                   </Box>
