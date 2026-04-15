@@ -14,9 +14,7 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/auth/signin',
-    newUser: '/auth/signup',
     error: '/auth/error',
-    verifyRequest: '/auth/verify-request',
   },
   providers: [
     GoogleProvider({
@@ -109,22 +107,24 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async signIn({ user, account }) {
-      // Allow OAuth sign-ins without email verification
       if (account?.provider !== 'credentials') {
-        // Ensure emailVerified and isActive are set for OAuth users (upsert handles both first and return visits)
+        // OAuth sign-in: PrismaAdapter creates the user automatically on first sign-in.
+        // For existing users, just mark email as verified (e.g. credentials user logging in via Google).
         if (user.email) {
-          await prisma.user.upsert({
+          const existing = await prisma.user.findUnique({
             where: { email: user.email },
-            update: { emailVerified: new Date() },
-            create: {
-              email: user.email,
-              name: user.name ?? null,
-              image: user.image ?? null,
-              emailVerified: new Date(),
-              role: UserRole.USER,
-              isActive: true,
-            },
-          }).catch(console.error);
+            select: { id: true, isActive: true, emailVerified: true },
+          });
+          if (existing) {
+            if (!existing.isActive) return false; // block deactivated accounts
+            if (!existing.emailVerified) {
+              await prisma.user.update({
+                where: { id: existing.id },
+                data: { emailVerified: new Date() },
+              }).catch(console.error);
+            }
+          }
+          // No existing user → PrismaAdapter will create it automatically after this callback
         }
         return true;
       }
