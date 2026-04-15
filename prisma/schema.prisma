@@ -99,6 +99,8 @@ model User {
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
+  favoriteLocationIds String[]
+
   accounts      Account[]
   sessions      Session[]
   places        Place[]
@@ -284,14 +286,41 @@ model Spot {
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
+  minDays           Int?
+  maxDays           Int?
+
   activityLocation  ActivityLocation   @relation(fields: [activityLocationId], references: [id], onDelete: Cascade)
   activityType      ActivityType?      @relation(fields: [activityTypeId], references: [id], onDelete: SetNull)
   registrationSpots RegistrationSpot[]
+  timeslots         Timeslot[]
 
   @@index([activityLocationId])
   @@index([activityTypeId])
   @@index([status])
   @@map("spots")
+}
+
+// ─────────────────────────────────────────
+// TIMESLOTS
+// ─────────────────────────────────────────
+
+model Timeslot {
+  id        String   @id @default(cuid())
+  spotId    String
+  name      String
+  startTime String?  // HH:MM, null for whole-day
+  endTime   String?  // HH:MM, null for whole-day
+  isWholeDay Boolean @default(false)
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  spot              Spot               @relation(fields: [spotId], references: [id], onDelete: Cascade)
+  registrationSpots RegistrationSpot[]
+
+  @@index([spotId])
+  @@map("timeslots")
 }
 
 // ─────────────────────────────────────────
@@ -417,14 +446,17 @@ model RegistrationSpot {
   id             String   @id @default(cuid())
   registrationId String
   spotId         String
+  timeslotId     String?
   createdAt      DateTime @default(now())
 
   registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
   spot         Spot         @relation(fields: [spotId], references: [id], onDelete: Restrict)
+  timeslot     Timeslot?    @relation(fields: [timeslotId], references: [id], onDelete: SetNull)
 
   @@unique([registrationId, spotId])
   @@index([registrationId])
   @@index([spotId])
+  @@index([spotId, timeslotId])
   @@map("registration_spots")
 }
 

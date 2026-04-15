@@ -66,7 +66,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
     include: {
       activityTypes: { include: { activityType: true } },
       place: { select: { id: true, name: true, slug: true, timezone: true } },
-      spots: { where: { status: 'AVAILABLE' }, orderBy: { sortOrder: 'asc' } },
+      spots: {
+        where: { status: 'AVAILABLE' },
+        orderBy: { sortOrder: 'asc' },
+        include: { timeslots: { where: { isActive: true }, orderBy: { sortOrder: 'asc' } } },
+      },
     },
   });
 
@@ -81,19 +85,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
     orderBy: { createdAt: 'desc' },
   });
 
-  // Enrich spots with availability if dates provided
-  const availabilityMap = startDate && endDate
-    ? new Map(
-        (await getAvailableSpots(locationId, new Date(startDate), new Date(endDate))).map(
-          (spot) => [spot.id, spot.isAvailable] as const,
-        ),
-      )
-    : null;
+  // Enrich spots with availability (including per-timeslot availability)
+  const enrichedSpots = startDate && endDate
+    ? await getAvailableSpots(locationId, new Date(startDate), new Date(endDate))
+    : location.spots.map((spot) => ({ ...spot, isAvailable: true }));
 
-  const spots = location.spots.map((spot) => ({
-    ...spot,
-    isAvailable: availabilityMap ? (availabilityMap.get(spot.id) ?? true) : true,
-  }));
+  const spots = enrichedSpots;
 
   return NextResponse.json({
     success: true,

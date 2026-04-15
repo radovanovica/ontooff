@@ -37,5 +37,6 @@ export async function GET(req: NextRequest) {
   }
 
   const spots = await getAvailableSpots(activityLocationId, start, end, undefined, activityTypeId);
+  // Each spot includes { ...spotFields, isAvailable, timeslots: [{ ...timeslotFields, isAvailable }] }
   return NextResponse.json({ success: true, data: spots });
 }

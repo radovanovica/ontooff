@@ -27,7 +27,7 @@ import {
   InputAdornment,
   Paper,
 } from '@mui/material';
-import { ArrowBack, Add, Delete, Edit, CloudUpload, Collections, Star, StarBorder, PinDrop, Search, Close, MyLocation } from '@mui/icons-material';
+import { ArrowBack, Add, Delete, Edit, CloudUpload, Collections, Star, StarBorder, PinDrop, Search, Close, MyLocation, Schedule } from '@mui/icons-material';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -81,16 +81,29 @@ interface LocationData {
   spots: SpotData[];
 }
 
+interface TimeslotData {
+  id: string;
+  name: string;
+  startTime: string | null;
+  endTime: string | null;
+  isWholeDay: boolean;
+  isActive: boolean;
+  sortOrder: number;
+}
+
 interface SpotData {
   id: string;
   name: string;
   code: string | null;
   description: string | null;
   maxPeople: number;
+  minDays: number | null;
+  maxDays: number | null;
   status: string;
   amenities: string[];
   svgShapeData: string | null;
   activityTypeId: string | null;
+  timeslots: TimeslotData[];
 }
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
@@ -114,6 +127,8 @@ const spotSchema = z.object({
   code: z.string().optional(),
   description: z.string().optional(),
   maxPeople: z.coerce.number().int().positive().default(1),
+  minDays: z.coerce.number().int().positive().nullable().optional().or(z.literal('')),
+  maxDays: z.coerce.number().int().positive().nullable().optional().or(z.literal('')),
   status: z.enum(['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'DISABLED']).default('AVAILABLE'),
   activityTypeId: z.string().nullable().optional(),
 });
@@ -607,6 +622,7 @@ function SpotsTab({
   const [editSpot, setEditSpot] = useState<SpotData | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [timeslotSpot, setTimeslotSpot] = useState<SpotData | null>(null);
 
   const { register, handleSubmit, reset, formState: { errors }, setValue: setSpotValue, watch: watchSpot } = useForm<SpotFormValues>({
     resolver: zodResolver(spotSchema),
@@ -614,32 +630,38 @@ function SpotsTab({
 
   const openAdd = () => {
     setEditSpot(null);
-    reset({ name: '', code: '', description: '', maxPeople: 1, status: 'AVAILABLE', activityTypeId: null });
+    reset({ name: '', code: '', description: '', maxPeople: 1, minDays: '', maxDays: '', status: 'AVAILABLE', activityTypeId: null });
     setOpen(true);
   };
 
   const openEdit = (spot: SpotData) => {
     setEditSpot(spot);
-    reset({ name: spot.name, code: spot.code ?? '', description: spot.description ?? '', maxPeople: spot.maxPeople, status: spot.status as SpotFormValues['status'], activityTypeId: spot.activityTypeId ?? null });
+    reset({ name: spot.name, code: spot.code ?? '', description: spot.description ?? '', maxPeople: spot.maxPeople, minDays: spot.minDays ?? '', maxDays: spot.maxDays ?? '', status: spot.status as SpotFormValues['status'], activityTypeId: spot.activityTypeId ?? null });
     setOpen(true);
   };
 
   const onSubmit = async (data: SpotFormValues) => {
     setSaving(true);
     setError(null);
+    const payload = {
+      ...data,
+      activityTypeId: data.activityTypeId || null,
+      minDays: data.minDays === '' ? null : data.minDays ?? null,
+      maxDays: data.maxDays === '' ? null : data.maxDays ?? null,
+    };
     try {
       if (editSpot) {
         const res = await fetch(`/api/spots`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: editSpot.id, ...data, activityTypeId: data.activityTypeId || null }),
+          body: JSON.stringify({ id: editSpot.id, ...payload }),
         });
         if (!res.ok) throw new Error(t('spots.errors.saveFailed'));
       } else {
         const res = await fetch('/api/spots', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ activityLocationId: locationId, ...data, activityTypeId: data.activityTypeId || null }),
+          body: JSON.stringify({ activityLocationId: locationId, ...payload }),
         });
         if (!res.ok) throw new Error(t('spots.errors.createFailed'));
       }
@@ -702,7 +724,18 @@ function SpotsTab({
                   {spot.description && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{spot.description}</Typography>}
                   <Typography variant="caption" color="text.secondary">
                     {t('spots.maxPeopleLabel', { count: spot.maxPeople })}
+                    {(spot.minDays || spot.maxDays) && (
+                      <> &nbsp;·&nbsp; {spot.minDays && `min ${spot.minDays}d`}{spot.minDays && spot.maxDays && ' – '}{spot.maxDays && `max ${spot.maxDays}d`}</>
+                    )}
                   </Typography>
+                  {spot.timeslots.length > 0 && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.75 }}>
+                      <Schedule sx={{ fontSize: 13, color: 'text.secondary' }} />
+                      <Typography variant="caption" color="text.secondary">
+                        {spot.timeslots.length} timeslot{spot.timeslots.length !== 1 ? 's' : ''}
+                      </Typography>
+                    </Box>
+                  )}
                   {spot.amenities.length > 0 && (
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 1.5 }}>
                       {spot.amenities.map((a) => <Chip key={a} label={t(`spots.amenitiesOptions.${a}`) ?? a} size="small" variant="outlined" />)}
@@ -711,6 +744,7 @@ function SpotsTab({
                 </CardContent>
                 <CardActions sx={{ px: 2, pb: 2, gap: 1 }}>
                   <Button size="small" variant="outlined" startIcon={<Edit />} onClick={() => openEdit(spot)}>{t('common.edit')}</Button>
+                  <IconButton size="small" color="primary" title="Manage timeslots" onClick={() => setTimeslotSpot(spot)}><Schedule fontSize="small" /></IconButton>
                   <IconButton size="small" color="error" onClick={() => handleDelete(spot.id)}><Delete fontSize="small" /></IconButton>
                 </CardActions>
               </Card>
@@ -764,6 +798,24 @@ function SpotsTab({
                   </TextField>
                 </Grid>
               )}
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  {...register('minDays')}
+                  label="Min days per booking (optional)"
+                  type="number"
+                  fullWidth
+                  slotProps={{ htmlInput: { min: 1 } }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  {...register('maxDays')}
+                  label="Max days per booking (optional)"
+                  type="number"
+                  fullWidth
+                  slotProps={{ htmlInput: { min: 1 } }}
+                />
+              </Grid>
             </Grid>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 3 }}>
@@ -774,7 +826,210 @@ function SpotsTab({
           </DialogActions>
         </Box>
       </Dialog>
+
+      {/* ── Timeslot Manager Dialog ──────────────────────────────────── */}
+      {timeslotSpot && (
+        <TimeslotDialog
+          spot={timeslotSpot}
+          onClose={() => setTimeslotSpot(null)}
+          onUpdated={() => { setTimeslotSpot(null); onUpdated(); }}
+        />
+      )}
     </Box>
+  );
+}
+
+// ─── Timeslot Dialog ──────────────────────────────────────────────────────────
+
+const timeslotFormSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  isWholeDay: z.boolean(),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  sortOrder: z.coerce.number().default(0),
+});
+type TimeslotFormValues = z.input<typeof timeslotFormSchema>;
+
+function TimeslotDialog({
+  spot,
+  onClose,
+  onUpdated,
+}: {
+  spot: SpotData;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const [timeslots, setTimeslots] = useState<TimeslotData[]>(spot.timeslots);
+  const [addOpen, setAddOpen] = useState(false);
+  const [editTs, setEditTs] = useState<TimeslotData | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<TimeslotFormValues>({
+    resolver: zodResolver(timeslotFormSchema),
+    defaultValues: { isWholeDay: false, sortOrder: timeslots.length },
+  });
+  const isWholeDay = watch('isWholeDay');
+  const isMultiDay = (spot.maxDays ?? 1) > 1;
+
+  const openAdd = () => {
+    setEditTs(null);
+    reset({ name: '', isWholeDay: isMultiDay, startTime: '', endTime: '', sortOrder: timeslots.length });
+    setAddOpen(true);
+  };
+
+  const openEdit = (ts: TimeslotData) => {
+    setEditTs(ts);
+    reset({ name: ts.name, isWholeDay: ts.isWholeDay, startTime: ts.startTime ?? '', endTime: ts.endTime ?? '', sortOrder: ts.sortOrder });
+    setAddOpen(true);
+  };
+
+  const onSubmit = async (data: TimeslotFormValues) => {
+    setSaving(true);
+    setError(null);
+    try {
+      const payload = {
+        ...data,
+        sortOrder: Number(data.sortOrder) || 0,
+        startTime: data.isWholeDay ? null : (data.startTime || null),
+        endTime: data.isWholeDay ? null : (data.endTime || null),
+      };
+      if (editTs) {
+        const res = await fetch('/api/timeslots', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editTs.id, ...payload }),
+        });
+        if (!res.ok) throw new Error('Failed to update timeslot');
+        const updated: TimeslotData = { ...editTs, ...payload };
+        setTimeslots((prev) => prev.map((t) => (t.id === editTs.id ? updated : t)));
+      } else {
+        const res = await fetch('/api/timeslots', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ spotId: spot.id, ...payload }),
+        });
+        if (!res.ok) throw new Error('Failed to create timeslot');
+        const json = await res.json() as { data: TimeslotData };
+        setTimeslots((prev) => [...prev, json.data]);
+      }
+      setAddOpen(false);
+      onUpdated();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this timeslot?')) return;
+    await fetch('/api/timeslots', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    setTimeslots((prev) => prev.filter((t) => t.id !== id));
+    onUpdated();
+  };
+
+  return (
+    <>
+      <Dialog open onClose={onClose} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          Timeslots — {spot.name}
+          {isMultiDay && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              This spot has maxDays &gt; 1, so only whole-day timeslots are allowed.
+            </Typography>
+          )}
+        </DialogTitle>
+        <DialogContent>
+          {timeslots.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+              No timeslots yet. Timeslots let visitors choose a specific time window when booking this spot.
+            </Typography>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
+              {timeslots.map((ts) => (
+                <Box
+                  key={ts.id}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    p: 1.5,
+                    borderRadius: 1,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Schedule fontSize="small" color="action" />
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{ts.name}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {ts.isWholeDay ? 'Whole day' : `${ts.startTime ?? '?'} – ${ts.endTime ?? '?'}`}
+                    </Typography>
+                  </Box>
+                  <Chip label={`#${ts.sortOrder}`} size="small" variant="outlined" sx={{ fontSize: 10 }} />
+                  <IconButton size="small" onClick={() => openEdit(ts)}><Edit fontSize="small" /></IconButton>
+                  <IconButton size="small" color="error" onClick={() => handleDelete(ts.id)}><Delete fontSize="small" /></IconButton>
+                </Box>
+              ))}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={onClose}>Close</Button>
+          <Button variant="contained" startIcon={<Add />} onClick={openAdd}>Add Timeslot</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add/Edit Timeslot sub-dialog */}
+      <Dialog open={addOpen} onClose={() => setAddOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>{editTs ? 'Edit Timeslot' : 'Add Timeslot'}</DialogTitle>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+          <DialogContent>
+            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12 }}>
+                <TextField {...register('name')} label="Name (e.g. Morning, 09:00–12:00)" fullWidth error={!!errors.name} helperText={errors.name?.message} />
+              </Grid>
+              <Grid size={{ xs: 12 }}>
+                <FormControlLabel
+                  control={<Switch {...register('isWholeDay')} checked={isWholeDay} disabled={isMultiDay} />}
+                  label="Whole day"
+                />
+                {isMultiDay && (
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                    Required for multi-day spots
+                  </Typography>
+                )}
+              </Grid>
+              {!isWholeDay && (
+                <>
+                  <Grid size={{ xs: 6 }}>
+                    <TextField {...register('startTime')} label="Start time" type="time" fullWidth slotProps={{ inputLabel: { shrink: true } }} />
+                  </Grid>
+                  <Grid size={{ xs: 6 }}>
+                    <TextField {...register('endTime')} label="End time" type="time" fullWidth slotProps={{ inputLabel: { shrink: true } }} />
+                  </Grid>
+                </>
+              )}
+              <Grid size={{ xs: 12 }}>
+                <TextField {...register('sortOrder')} label="Sort order" type="number" fullWidth />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 3 }}>
+            <Button onClick={() => setAddOpen(false)}>Cancel</Button>
+            <Button type="submit" variant="contained" disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
+            </Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
+    </>
   );
 }
 

@@ -45,6 +45,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Close,
+  AccessTime,
+  WbSunny,
 } from '@mui/icons-material';
 import dynamic from 'next/dynamic';
 import { useForm, Controller } from 'react-hook-form';
@@ -67,6 +69,7 @@ import {
   PaymentMethod,
   PricingType,
   RegistrationFormData,
+  Timeslot,
 } from '@/types';
 import ReviewForm from '@/components/reviews/ReviewForm';
 
@@ -207,7 +210,19 @@ export default function RegistrationStepper({
 
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
-  const [availableSpots, setAvailableSpots] = useState<(SpotMapItem & { isAvailable?: boolean })[]>([]);
+  const [availableSpots, setAvailableSpots] = useState<(SpotMapItem & { isAvailable?: boolean; minDays?: number | null; maxDays?: number | null; timeslots?: (Timeslot & { isAvailable?: boolean })[] })[]>([]);
+
+  // spotId → selected timeslotId
+  const [spotTimeslotSelections, setSpotTimeslotSelections] = useState<Record<string, string>>({});
+
+  const selectTimeslot = (spotId: string, timeslotId: string) => {
+    setSpotTimeslotSelections((prev) => ({ ...prev, [spotId]: timeslotId }));
+  };
+
+  const clearTimeslotForSpot = (spotId: string) => {
+    setSpotTimeslotSelections((prev) => { const next = { ...prev }; delete next[spotId]; return next; });
+  };
+
 
   const today = format(new Date(), 'yyyy-MM-dd');
   const tomorrow = format(addDays(new Date(), 1), 'yyyy-MM-dd');
@@ -243,6 +258,10 @@ export default function RegistrationStepper({
       ? current.filter((id) => id !== spot.id)
       : [...current, spot.id];
     setValue1('spotIds', next);
+    // Clear timeslot selection when spot is deselected
+    if (current.includes(spot.id)) {
+      clearTimeslotForSpot(spot.id);
+    }
   };
 
   const pricingRules = selectedLocation?.pricingRules ?? [];
@@ -390,13 +409,20 @@ export default function RegistrationStepper({
           throw new Error(json.error ?? 'Failed to check spot availability');
         }
 
-        const fetched = (json.data ?? []) as (SpotMapItem & { isAvailable?: boolean })[];
+        const fetched = (json.data ?? []) as (SpotMapItem & { isAvailable?: boolean; minDays?: number | null; maxDays?: number | null; timeslots?: (Timeslot & { isAvailable?: boolean })[] })[];
         setAvailableSpots(fetched);
 
         const stillAvailableIds = new Set(
           fetched.filter((s) => s.isAvailable !== false).map((s) => s.id)
         );
-        setValue1('spotIds', (selectedSpotIds ?? []).filter((id) => stillAvailableIds.has(id)));
+        const nextSpotIds = (selectedSpotIds ?? []).filter((id) => stillAvailableIds.has(id));
+        setValue1('spotIds', nextSpotIds);
+        // Clear timeslot selections for spots that are no longer selected
+        setSpotTimeslotSelections((prev) => {
+          const next: Record<string, string> = {};
+          for (const id of nextSpotIds) { if (prev[id]) next[id] = prev[id]; }
+          return next;
+        });
       } catch (err) {
         setAvailabilityError(err instanceof Error ? err.message : 'Failed to check spot availability');
       } finally {
@@ -425,11 +451,24 @@ export default function RegistrationStepper({
       setError1('spotIds', { message: t('validation.spotRequired') });
       return;
     }
+    // Validate that all selected spots with timeslots have a timeslot chosen
+    for (const spotId of values.spotIds ?? []) {
+      const spot = availableSpots.find((s) => s.id === spotId);
+      if ((spot?.timeslots ?? []).length > 0 && !spotTimeslotSelections[spotId]) {
+        setError1('spotIds', { message: t('validation.timeslotRequired', 'Please select a timeslot for each selected spot') });
+        return;
+      }
+    }
+    const spotTimeslots = (values.spotIds ?? []).map((spotId) => ({
+      spotId,
+      timeslotId: spotTimeslotSelections[spotId] ?? null,
+    }));
     setFormData((prev) => ({
       ...prev,
       ...values,
       activityLocationId: selectedLocation.id,
       numberOfDays,
+      spotTimeslots,
     }));
     setActiveStep(1);
   };
@@ -493,7 +532,7 @@ export default function RegistrationStepper({
     try {
       const payload = {
         activityLocationId: formData.activityLocationId,
-        spotIds: formData.spotIds,
+        spotTimeslots: formData.spotTimeslots ?? (formData.spotIds ?? []).map((id) => ({ spotId: id, timeslotId: null })),
         pricingRuleId: formData.pricingRuleId ?? null,
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -1299,10 +1338,69 @@ export default function RegistrationStepper({
                                     {spot.name}{spot.code ? ` (${spot.code})` : ''}
                                   </Typography>
                                   <Typography variant="caption" color="text.secondary">{tc('stepper.maxPeople', { count: spot.maxPeople })}</Typography>
+                                  {(spot.minDays != null || spot.maxDays != null) && (
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                      {spot.minDays != null && spot.maxDays != null
+                                        ? `${spot.minDays}–${spot.maxDays} days`
+                                        : spot.minDays != null
+                                          ? `Min ${spot.minDays} day${spot.minDays > 1 ? 's' : ''}`
+                                          : `Max ${spot.maxDays} day${(spot.maxDays ?? 0) > 1 ? 's' : ''}`}
+                                    </Typography>
+                                  )}
                                 </Box>
                                 <Checkbox checked={checked} />
                               </CardContent>
                             </CardActionArea>
+
+                            {/* Timeslot selector — shown for selected spots with timeslots */}
+                            {checked && (spot.timeslots ?? []).length > 0 && (
+                              <Box sx={{ px: 2, pb: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1.5, mb: 1 }}>
+                                  <AccessTime fontSize="small" color="action" />
+                                  <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                                    {tc('stepper.selectTimeslot', 'Select timeslot')}
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                  {(spot.timeslots ?? []).map((ts) => {
+                                    const isSelected = spotTimeslotSelections[spot.id] === ts.id;
+                                    const isUnavailable = ts.isAvailable === false;
+                                    return (
+                                      <Chip
+                                        key={ts.id}
+                                        size="small"
+                                        icon={ts.isWholeDay ? <WbSunny fontSize="small" /> : <AccessTime fontSize="small" />}
+                                        label={
+                                          ts.isWholeDay
+                                            ? tc('stepper.wholeDay', 'Whole day')
+                                            : `${ts.startTime} – ${ts.endTime}`
+                                        }
+                                        onClick={() => !isUnavailable && selectTimeslot(spot.id, ts.id)}
+                                        disabled={isUnavailable}
+                                        sx={{
+                                          cursor: isUnavailable ? 'default' : 'pointer',
+                                          ...(isSelected && {
+                                            bgcolor: '#2d5a27',
+                                            color: 'white',
+                                            '& .MuiChip-icon': { color: 'white' },
+                                            '&:hover': { bgcolor: '#1e3d1a' },
+                                          }),
+                                          ...(isUnavailable && {
+                                            opacity: 0.45,
+                                            textDecoration: 'line-through',
+                                          }),
+                                        }}
+                                      />
+                                    );
+                                  })}
+                                </Box>
+                                {!spotTimeslotSelections[spot.id] && (
+                                  <Typography variant="caption" color="error.main" sx={{ mt: 0.5, display: 'block' }}>
+                                    {tc('stepper.timeslotRequired', 'Please select a timeslot')}
+                                  </Typography>
+                                )}
+                              </Box>
+                            )}
                           </Card>
                         );
                       })

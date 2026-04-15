@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { SpotStatus } from '@/types';
+import { RegistrationStatus } from '@prisma/client';
 
 /**
  * Generate a unique human-readable registration number
@@ -16,34 +17,41 @@ export async function generateRegistrationNumber(): Promise<string> {
 }
 
 /**
- * Check if spots are available for the given date range
+ * Check if spots (with optional timeslots) are available for the given date range.
+ * For spots with a timeslotId, the uniqueness constraint is per (spotId, timeslotId).
+ * For spots with no timeslotId (null), the constraint is per spotId (old behaviour).
  */
 export async function checkSpotAvailability(
-  spotIds: string[],
+  spotTimeslots: Array<{ spotId: string; timeslotId: string | null }>,
   startDate: Date,
   endDate: Date,
   excludeRegistrationId?: string
 ): Promise<{ available: boolean; conflicts: string[] }> {
-  const conflicts = await prisma.registrationSpot.findMany({
-    where: {
-      spotId: { in: spotIds },
-      registration: {
-        id: excludeRegistrationId ? { not: excludeRegistrationId } : undefined,
-        status: { notIn: ['CANCELLED'] },
-        OR: [
-          { startDate: { lte: endDate }, endDate: { gte: startDate } },
-        ],
-      },
-    },
-    select: { spotId: true },
-  });
+  const conflicts: string[] = [];
 
-  const conflictIds = [...new Set(conflicts.map((c: { spotId: string }) => c.spotId))];
-  return { available: conflictIds.length === 0, conflicts: conflictIds as string[] };
+  for (const { spotId, timeslotId } of spotTimeslots) {
+    const existing = await prisma.registrationSpot.findFirst({
+      where: {
+        spotId,
+        // null matches IS NULL, a string matches exactly — Prisma handles this correctly
+        timeslotId: timeslotId ?? null,
+        registration: {
+          id: excludeRegistrationId ? { not: excludeRegistrationId } : undefined,
+          status: { notIn: [RegistrationStatus.CANCELLED] },
+          startDate: { lte: endDate },
+          endDate: { gte: startDate },
+        },
+      },
+    });
+    if (existing) conflicts.push(spotId);
+  }
+
+  return { available: conflicts.length === 0, conflicts };
 }
 
 /**
- * Get available spots for a location and date range
+ * Get available spots for a location and date range.
+ * Returns each spot with its timeslots and per-timeslot availability.
  */
 export async function getAvailableSpots(
   activityLocationId: string,
@@ -56,32 +64,75 @@ export async function getAvailableSpots(
     where: {
       activityLocationId,
       status: SpotStatus.AVAILABLE,
-      // If activityTypeId provided, show only spots matching that type OR spots with no type assigned
       ...(activityTypeId
         ? { OR: [{ activityTypeId }, { activityTypeId: null }] }
         : undefined),
     },
-  });
-
-  const bookedSpotIds = await prisma.registrationSpot.findMany({
-    where: {
-      spotId: { in: allSpots.map((s: { id: string }) => s.id) },
-      registration: {
-        id: excludeRegistrationId ? { not: excludeRegistrationId } : undefined,
-        status: { notIn: ['CANCELLED'] },
-        startDate: { lte: endDate },
-        endDate: { gte: startDate },
-      },
+    include: {
+      timeslots: { where: { isActive: true }, orderBy: { sortOrder: 'asc' } },
     },
-    select: { spotId: true },
+    orderBy: { sortOrder: 'asc' },
   });
 
-  const bookedIds = new Set(bookedSpotIds.map((b: { spotId: string }) => b.spotId));
+  const baseRegFilter = {
+    id: excludeRegistrationId ? { not: excludeRegistrationId } : undefined,
+    status: { notIn: [RegistrationStatus.CANCELLED] },
+    startDate: { lte: endDate },
+    endDate: { gte: startDate },
+  };
 
-  return allSpots.map((spot: { id: string; [key: string]: unknown }) => ({
-    ...spot,
-    isAvailable: !bookedIds.has(spot.id),
-  }));
+  // Spots WITHOUT timeslots — check by spotId only (null timeslotId)
+  const noTimeslotSpotIds = allSpots
+    .filter((s) => s.timeslots.length === 0)
+    .map((s) => s.id);
+
+  const bookedNoTimeslotIds = noTimeslotSpotIds.length > 0
+    ? await prisma.registrationSpot.findMany({
+        where: {
+          spotId: { in: noTimeslotSpotIds },
+          timeslotId: null,
+          registration: baseRegFilter,
+        },
+        select: { spotId: true },
+      })
+    : [];
+  const bookedNoTimeslot = new Set(bookedNoTimeslotIds.map((b) => b.spotId));
+
+  // Spots WITH timeslots — check per (spotId, timeslotId)
+  const allTimeslotIds = allSpots.flatMap((s) => s.timeslots.map((t) => t.id));
+  const bookedTimeslotRows = allTimeslotIds.length > 0
+    ? await prisma.registrationSpot.findMany({
+        where: {
+          timeslotId: { in: allTimeslotIds },
+          registration: baseRegFilter,
+        },
+        select: { spotId: true, timeslotId: true },
+      })
+    : [];
+
+  // Build map: spotId → Set<bookedTimeslotId>
+  const bookedBySpot = new Map<string, Set<string>>();
+  for (const row of bookedTimeslotRows) {
+    if (!row.timeslotId) continue;
+    if (!bookedBySpot.has(row.spotId)) bookedBySpot.set(row.spotId, new Set());
+    bookedBySpot.get(row.spotId)!.add(row.timeslotId);
+  }
+
+  return allSpots.map((spot) => {
+    if (spot.timeslots.length === 0) {
+      return { ...spot, isAvailable: !bookedNoTimeslot.has(spot.id), timeslots: [] };
+    }
+    const bookedTimeslotIds = bookedBySpot.get(spot.id) ?? new Set<string>();
+    const timeslotsWithAvailability = spot.timeslots.map((t) => ({
+      ...t,
+      isAvailable: !bookedTimeslotIds.has(t.id),
+    }));
+    return {
+      ...spot,
+      isAvailable: timeslotsWithAvailability.some((t) => t.isAvailable),
+      timeslots: timeslotsWithAvailability,
+    };
+  });
 }
 
 /**

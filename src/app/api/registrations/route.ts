@@ -16,6 +16,12 @@ const guestCountsSchema = z.record(z.string(), z.number().int().nonnegative()).r
 
 const createSchema = z.object({
   activityLocationId: z.string(),
+  // New: explicit spot+timeslot pairs (preferred)
+  spotTimeslots: z.array(z.object({
+    spotId: z.string(),
+    timeslotId: z.string().nullable().optional(),
+  })).optional(),
+  // Legacy: spotIds only (no timeslot) — kept for backward compat
   spotIds: z.array(z.string()).optional().default([]),
   pricingRuleId: z.string().optional(),
   firstName: z.string().min(1),
@@ -137,26 +143,77 @@ export async function POST(req: NextRequest) {
 
     const totalGuests = getTotalGuests(data.guestCounts as GuestCounts);
 
-    // Check spot availability
-    if (data.spotIds.length > 0) {
-      const { available, conflicts } = await checkSpotAvailability(data.spotIds, startDate, endDate);
-      if (!available) {
-        return NextResponse.json(
-          { success: false, error: 'One or more spots are not available for the selected dates', conflicts },
-          { status: 409 }
-        );
-      }
+    // Resolve the effective spot+timeslot pairs
+    const resolvedSpotTimeslots: Array<{ spotId: string; timeslotId: string | null }> =
+      data.spotTimeslots
+        ? data.spotTimeslots.map((st) => ({ spotId: st.spotId, timeslotId: st.timeslotId ?? null }))
+        : data.spotIds.map((id) => ({ spotId: id, timeslotId: null }));
 
+    // Check spot availability
+    if (resolvedSpotTimeslots.length > 0) {
+      // Validate spots belong to the location
+      const spotIds = resolvedSpotTimeslots.map((st) => st.spotId);
       const selectedSpots = await prisma.spot.findMany({
-        where: {
-          id: { in: data.spotIds },
-          activityLocationId: data.activityLocationId,
-        },
-        select: { id: true, maxPeople: true },
+        where: { id: { in: spotIds }, activityLocationId: data.activityLocationId },
+        include: { timeslots: { where: { isActive: true } } },
       });
 
-      if (selectedSpots.length !== data.spotIds.length) {
+      if (selectedSpots.length !== spotIds.length) {
         return NextResponse.json({ success: false, error: 'One or more selected spots are invalid' }, { status: 422 });
+      }
+
+      // Per-spot validations
+      for (const spot of selectedSpots) {
+        // minDays / maxDays per spot
+        if (spot.minDays != null && numberOfDays < spot.minDays) {
+          return NextResponse.json(
+            { success: false, error: `Spot "${spot.name}" requires a minimum stay of ${spot.minDays} day(s)` },
+            { status: 422 }
+          );
+        }
+        if (spot.maxDays != null && numberOfDays > spot.maxDays) {
+          return NextResponse.json(
+            { success: false, error: `Spot "${spot.name}" allows a maximum stay of ${spot.maxDays} day(s)` },
+            { status: 422 }
+          );
+        }
+
+        const st = resolvedSpotTimeslots.find((x) => x.spotId === spot.id);
+
+        // Timeslot required if spot has timeslots configured
+        if (spot.timeslots.length > 0 && !st?.timeslotId) {
+          return NextResponse.json(
+            { success: false, error: `Please select a timeslot for spot "${spot.name}"` },
+            { status: 422 }
+          );
+        }
+
+        // Validate the chosen timeslot belongs to the spot
+        if (st?.timeslotId) {
+          const timeslot = spot.timeslots.find((t) => t.id === st.timeslotId);
+          if (!timeslot) {
+            return NextResponse.json(
+              { success: false, error: `Invalid timeslot selected for spot "${spot.name}"` },
+              { status: 422 }
+            );
+          }
+          // Multi-day spots must use whole-day timeslots
+          if (!timeslot.isWholeDay && spot.maxDays != null && spot.maxDays > 1) {
+            return NextResponse.json(
+              { success: false, error: `Spot "${spot.name}" requires a whole-day timeslot for multi-day bookings` },
+              { status: 422 }
+            );
+          }
+        }
+      }
+
+      // Critical validation: no double-booking per (spotId, timeslotId, dateRange)
+      const { available, conflicts } = await checkSpotAvailability(resolvedSpotTimeslots, startDate, endDate);
+      if (!available) {
+        return NextResponse.json(
+          { success: false, error: 'One or more spots/timeslots are already booked for the selected dates', conflicts },
+          { status: 409 }
+        );
       }
 
       const selectedSpotsCapacity = selectedSpots.reduce((sum, spot) => sum + spot.maxPeople, 0);
@@ -300,8 +357,8 @@ export async function POST(req: NextRequest) {
         source: data.source ?? 'web',
         status: data.initialStatus ?? 'PENDING',
         embedTokenId: data.embedTokenId ?? null,
-        registrationSpots: data.spotIds.length > 0
-          ? { create: data.spotIds.map((spotId) => ({ spotId })) }
+        registrationSpots: resolvedSpotTimeslots.length > 0
+          ? { create: resolvedSpotTimeslots.map((st) => ({ spotId: st.spotId, timeslotId: st.timeslotId ?? null })) }
           : undefined,
         paymentBreakdown: pricingData.paymentBreakdown
           ? { create: pricingData.paymentBreakdown }

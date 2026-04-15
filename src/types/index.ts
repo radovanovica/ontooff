@@ -74,6 +74,7 @@ export interface User {
   role: UserRole;
   isActive: boolean;
   phone: string | null;
+  favoriteLocationIds: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -256,6 +257,25 @@ export interface ActivityLocation {
 }
 
 // ─────────────────────────────────────────
+// TIMESLOT
+// ─────────────────────────────────────────
+
+export interface Timeslot {
+  id: string;
+  spotId: string;
+  name: string;
+  startTime: string | null;  // HH:MM
+  endTime: string | null;    // HH:MM
+  isWholeDay: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+  // Computed availability (returned by /api/spots/availability)
+  isAvailable?: boolean;
+}
+
+// ─────────────────────────────────────────
 // SPOT
 // ─────────────────────────────────────────
 
@@ -267,6 +287,8 @@ export interface Spot {
   code: string | null;
   svgShapeData: string | null;
   maxPeople: number;
+  minDays: number | null;
+  maxDays: number | null;
   amenities: string[];
   imageUrl: string | null;
   status: SpotStatus;
@@ -274,6 +296,7 @@ export interface Spot {
   createdAt: Date;
   updatedAt: Date;
   activityLocation?: ActivityLocation;
+  timeslots?: Timeslot[];
   // Computed availability
   isAvailable?: boolean;
   bookedDates?: string[];
@@ -401,8 +424,10 @@ export interface RegistrationSpot {
   id: string;
   registrationId: string;
   spotId: string;
+  timeslotId: string | null;
   createdAt: Date;
   spot?: Spot;
+  timeslot?: Timeslot | null;
 }
 
 // ─────────────────────────────────────────
@@ -535,6 +560,7 @@ export interface RegistrationStep1Data {
 
 export interface RegistrationStep2Data {
   spotIds: string[];
+  spotTimeslots?: Array<{ spotId: string; timeslotId: string | null }>;
   startDate: string;
   endDate: string;
   numberOfDays: number;

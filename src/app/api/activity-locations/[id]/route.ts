@@ -48,7 +48,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         include: { activityType: { select: { id: true, name: true, icon: true, color: true } } },
       },
       place: { select: { id: true, name: true, slug: true, timezone: true } },
-      spots: { orderBy: { sortOrder: 'asc' } },
+      spots: { orderBy: { sortOrder: 'asc' }, include: { timeslots: { where: { isActive: true }, orderBy: { sortOrder: 'asc' } } } },
     },
   });
 

@@ -37,11 +37,14 @@ import {
   Public,
   FilterAlt,
   MyLocation,
+  Favorite,
+  FavoriteBorder,
 } from '@mui/icons-material';
 import { ActivityTag } from '@/types';
 import DateRangePicker from '@/components/ui/DateRangePicker';
 import Navbar from '@/components/layout/Navbar';
 import { useTranslation } from '@/i18n/client';
+import { useSession } from 'next-auth/react';
 
 // Dynamically import the interactive map (no SSR)
 const SearchMap = dynamic(() => import('@/components/map/SearchMap'), {
@@ -155,6 +158,53 @@ function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslation('common');
+  const { data: session } = useSession();
+
+  // ── Favorites
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [favoritesFilter, setFavoritesFilter] = useState(false);
+  const [favoritesLoading, setFavoritesLoading] = useState(false);
+
+  useEffect(() => {
+    if (!session) return;
+    setFavoritesLoading(true);
+    fetch('/api/users/me/favorites')
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setFavoriteIds(new Set(d.data ?? [])); })
+      .catch(() => {})
+      .finally(() => setFavoritesLoading(false));
+  }, [session]);
+
+  const toggleFavorite = useCallback(async (locationId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!session) return;
+    const isFav = favoriteIds.has(locationId);
+    // Optimistic update
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (isFav) next.delete(locationId); else next.add(locationId);
+      return next;
+    });
+    try {
+      if (isFav) {
+        await fetch(`/api/users/me/favorites?locationId=${locationId}`, { method: 'DELETE' });
+      } else {
+        await fetch('/api/users/me/favorites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ locationId }),
+        });
+      }
+    } catch {
+      // Revert on failure
+      setFavoriteIds((prev) => {
+        const next = new Set(prev);
+        if (isFav) next.add(locationId); else next.delete(locationId);
+        return next;
+      });
+    }
+  }, [session, favoriteIds]);
 
   // Read URL params on mount only
   const initialTags = useMemo(
@@ -374,6 +424,11 @@ function SearchPage() {
     [places, highlightedId]
   );
 
+  // Filter down to favorites when that toggle is active
+  const visiblePlaces = favoritesFilter
+    ? places.filter((p) => favoriteIds.has(p.id))
+    : places;
+
   const hasFilters = selectedTags.length > 0 || locationQuery || from || to;
   const today = new Date().toISOString().split('T')[0];
 
@@ -542,9 +597,30 @@ function SearchPage() {
             </Box>
 
             {/* Row 2: tag chips */}
-            {allTags.length > 0 && (
+            {(allTags.length > 0 || session) && (
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'nowrap', overflowX: 'auto', alignItems: 'center', '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none', pb: 0.5 }}>
                 <FilterAlt fontSize="small" color="action" />
+                {/* Favorites filter */}
+                {session && (
+                  <Chip
+                    icon={<Favorite sx={{ fontSize: '14px !important' }} />}
+                    label={t('search.favorites', 'Favorites')}
+                    size="small"
+                    variant={favoritesFilter ? 'filled' : 'outlined'}
+                    onClick={() => setFavoritesFilter((p) => !p)}
+                    disabled={favoritesLoading}
+                    sx={{
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                      ...(favoritesFilter && {
+                        bgcolor: '#c0392b',
+                        color: 'white',
+                        '& .MuiChip-icon': { color: 'white' },
+                        '&:hover': { bgcolor: '#922b21' },
+                      }),
+                    }}
+                  />
+                )}
                 {allTags.map((tag) => (
                   <Chip
                     key={tag.slug}
@@ -652,16 +728,28 @@ function SearchPage() {
                   </Button>
                 )}
               </Box>
+            ) : visiblePlaces.length === 0 && favoritesFilter ? (
+              <Box sx={{ textAlign: 'center', py: 10 }}>
+                <Favorite sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  {t('search.noFavorites', 'No favorites yet')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t('search.noFavoritesHint', 'Click the heart icon on any place to save it as a favorite')}
+                </Typography>
+              </Box>
             ) : (
               <>
                 <Grid container spacing={2}>
-                  {places.map((place) => (
+                  {visiblePlaces.map((place) => (
                     <Grid key={place.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
                       <PlaceCard
                         place={place}
                         highlighted={highlightedId === place.id}
                         onMouseEnter={() => setHighlightedId(place.id)}
                         onMouseLeave={() => setHighlightedId(null)}
+                        isFavorite={favoriteIds.has(place.id)}
+                        onToggleFavorite={session ? (e) => toggleFavorite(place.id, e) : undefined}
                       />
                     </Grid>
                   ))}
@@ -723,13 +811,15 @@ function SearchPage() {
                   </Typography>
                 </Box>
               ) : (
-                places.map((place) => (
+                visiblePlaces.map((place) => (
                   <PlaceCardCompact
                     key={place.id}
                     place={place}
                     highlighted={highlightedId === place.id}
                     onMouseEnter={() => setHighlightedId(place.id)}
                     onMouseLeave={() => setHighlightedId(null)}
+                    isFavorite={favoriteIds.has(place.id)}
+                    onToggleFavorite={session ? (e) => toggleFavorite(place.id, e) : undefined}
                   />
                 ))
               )}
@@ -782,11 +872,15 @@ function PlaceCard({
   highlighted,
   onMouseEnter,
   onMouseLeave,
+  isFavorite = false,
+  onToggleFavorite,
 }: {
   place: SearchPlace;
   highlighted: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: (e: React.MouseEvent) => void;
 }) {
   const tags: ActivityTag[] = place.isFree
     ? (place.tags ?? []).map((t) => t.tag)
@@ -842,6 +936,22 @@ function PlaceCard({
             sizes="(max-width:600px) 100vw, 33vw"
             style={{ objectFit: 'cover' }}
           />
+          {onToggleFavorite && (
+            <IconButton
+              size="small"
+              onClick={(e) => { e.preventDefault(); onToggleFavorite(e); }}
+              sx={{
+                position: 'absolute', top: 6, right: 6, zIndex: 2,
+                bgcolor: 'rgba(255,255,255,0.85)',
+                '&:hover': { bgcolor: 'rgba(255,255,255,1)' },
+                padding: '4px',
+              }}
+            >
+              {isFavorite
+                ? <Favorite sx={{ color: '#c0392b', fontSize: 18 }} />
+                : <FavoriteBorder sx={{ fontSize: 18 }} />}
+            </IconButton>
+          )}
         </CardMedia>
       ) : (
         <Box
@@ -851,9 +961,26 @@ function PlaceCard({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            position: 'relative',
           }}
         >
           <LocationOn sx={{ fontSize: 48, color: 'grey.300' }} />
+          {onToggleFavorite && (
+            <IconButton
+              size="small"
+              onClick={(e) => { e.preventDefault(); onToggleFavorite(e); }}
+              sx={{
+                position: 'absolute', top: 6, right: 6, zIndex: 2,
+                bgcolor: 'rgba(255,255,255,0.85)',
+                '&:hover': { bgcolor: 'rgba(255,255,255,1)' },
+                padding: '4px',
+              }}
+            >
+              {isFavorite
+                ? <Favorite sx={{ color: '#c0392b', fontSize: 18 }} />
+                : <FavoriteBorder sx={{ fontSize: 18 }} />}
+            </IconButton>
+          )}
         </Box>
       )}
 
@@ -920,11 +1047,15 @@ function PlaceCardCompact({
   highlighted,
   onMouseEnter,
   onMouseLeave,
+  isFavorite = false,
+  onToggleFavorite,
 }: {
   place: SearchPlace;
   highlighted: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: (e: React.MouseEvent) => void;
 }) {
   const href = place.isFree ? `/locations/${place.slug}` : `/places/${place.slug}`;
   const { t } = useTranslation('common');
@@ -992,9 +1123,20 @@ function PlaceCardCompact({
               sx={{ bgcolor: '#7b3f00', color: 'white', fontSize: 10, height: 16, flexShrink: 0 }}
             />
           )}
-          <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>
+          <Typography variant="body2" sx={{ fontWeight: 700, flex: 1, minWidth: 0 }} noWrap>
             {place.name}
           </Typography>
+          {onToggleFavorite && (
+            <IconButton
+              size="small"
+              onClick={(e) => { e.preventDefault(); onToggleFavorite(e); }}
+              sx={{ flexShrink: 0, padding: '2px' }}
+            >
+              {isFavorite
+                ? <Favorite sx={{ color: '#c0392b', fontSize: 16 }} />
+                : <FavoriteBorder sx={{ fontSize: 16 }} />}
+            </IconButton>
+          )}
         </Box>
 
         {(place.city || place.country) && (
