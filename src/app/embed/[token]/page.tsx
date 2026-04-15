@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation';
-import { Box, Container, Typography, Paper } from '@mui/material';
+import { Box, Container, Paper } from '@mui/material';
 import { validateEmbedToken } from '@/lib/utils';
 import { prisma } from '@/lib/prisma';
 import RegistrationStepper from '@/components/registration/RegistrationStepper';
+import EmbedHeader from '@/components/embed/EmbedHeader';
 import type { Metadata } from 'next';
 import { SpotStatus } from '@prisma/client';
 
@@ -22,6 +23,12 @@ export default async function EmbedPage({ params }: Props) {
   const { token } = await params;
   const embedToken = await validateEmbedToken(token);
   if (!embedToken) notFound();
+
+  // Fetch place info for header (logo + name)
+  const place = await prisma.place.findUnique({
+    where: { id: embedToken.placeId },
+    select: { name: true, logoUrl: true },
+  });
 
   // Fetch location(s): specific token => one location, place token => all active locations
   const includeConfig = {
@@ -94,6 +101,7 @@ export default async function EmbedPage({ params }: Props) {
       }}
     >
       <Container maxWidth="md">
+        <EmbedHeader placeName={place?.name ?? null} logoUrl={place?.logoUrl ?? null} />
         <Paper elevation={3} sx={{ p: { xs: 3, md: 5 }, borderRadius: 3 }}>
           <RegistrationStepper
             location={serializedLocation as unknown as Parameters<typeof RegistrationStepper>[0]['location']}

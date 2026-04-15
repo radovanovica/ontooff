@@ -647,6 +647,7 @@ export default function RegistrationStepper({
                       boxShadow: 4,
                       transform: 'translateY(-2px)',
                     },
+                    '& .MuiTouchRipple-root': { color: at.color ?? '#2d5a27' },
                   }}
                 >
                   <Box
@@ -660,7 +661,7 @@ export default function RegistrationStepper({
                       px: 2,
                       background: at.color
                         ? `linear-gradient(135deg, ${at.color}18 0%, ${at.color}08 100%)`
-                        : 'linear-gradient(135deg, rgba(0,0,0,0.03) 0%, transparent 100%)',
+                        : 'linear-gradient(135deg, #2d5a2710 0%, #2d5a2705 100%)',
                       textAlign: 'center',
                     }}
                   >
