@@ -493,9 +493,11 @@ model Organization {
 
 model Review {
   id                 String    @id @default(cuid())
-  placeId            String
+  // One of placeId (booking review) or freeLocationId (community review) must be set
+  placeId            String?
+  freeLocationId     String?
   activityLocationId String?
-  registrationId     String    @unique
+  registrationId     String?   @unique  // null for community reviews
   userId             String?
 
   guestName          String
@@ -511,12 +513,14 @@ model Review {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  place            Place             @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  place            Place?            @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  freeLocation     FreeLocation?     @relation(fields: [freeLocationId], references: [id], onDelete: Cascade)
   activityLocation ActivityLocation? @relation(fields: [activityLocationId], references: [id], onDelete: SetNull)
-  registration     Registration      @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  registration     Registration?     @relation(fields: [registrationId], references: [id], onDelete: Cascade)
   user             User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([placeId])
+  @@index([freeLocationId])
   @@index([activityLocationId])
   @@index([registrationId])
   @@index([userId])
@@ -550,7 +554,8 @@ model FreeLocation {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  tags FreeLocationTag[]
+  tags    FreeLocationTag[]
+  reviews Review[]
 
   @@index([isActive])
   @@index([slug])

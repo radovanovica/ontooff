@@ -5,12 +5,13 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 const createSchema = z.object({
-  // One of these two auth methods must be provided
+  // One of these two auth methods must be provided (not needed for community mode)
   editToken: z.string().optional(),           // from confirmation email link
   registrationNumber: z.string().optional(),  // typed manually
   email: z.string().email().optional(),       // must match registration email
 
-  placeId: z.string(),
+  placeId: z.string().optional(),
+  freeLocationId: z.string().optional(),      // community location review
   activityLocationId: z.string().optional(),
 
   rating: z.number().int().min(1).max(5),
@@ -19,7 +20,8 @@ const createSchema = z.object({
 });
 
 // ── POST /api/reviews ─────────────────────────────────────────────────────────
-// Public — verified by editToken OR (registrationNumber + email)
+// Community path: session auth + freeLocationId (auto-approved)
+// Booking path: verified by editToken OR (registrationNumber + email)
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const result = createSchema.safeParse(body);
@@ -30,7 +32,59 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { editToken, registrationNumber, email, placeId, activityLocationId, rating, title, body: reviewBody } = result.data;
+  const { editToken, registrationNumber, email, placeId, freeLocationId, activityLocationId, rating, title, body: reviewBody } = result.data;
+
+  // ── Community location review path ────────────────────────────────────────
+  if (freeLocationId) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: 'You must be signed in to leave a review.' },
+        { status: 401 },
+      );
+    }
+
+    // Verify the free location exists
+    const freeLocation = await prisma.freeLocation.findUnique({ where: { id: freeLocationId } });
+    if (!freeLocation) {
+      return NextResponse.json({ success: false, error: 'Location not found.' }, { status: 404 });
+    }
+
+    // One review per user per community location
+    const existing = await prisma.review.findFirst({
+      where: { freeLocationId, userId: session.user.id },
+    });
+    if (existing) {
+      return NextResponse.json(
+        { success: false, error: 'You have already reviewed this location.' },
+        { status: 409 },
+      );
+    }
+
+    const review = await prisma.review.create({
+      data: {
+        freeLocationId,
+        userId: session.user.id,
+        guestName: session.user.name ?? session.user.email ?? 'Member',
+        guestEmail: session.user.email ?? '',
+        rating,
+        title: title ?? null,
+        body: reviewBody,
+        isApproved: true,   // community reviews are auto-approved
+        isRejected: false,
+      },
+    });
+
+    return NextResponse.json({ success: true, data: review }, { status: 201 });
+  }
+
+  // ── Booking-based review path ─────────────────────────────────────────────
+  if (!placeId) {
+    return NextResponse.json(
+      { success: false, error: 'Provide placeId or freeLocationId.' },
+      { status: 400 },
+    );
+  }
 
   if (!editToken && !(registrationNumber && email)) {
     return NextResponse.json(
@@ -109,17 +163,19 @@ export async function POST(req: NextRequest) {
 }
 
 // ── GET /api/reviews ──────────────────────────────────────────────────────────
-// Public — returns approved reviews, optional filter by placeId / locationId
+// Public — returns approved reviews, optional filter by placeId / locationId / freeLocationId
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const placeId = searchParams.get('placeId');
   const locationId = searchParams.get('locationId');
+  const freeLocationId = searchParams.get('freeLocationId');
   const page = Number(searchParams.get('page') ?? 1);
   const pageSize = Math.min(Number(searchParams.get('pageSize') ?? 20), 50);
 
   const where: Record<string, unknown> = { isApproved: true, isRejected: false };
   if (placeId) where.placeId = placeId;
   if (locationId) where.activityLocationId = locationId;
+  if (freeLocationId) where.freeLocationId = freeLocationId;
 
   const [reviews, total] = await Promise.all([
     prisma.review.findMany({

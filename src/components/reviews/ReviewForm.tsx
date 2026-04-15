@@ -10,17 +10,21 @@ import {
   Paper,
   Stack,
 } from '@mui/material';
-import { Star } from '@mui/icons-material';
+import { Star, Login } from '@mui/icons-material';
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/i18n/client';
 
 interface ReviewFormProps {
-  placeId: string;
+  placeId?: string;
   activityLocationId?: string;
   /** Pass either editToken (from URL/email) OR registrationNumber+email */
   editToken?: string;
   registrationNumber?: string;
   guestEmail?: string;
+  /** Community location mode: no booking required, uses signed-in session */
+  communityMode?: boolean;
+  freeLocationId?: string;
   /** Called after successful submission */
   onSubmitted?: () => void;
 }
@@ -31,12 +35,15 @@ export default function ReviewForm({
   editToken,
   registrationNumber: initialRegNumber,
   guestEmail: initialEmail,
+  communityMode = false,
+  freeLocationId,
   onSubmitted,
 }: ReviewFormProps) {
   const { t } = useTranslation('registration');
+  const { data: session, status: sessionStatus } = useSession();
 
   // If no editToken provided, user must enter booking number + email
-  const needsVerification = !editToken && !initialRegNumber;
+  const needsVerification = !communityMode && !editToken && !initialRegNumber;
   const [verified, setVerified] = useState(!needsVerification);
   const [regNumber, setRegNumber] = useState(initialRegNumber ?? '');
   const [email, setEmail] = useState(initialEmail ?? '');
@@ -50,11 +57,29 @@ export default function ReviewForm({
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
+  // Community mode: require sign-in
+  if (communityMode && sessionStatus !== 'loading' && !session?.user) {
+    return (
+      <Paper variant="outlined" sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
+        <Login sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 0.5 }}>
+          Sign in to leave a review
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Share your experience with the community.
+        </Typography>
+        <Button variant="contained" href="/auth/signin" size="small">
+          Sign in
+        </Button>
+      </Paper>
+    );
+  }
+
   const handleVerify = async () => {
     setVerifying(true);
     setVerifyError(null);
     try {
-      const params = new URLSearchParams({ placeId, registrationNumber: regNumber, email });
+      const params = new URLSearchParams({ placeId: placeId!, registrationNumber: regNumber, email });
       if (activityLocationId) params.set('activityLocationId', activityLocationId);
       const res = await fetch(`/api/reviews/check?${params}`);
       const json = await res.json();
@@ -83,19 +108,26 @@ export default function ReviewForm({
     setSubmitting(true);
     setError(null);
     try {
+      const payload: Record<string, unknown> = {
+        rating,
+        title: title || undefined,
+        body,
+      };
+
+      if (communityMode && freeLocationId) {
+        payload.freeLocationId = freeLocationId;
+      } else {
+        payload.placeId = placeId;
+        payload.activityLocationId = activityLocationId;
+        payload.editToken = editToken;
+        payload.registrationNumber = initialRegNumber ?? regNumber;
+        payload.email = initialEmail ?? email;
+      }
+
       const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          placeId,
-          activityLocationId,
-          editToken,
-          registrationNumber: initialRegNumber ?? regNumber,
-          email: initialEmail ?? email,
-          rating,
-          title: title || undefined,
-          body,
-        }),
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -119,7 +151,7 @@ export default function ReviewForm({
   if (submitted) {
     return (
       <Alert severity="success" icon={<Star />}>
-        {error ?? t('review.submitted')}
+        {error ?? (communityMode ? 'Thank you for your review!' : t('review.submitted'))}
       </Alert>
     );
   }
@@ -161,8 +193,15 @@ export default function ReviewForm({
 
   return (
     <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+      {communityMode && session?.user && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Posting as <strong>{session.user.name ?? session.user.email}</strong>
+          </Typography>
+        </Box>
+      )}
       <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-        {t('review.title')}
+        {communityMode ? 'Write a review' : t('review.title')}
       </Typography>
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 

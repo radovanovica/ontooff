@@ -16,7 +16,9 @@ import {
   Avatar,
   Stack,
 } from '@mui/material';
-import { ArrowBack, LocationOn, Phone, Email, Language } from '@mui/icons-material';
+import { ArrowBack, LocationOn, Phone, Email, Language, Star, RateReview } from '@mui/icons-material';
+import ReviewForm from '@/components/reviews/ReviewForm';
+import { Rating } from '@mui/material';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import RegistrationStepper from '@/components/registration/RegistrationStepper';
@@ -62,6 +64,10 @@ function PlaceContent() {
   const [selectedActivityTypeId, setSelectedActivityTypeId] = useState<string | null>(null);
   const bookingRef = useRef<HTMLDivElement>(null);
 
+  // Reviews
+  const [reviewMeta, setReviewMeta] = useState<{ averageRating: number | null; totalRatings: number } | null>(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+
   useEffect(() => {
     fetch(`/api/places/by-slug/${params.slug}`)
       .then((r) => r.json())
@@ -72,6 +78,15 @@ function PlaceContent() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [params.slug]);
+
+  useEffect(() => {
+    if (!place?.id) return;
+    // Fetch review aggregate
+    fetch(`/api/reviews?placeId=${place.id}&pageSize=1`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setReviewMeta(d.meta); })
+      .catch(() => {});
+  }, [place?.id]);
 
   useEffect(() => {
     if (!place?.id) return;
@@ -156,6 +171,23 @@ function PlaceContent() {
               )}
             </Box>
           </Box>
+
+          {/* Rating badge */}
+          {reviewMeta && reviewMeta.totalRatings > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5 }}>
+              <Rating
+                value={reviewMeta.averageRating ?? 0}
+                precision={0.1}
+                readOnly
+                size="small"
+                icon={<Star fontSize="inherit" sx={{ color: 'warning.light' }} />}
+                emptyIcon={<Star fontSize="inherit" sx={{ color: 'rgba(255,255,255,0.3)' }} />}
+              />
+              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
+                {reviewMeta.averageRating?.toFixed(1)} · {reviewMeta.totalRatings} {reviewMeta.totalRatings === 1 ? 'review' : 'reviews'}
+              </Typography>
+            </Box>
+          )}
 
           {/* Activity tags */}
           <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75, mt: 2 }}>
@@ -312,7 +344,26 @@ function PlaceContent() {
             })()}
 
             {/* Reviews */}
-            <Box sx={{ mt: 5 }}>
+            <Box sx={{ mt: 6 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>Reviews</Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<RateReview />}
+                  onClick={() => setShowReviewForm((p) => !p)}
+                >
+                  {showReviewForm ? 'Hide form' : 'Write a Review'}
+                </Button>
+              </Box>
+              {showReviewForm && (
+                <Box sx={{ mb: 3 }}>
+                  <ReviewForm
+                    placeId={place.id}
+                    onSubmitted={() => { setShowReviewForm(false); }}
+                  />
+                </Box>
+              )}
               <ReviewList placeId={place.id} />
             </Box>
           </Box>

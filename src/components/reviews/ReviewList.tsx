@@ -34,9 +34,10 @@ interface ReviewMeta {
 interface ReviewListProps {
   placeId?: string;
   locationId?: string;
+  freeLocationId?: string;
 }
 
-export default function ReviewList({ placeId, locationId }: ReviewListProps) {
+export default function ReviewList({ placeId, locationId, freeLocationId }: ReviewListProps) {
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [meta, setMeta] = useState<ReviewMeta | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,6 +47,7 @@ export default function ReviewList({ placeId, locationId }: ReviewListProps) {
     const params = new URLSearchParams();
     if (placeId) params.set('placeId', placeId);
     if (locationId) params.set('locationId', locationId);
+    if (freeLocationId) params.set('freeLocationId', freeLocationId);
 
     fetch(`/api/reviews?${params}`)
       .then((r) => r.json())
@@ -56,11 +58,20 @@ export default function ReviewList({ placeId, locationId }: ReviewListProps) {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [placeId, locationId]);
+  }, [placeId, locationId, freeLocationId]);
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>;
   if (error) return <Alert severity="error">{error}</Alert>;
-  if (reviews.length === 0) return null;
+  if (reviews.length === 0) {
+    if (freeLocationId) {
+      return (
+        <Typography variant="body2" color="text.secondary" sx={{ py: 2, fontStyle: 'italic' }}>
+          No reviews yet. Be the first to share your experience!
+        </Typography>
+      );
+    }
+    return null;
+  }
 
   return (
     <Box>

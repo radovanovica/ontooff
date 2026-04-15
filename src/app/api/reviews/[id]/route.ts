@@ -16,8 +16,12 @@ async function canModerate(reviewId: string, userId: string, role: UserRole) {
     include: { place: { select: { ownerId: true } } },
   });
   if (!review) return null;
-  if (role !== UserRole.SUPER_ADMIN && review.place.ownerId !== userId) return null;
-  return review;
+  // Super admins can moderate anything
+  if (role === UserRole.SUPER_ADMIN) return review;
+  // Place owners can moderate their place's reviews
+  if (review.place && review.place.ownerId === userId) return review;
+  // Community reviews (no place) — only super admins (handled above)
+  return null;
 }
 
 // ── PATCH /api/reviews/[id] — approve or reject ──────────────────────────────
