@@ -9,7 +9,6 @@ import {
   FormControlLabel,
   CircularProgress,
   Alert,
-  MenuItem,
   Typography,
   Paper,
   Chip,
@@ -30,7 +29,6 @@ const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
   instructions: z.string().optional(),
-  activityTypeId: z.string().min(1, 'Activity type is required'),
   maxCapacity: z.coerce.number().int().positive().optional().or(z.literal('')),
   requiresSpot: z.boolean().default(true),
   sortOrder: z.coerce.number().default(0),
@@ -85,6 +83,9 @@ export default function NewLocationPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Activity types multi-select state
+  const [selectedActivityTypeIds, setSelectedActivityTypeIds] = useState<string[]>([]);
 
   // Zone position picked on map
   const [pickedZone, setPickedZone] = useState<{ cx: number; cy: number } | null>(null);
@@ -143,6 +144,10 @@ export default function NewLocationPage() {
   // ── Submit ─────────────────────────────────────────────────────────────
 
   const onSubmit = async (data: FormOutputValues) => {
+    if (selectedActivityTypeIds.length === 0) {
+      setError('At least one activity type is required');
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -155,7 +160,7 @@ export default function NewLocationPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           placeId,
-          activityTypeId: data.activityTypeId,
+          activityTypeIds: selectedActivityTypeIds,
           name: data.name,
           description: data.description || undefined,
           instructions: data.instructions || undefined,
@@ -236,29 +241,37 @@ export default function NewLocationPage() {
                   />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
-                  <Controller
-                    name="activityTypeId"
-                    control={control}
-                    defaultValue=""
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label={t('locations.form.activityType')}
-                        fullWidth
-                        select
-                        error={!!errors.activityTypeId}
-                        helperText={errors.activityTypeId?.message}
-                      >
-                        <MenuItem value="" disabled>{t('locations.selectPlaceholder')}</MenuItem>
-                        {activityTypes.map((at) => (
-                          <MenuItem key={at.id} value={at.id}>
-                            {at.icon && <Typography component="span" sx={{ mr: 1 }}>{at.icon}</Typography>}
-                            {at.name}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    )}
-                  />
+                  <Typography variant="subtitle2" gutterBottom>
+                    {t('locations.form.activityType')}
+                  </Typography>
+                  {activityTypes.length === 0 ? (
+                    <Typography variant="caption" color="text.secondary">{t('locations.noActivityTypes')}</Typography>
+                  ) : (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                      {activityTypes.map((at) => {
+                        const selected = selectedActivityTypeIds.includes(at.id);
+                        return (
+                          <Chip
+                            key={at.id}
+                            label={`${at.icon ?? ''} ${at.name}`.trim()}
+                            onClick={() =>
+                              setSelectedActivityTypeIds((prev) =>
+                                selected ? prev.filter((id) => id !== at.id) : [...prev, at.id]
+                              )
+                            }
+                            color={selected ? 'primary' : 'default'}
+                            variant={selected ? 'filled' : 'outlined'}
+                            clickable
+                          />
+                        );
+                      })}
+                    </Box>
+                  )}
+                  {selectedActivityTypeIds.length === 0 && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
+                      At least one activity type is required
+                    </Typography>
+                  )}
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
@@ -340,7 +353,7 @@ export default function NewLocationPage() {
                   form="new-location-form"
                   variant="contained"
                   size="large"
-                  disabled={saving || activityTypes.length === 0}
+                  disabled={saving || selectedActivityTypeIds.length === 0}
                   startIcon={saving ? <CircularProgress size={18} color="inherit" /> : <Check />}
                 >
                   {saving ? t('common.saving') : t('locations.create')}

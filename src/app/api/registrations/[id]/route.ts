@@ -66,7 +66,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     include: {
       activityLocation: {
         include: {
-          activityType: true,
+          activityTypes: { include: { activityType: true } },
           place: { select: { id: true, name: true, slug: true } },
         },
       },

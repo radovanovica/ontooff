@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     where: { placeId, isActive: true },
     orderBy: { sortOrder: 'asc' },
     include: {
-      _count: { select: { activityLocations: true } },
+      _count: { select: { locations: true } },
       ...(includeTags ? { tags: { include: { tag: true } } } : {}),
     },
   });

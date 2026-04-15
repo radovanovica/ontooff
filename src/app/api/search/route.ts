@@ -11,17 +11,18 @@ interface SearchLocation {
   latitude: number | null;
   longitude: number | null;
   _count: { spots: number };
+  activityTypes: {
+    activityType: {
+      id: string;
+      name: string;
+      icon: string | null;
+      color: string | null;
+      tags: { tag: { id: string; name: string; slug: string; icon: string | null; color: string | null } }[];
+    };
+  }[];
   available?: boolean;
   capacity?: number;
   bookedSpots?: number;
-}
-interface SearchActivityType {
-  id: string;
-  name: string;
-  icon: string | null;
-  color: string | null;
-  tags: { tag: { id: string; name: string; slug: string; icon: string | null; color: string | null } }[];
-  activityLocations: SearchLocation[];
 }
 interface SearchPlaceRaw {
   id: string;
@@ -35,7 +36,8 @@ interface SearchPlaceRaw {
   website: string | null;
   logoUrl: string | null;
   coverUrl: string | null;
-  activityTypes: SearchActivityType[];
+  activityTypes: { id: string; name: string; icon: string | null; color: string | null; tags: { tag: { id: string; name: string; slug: string; icon: string | null; color: string | null } }[] }[];
+  activityLocations: SearchLocation[];
   embedTokens: { token: string }[];
   _count: { activityLocations: number };
 }
@@ -134,16 +136,11 @@ async function runSearch({
   // Build bbox filter — place must have at least one activityLocation within bounds
   const bboxFilter = hasBbox
     ? {
-        activityTypes: {
+        activityLocations: {
           some: {
             isActive: true,
-            activityLocations: {
-              some: {
-                isActive: true,
-                latitude: { gte: minLat!, lte: maxLat! },
-                longitude: { gte: minLng!, lte: maxLng! },
-              },
-            },
+            latitude: { gte: minLat!, lte: maxLat! },
+            longitude: { gte: minLng!, lte: maxLng! },
           },
         },
       }
@@ -164,20 +161,35 @@ async function runSearch({
       owner: { select: { name: true } },
       activityTypes: {
         where: { isActive: true },
-        include: {
-          tags: {
-            include: { tag: true },
-          },
-          activityLocations: {
-            where: { isActive: true },
-            select: {
-              id: true,
-              name: true,
-              maxCapacity: true,
-              requiresSpot: true,
-              latitude: true,
-              longitude: true,
-              _count: { select: { spots: true } },
+        select: {
+          id: true,
+          name: true,
+          icon: true,
+          color: true,
+          tags: { include: { tag: true } },
+        },
+      },
+      activityLocations: {
+        where: { isActive: true },
+        select: {
+          id: true,
+          name: true,
+          maxCapacity: true,
+          requiresSpot: true,
+          latitude: true,
+          longitude: true,
+          _count: { select: { spots: true } },
+          activityTypes: {
+            include: {
+              activityType: {
+                select: {
+                  id: true,
+                  name: true,
+                  icon: true,
+                  color: true,
+                  tags: { include: { tag: true } },
+                },
+              },
             },
           },
         },
@@ -223,13 +235,12 @@ async function runSearch({
         reviewCount: rating?.count ?? 0,
       };
       if (!fromDate || !toDate) {
-        return { ...base, availableLocations: place.activityTypes.flatMap((at) => at.activityLocations) };
+        return { ...base, availableLocations: place.activityLocations };
       }
 
       // For each activity location check available spots
       const activityLocationsWithAvailability = await Promise.all(
-        place.activityTypes.flatMap((at) =>
-          at.activityLocations.map(async (loc) => {
+        place.activityLocations.map(async (loc) => {
             const bookedSpots = await prisma.registrationSpot.count({
               where: {
                 registration: {
@@ -244,7 +255,6 @@ async function runSearch({
             const available = capacity > bookedSpots;
             return { ...loc, available, capacity, bookedSpots };
           })
-        )
       );
 
       const availableLocations = activityLocationsWithAvailability.filter((l) => l.available);

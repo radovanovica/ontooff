@@ -431,7 +431,7 @@ export default function ActivityTypesTab({ placeId }: Props) {
 
                 {/* Tags */}
                 {at.tags && at.tags.length > 0 && (
-                  <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                  <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75, mt: 0.5 }}>
                     {at.tags.map(({ tag }) => (
                       <Chip
                         key={tag.id}

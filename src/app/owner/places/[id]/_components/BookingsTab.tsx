@@ -52,7 +52,7 @@ interface BookingRow {
 interface ActivityLocation {
   id: string;
   name: string;
-  activityType: { name: string };
+  activityTypes: Array<{ activityType: { name: string } }>;
   spots: { id: string; name: string; code: string | null }[];
 }
 
@@ -297,7 +297,7 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
               >
                 {locations.map((loc) => (
                   <MenuItem key={loc.id} value={loc.id}>
-                    {loc.name} — {loc.activityType.name}
+                    {loc.name}{loc.activityTypes.length > 0 ? ` — ${loc.activityTypes.map((a) => a.activityType.name).join(', ')}` : ''}
                   </MenuItem>
                 ))}
               </Select>

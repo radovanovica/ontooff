@@ -17,12 +17,12 @@ const updateSchema = z.object({
   svgMapData: z.string().optional(),
   mapImageUrl: z.string().optional(),
   isActive: z.boolean().optional(),
-  gallery: z.string().optional(),         // JSON: string[] of base64 data-URIs
-  coverImageIndex: z.number().int().min(0).nullable().optional(), // index of primary gallery image
-  instructions: z.string().optional(),    // How to find this location
+  gallery: z.string().optional(),
+  coverImageIndex: z.number().int().min(0).nullable().optional(),
+  instructions: z.string().optional(),
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
-  additionalActivityTypeIds: z.array(z.string()).optional(), // IDs of additional activity types
+  activityTypeIds: z.array(z.string()).optional(),
 });
 
 async function getLocationWithAccess(id: string, userId: string, role: UserRole) {
@@ -44,19 +44,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const location = await prisma.activityLocation.findUnique({
     where: { id },
     include: {
-      activityType: true,
-      place: { select: { id: true, name: true, slug: true, timezone: true } },
-      spots: { orderBy: { sortOrder: 'asc' } },
-      additionalActivityTypes: {
+      activityTypes: {
         include: { activityType: { select: { id: true, name: true, icon: true, color: true } } },
       },
+      place: { select: { id: true, name: true, slug: true, timezone: true } },
+      spots: { orderBy: { sortOrder: 'asc' } },
     },
   });
 
   if (!location) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
 
+  const locationActivityTypeIds = location.activityTypes.map((a: { activityTypeId: string }) => a.activityTypeId);
   const pricingRules = await prisma.pricingRule.findMany({
-    where: { isActive: true, activityTypeId: location.activityTypeId },
+    where: { isActive: true, activityTypeId: { in: locationActivityTypeIds } },
     include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } },
     orderBy: { createdAt: 'desc' },
   });
@@ -89,15 +89,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, { status: 422 });
   }
 
-  const { additionalActivityTypeIds, ...locationData } = result.data;
+  const { activityTypeIds, ...locationData } = result.data;
   const updated = await prisma.activityLocation.update({ where: { id }, data: locationData });
 
-  // Sync additional activity types in join table
-  if (additionalActivityTypeIds !== undefined) {
+  // Sync all activity types in join table
+  if (activityTypeIds !== undefined) {
     await prisma.activityLocationActivity.deleteMany({ where: { activityLocationId: id } });
-    if (additionalActivityTypeIds.length > 0) {
+    if (activityTypeIds.length > 0) {
       await prisma.activityLocationActivity.createMany({
-        data: additionalActivityTypeIds.map((atId) => ({
+        data: activityTypeIds.map((atId) => ({
           activityLocationId: id,
           activityTypeId: atId,
         })),
@@ -106,16 +106,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
   }
 
-  const updatedWithExtras = await prisma.activityLocation.findUnique({
+  const updatedWithTypes = await prisma.activityLocation.findUnique({
     where: { id },
     include: {
-      additionalActivityTypes: {
+      activityTypes: {
         include: { activityType: { select: { id: true, name: true, icon: true, color: true } } },
       },
     },
   });
 
-  return NextResponse.json({ success: true, data: updatedWithExtras });
+  return NextResponse.json({ success: true, data: updatedWithTypes });
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

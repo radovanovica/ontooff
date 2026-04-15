@@ -97,7 +97,7 @@ export async function validateEmbedToken(token: string) {
           id: true,
           name: true,
           isActive: true,
-          activityType: { select: { id: true, name: true } },
+          activityTypes: { include: { activityType: { select: { id: true, name: true } } } },
         },
       },
     },

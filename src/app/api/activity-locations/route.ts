@@ -7,7 +7,7 @@ import { UserRole } from '@/types';
 
 const schema = z.object({
   placeId: z.string(),
-  activityTypeId: z.string(),
+  activityTypeIds: z.array(z.string()).min(1, 'At least one activity type is required'),
   name: z.string().min(1),
   description: z.string().optional(),
   maxCapacity: z.number().int().positive().optional(),
@@ -17,8 +17,8 @@ const schema = z.object({
   sortOrder: z.number().default(0),
   svgMapData: z.string().optional(),
   mapImageUrl: z.string().optional(),
-  gallery: z.string().optional(),       // JSON: string[] of base64 data-URIs
-  instructions: z.string().optional(),  // How to find this location
+  gallery: z.string().optional(),
+  instructions: z.string().optional(),
 });
 
 async function canAccessPlace(placeId: string, userId: string, role: UserRole) {
@@ -34,12 +34,14 @@ export async function GET(req: NextRequest) {
 
   const where: Record<string, unknown> = { isActive: true };
   if (placeId) where.placeId = placeId;
-  if (activityTypeId) where.activityTypeId = activityTypeId;
+  if (activityTypeId) {
+    where.activityTypes = { some: { activityTypeId } };
+  }
 
   const locations = await prisma.activityLocation.findMany({
     where,
     include: {
-      activityType: { select: { id: true, name: true, icon: true, color: true } },
+      activityTypes: { include: { activityType: { select: { id: true, name: true, icon: true, color: true } } } },
       _count: { select: { spots: true, registrations: true } },
     },
     orderBy: { sortOrder: 'asc' },
@@ -62,6 +64,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
 
-  const location = await prisma.activityLocation.create({ data: result.data });
+  const { activityTypeIds, ...locationData } = result.data;
+  const location = await prisma.activityLocation.create({ data: locationData });
+
+  await prisma.activityLocationActivity.createMany({
+    data: activityTypeIds.map((atId) => ({
+      activityLocationId: location.id,
+      activityTypeId: atId,
+    })),
+    skipDuplicates: true,
+  });
+
   return NextResponse.json({ success: true, data: location }, { status: 201 });
 }

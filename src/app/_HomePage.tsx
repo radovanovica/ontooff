@@ -159,7 +159,7 @@ export default function HomePage() {
                 <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5, mb: 1, display: 'block' }}>
                   {t('home.search.selectActivity', 'Select Activity')}
                 </Typography>
-                <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75, mb: 2.5 }}>
+                <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1, mb: 2.5, mt: 0.5 }}>
                   {tags.map((tag) => {
                     const active = selectedTags.includes(tag.slug);
                     return (

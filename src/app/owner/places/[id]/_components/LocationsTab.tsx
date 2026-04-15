@@ -25,7 +25,7 @@ interface LocationData {
   requiresSpot: boolean;
   maxCapacity: number | null;
   isActive: boolean;
-  activityType: { name: string; icon: string | null; color: string | null };
+  activityTypes: Array<{ activityType: { name: string; icon: string | null; color: string | null } }>;
   _count?: { spots: number };
 }
 
@@ -76,8 +76,8 @@ export default function LocationsTab({ placeId }: { placeId: string }) {
               <Card elevation={1} sx={{ borderRadius: 2 }}>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    {loc.activityType.icon && (
-                      <Typography sx={{ fontSize: '1.25rem' }}>{loc.activityType.icon}</Typography>
+                    {loc.activityTypes[0]?.activityType.icon && (
+                      <Typography sx={{ fontSize: '1.25rem' }}>{loc.activityTypes[0].activityType.icon}</Typography>
                     )}
                     <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                       {loc.name}
@@ -89,7 +89,11 @@ export default function LocationsTab({ placeId }: { placeId: string }) {
                       sx={{ ml: 'auto' }}
                     />
                   </Box>
-                  <Chip label={loc.activityType.name} size="small" variant="outlined" sx={{ mb: 1 }} />
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                    {loc.activityTypes.map(({ activityType: at }) => (
+                      <Chip key={at.name} label={at.name} size="small" variant="outlined" />
+                    ))}
+                  </Box>
                   {loc.description && (
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                       {loc.description}

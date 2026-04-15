@@ -29,7 +29,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const at = await prisma.activityType.findUnique({
     where: { id },
-    include: { _count: { select: { activityLocations: true } } },
+    include: { _count: { select: { locations: true } } },
   });
   if (!at) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
   return NextResponse.json({ success: true, data: at });

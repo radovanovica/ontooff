@@ -25,7 +25,7 @@ export default async function EmbedPage({ params }: Props) {
 
   // Fetch location(s): specific token => one location, place token => all active locations
   const includeConfig = {
-    activityType: true,
+    activityTypes: { include: { activityType: true } },
     place: { select: { id: true, name: true } },
     spots: { where: { status: SpotStatus.AVAILABLE }, orderBy: { sortOrder: 'asc' as const } },
   };
@@ -46,7 +46,7 @@ export default async function EmbedPage({ params }: Props) {
 
   if (!location) notFound();
 
-  const activityTypeIds = [...new Set(locations.map((loc) => loc.activityTypeId))];
+  const activityTypeIds = [...new Set(locations.flatMap((loc) => loc.activityTypes.map((a) => a.activityTypeId)))];
   const rules = await prisma.pricingRule.findMany({
     where: { isActive: true, activityTypeId: { in: activityTypeIds } },
     include: { pricingTiers: true },
@@ -64,24 +64,24 @@ export default async function EmbedPage({ params }: Props) {
   // Serialize Decimal fields so they can cross the server→client boundary
   const serializedLocation = {
     ...location,
-    pricingRules: (rulesByType.get(location.activityTypeId) ?? []).map((rule) => ({
+    pricingRules: location.activityTypes.flatMap((a) => (rulesByType.get(a.activityTypeId) ?? []).map((rule) => ({
       ...rule,
       pricingTiers: (rule.pricingTiers ?? []).map((tier) => ({
         ...tier,
         pricePerUnit: Number(tier.pricePerUnit),
       })),
-    })),
+    }))),
   };
 
   const serializedLocations = locations.map((loc) => ({
     ...loc,
-    pricingRules: (rulesByType.get(loc.activityTypeId) ?? []).map((rule) => ({
+    pricingRules: loc.activityTypes.flatMap((a) => (rulesByType.get(a.activityTypeId) ?? []).map((rule) => ({
       ...rule,
       pricingTiers: (rule.pricingTiers ?? []).map((tier) => ({
         ...tier,
         pricePerUnit: Number(tier.pricePerUnit),
       })),
-    })),
+    }))),
   }));
 
   return (

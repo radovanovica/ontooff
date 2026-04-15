@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
       include: {
         activityLocation: {
           include: {
-            activityType: { select: { id: true, name: true, icon: true } },
+            activityTypes: { include: { activityType: { select: { id: true, name: true, icon: true } } } },
             place: { select: { id: true, name: true, slug: true } },
           },
         },
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
     const location = await prisma.activityLocation.findUnique({
       where: { id: data.activityLocationId, isActive: true },
       include: {
-        activityType: true,
+        activityTypes: { include: { activityType: true } },
         place: { select: { name: true, id: true, owner: { select: { email: true, name: true } } } },
       },
     });
@@ -194,12 +194,13 @@ export async function POST(req: NextRequest) {
     } = {};
 
     if (data.pricingRuleId) {
+      const locationActivityTypeIds = location.activityTypes.map((a: { activityTypeId: string }) => a.activityTypeId);
       const pricingRule = await prisma.pricingRule.findUnique({
-        where: { id: data.pricingRuleId, isActive: true, activityTypeId: location.activityTypeId },
+        where: { id: data.pricingRuleId, isActive: true },
         include: { pricingTiers: true },
       });
 
-      if (!pricingRule) {
+      if (!pricingRule || (pricingRule.activityTypeId && !locationActivityTypeIds.includes(pricingRule.activityTypeId))) {
         return NextResponse.json(
           { success: false, error: 'Selected pricing rule is not valid for this activity' },
           { status: 422 }
@@ -326,7 +327,7 @@ export async function POST(req: NextRequest) {
         registrationNumber,
         firstName: data.firstName,
         locationName: location.name,
-        activityName: location.activityType.name,
+        activityName: location.activityTypes.map((a: { activityType: { name: string } }) => a.activityType.name).join(', '),
         placeName: location.place.name,
         startDate: startDate.toLocaleDateString('en-GB'),
         endDate: endDate.toLocaleDateString('en-GB'),
@@ -359,7 +360,7 @@ export async function POST(req: NextRequest) {
         guestEmail: data.email,
         guestPhone: data.phone,
         locationName: location.name,
-        activityName: location.activityType.name,
+        activityName: location.activityTypes.map((a: { activityType: { name: string } }) => a.activityType.name).join(', '),
         placeName: location.place.name,
         startDate: startDate.toLocaleDateString('en-GB'),
         endDate: endDate.toLocaleDateString('en-GB'),

@@ -202,10 +202,9 @@ model ActivityType {
   updatedAt   DateTime @updatedAt
 
   place             Place              @relation(fields: [placeId], references: [id], onDelete: Cascade)
-  activityLocations ActivityLocation[]
+  locations         ActivityLocationActivity[]
   pricingRules      PricingRule[]
   tags              ActivityTypeTag[]
-  additionalLocations ActivityLocationActivity[]
   spots             Spot[]
 
   @@index([placeId])
@@ -229,7 +228,6 @@ model ActivityLocationActivity {
 model ActivityLocation {
   id             String   @id @default(cuid())
   placeId        String
-  activityTypeId String
   name           String
   description    String?  @db.Text
   svgMapData     String?  @db.Text
@@ -249,21 +247,17 @@ model ActivityLocation {
   updatedAt      DateTime @updatedAt
 
   place        Place        @relation(fields: [placeId], references: [id], onDelete: Cascade)
-  activityType ActivityType @relation(fields: [activityTypeId], references: [id], onDelete: Cascade)
+  activityTypes ActivityLocationActivity[]
   spots        Spot[]
   registrations Registration[]
   pricingRules PricingRule[]
   embedTokens  EmbedToken[]
   reviews      Review[]
-  additionalActivityTypes ActivityLocationActivity[]
 
   @@index([placeId])
-  @@index([activityTypeId])
   @@index([isActive])
   @@map("activity_locations")
-}
-
-// ─────────────────────────────────────────
+}// ─────────────────────────────────────────
 // SPOTS
 // ─────────────────────────────────────────
 

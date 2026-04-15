@@ -73,8 +73,7 @@ interface LocationData {
   coverImageIndex: number | null;    // index of primary gallery image
   instructions: string | null;       // How to find the place
   svgMapData: string | null;
-  activityType: { id: string; name: string; icon: string | null };
-  additionalActivityTypes: Array<{
+  activityTypes: Array<{
     activityTypeId: string;
     activityType: { id: string; name: string; icon: string | null; color: string | null };
   }>;
@@ -137,10 +136,9 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
   const [error, setError] = useState<string | null>(null);
   const [mapPickerOpen, setMapPickerOpen] = useState(false);
 
-  // Additional activity types state (all types except primary)
-  const otherActivityTypes = allActivityTypes.filter((at) => at.id !== location.activityType.id);
-  const [additionalActivityTypeIds, setAdditionalActivityTypeIds] = useState<string[]>(
-    location.additionalActivityTypes.map((a) => a.activityTypeId)
+  // Activity types state: all types equal priority
+  const [activityTypeIds, setActivityTypeIds] = useState<string[]>(
+    location.activityTypes.map((a) => a.activityTypeId)
   );
 
   // Virtual map zone state
@@ -244,7 +242,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
           mapHeight: data.mapHeight === '' ? null : Number(data.mapHeight) || null,
           latitude: data.latitude === '' ? null : data.latitude === undefined ? null : Number(data.latitude),
           longitude: data.longitude === '' ? null : data.longitude === undefined ? null : Number(data.longitude),
-          additionalActivityTypeIds,
+          activityTypeIds,
         }),
       });
       if (!res.ok) throw new Error(t('locations.errors.saveFailed'));
@@ -298,24 +296,24 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
             helperText={t('locations.form.instructionsHint')}
           />
         </Grid>
-        {/* Additional Activity Types */}
-        {otherActivityTypes.length > 0 && (
+        {/* Activity Types */}
+        {allActivityTypes.length > 0 && (
           <Grid size={{ xs: 12 }}>
             <Typography variant="subtitle2" gutterBottom>
-              Also available for
+              Activity Types
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-              This location will appear under the selected activity types in addition to its primary activity ({location.activityType.name}).
+              Select all activity types available at this location.
             </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {otherActivityTypes.map((at) => {
-                const selected = additionalActivityTypeIds.includes(at.id);
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+              {allActivityTypes.map((at) => {
+                const selected = activityTypeIds.includes(at.id);
                 return (
                   <Chip
                     key={at.id}
                     label={`${at.icon ?? ''} ${at.name}`.trim()}
                     onClick={() =>
-                      setAdditionalActivityTypeIds((prev) =>
+                      setActivityTypeIds((prev) =>
                         selected ? prev.filter((id) => id !== at.id) : [...prev, at.id]
                       )
                     }
@@ -597,12 +595,12 @@ function SpotsTab({
   locationId,
   spots,
   onUpdated,
-  allActivityTypes,
+  locationActivityTypes,
 }: {
   locationId: string;
   spots: SpotData[];
   onUpdated: () => void;
-  allActivityTypes: Array<{ id: string; name: string; icon: string | null }>;
+  locationActivityTypes: Array<{ id: string; name: string; icon: string | null }>;
 }) {
   const { t } = useTranslation('owner');
   const [open, setOpen] = useState(false);
@@ -690,7 +688,7 @@ function SpotsTab({
                     <Chip label={spot.status} color={STATUS_COLORS[spot.status] ?? 'default'} size="small" />
                   </Box>
                   {spot.activityTypeId && (() => {
-                    const at = allActivityTypes.find((a) => a.id === spot.activityTypeId);
+                    const at = locationActivityTypes.find((a) => a.id === spot.activityTypeId);
                     return at ? (
                       <Chip
                         size="small"
@@ -706,7 +704,7 @@ function SpotsTab({
                     {t('spots.maxPeopleLabel', { count: spot.maxPeople })}
                   </Typography>
                   {spot.amenities.length > 0 && (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 1.5 }}>
                       {spot.amenities.map((a) => <Chip key={a} label={t(`spots.amenitiesOptions.${a}`) ?? a} size="small" variant="outlined" />)}
                     </Box>
                   )}
@@ -747,7 +745,7 @@ function SpotsTab({
                   ))}
                 </TextField>
               </Grid>
-              {allActivityTypes.length > 0 && (
+              {locationActivityTypes.length > 0 && (
                 <Grid size={{ xs: 12 }}>
                   <TextField
                     select
@@ -758,7 +756,7 @@ function SpotsTab({
                     helperText="Leave blank to show this spot for all activity types at this location"
                   >
                     <MenuItem value="">All activities</MenuItem>
-                    {allActivityTypes.map((at) => (
+                    {locationActivityTypes.map((at) => (
                       <MenuItem key={at.id} value={at.id}>
                         {at.icon ? `${at.icon} ` : ''}{at.name}
                       </MenuItem>
@@ -1071,7 +1069,7 @@ export default function LocationDetailPage() {
     <Box>
       <PageHeader
         title={location.name}
-        subtitle={`${location.activityType.icon ?? ''} ${location.activityType.name}`.trim()}
+        subtitle={location.activityTypes.map((a) => `${a.activityType.icon ?? ''} ${a.activityType.name}`.trim()).join(' · ')}
         breadcrumbs={[
           { label: t('dashboard.title'), href: '/owner' },
           { label: t('places.title'), href: '/owner/places' },
@@ -1103,7 +1101,12 @@ export default function LocationDetailPage() {
         <SettingsTab location={location} locationId={locationId} placeId={placeId} onUpdated={loadLocation} allActivityTypes={allActivityTypes} />
       </TabPanel>
       <TabPanel value={tab} index={1}>
-        <SpotsTab locationId={locationId} spots={location.spots} onUpdated={loadLocation} allActivityTypes={allActivityTypes} />
+        <SpotsTab
+          locationId={locationId}
+          spots={location.spots}
+          onUpdated={loadLocation}
+          locationActivityTypes={location.activityTypes.map((a) => a.activityType)}
+        />
       </TabPanel>
       <TabPanel value={tab} index={2}>
         <GalleryTab location={location} locationId={locationId} onUpdated={loadLocation} />

@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
       include: {
         activityLocation: {
           include: {
-            activityType: { select: { name: true } },
+            activityTypes: { include: { activityType: { select: { name: true } } } },
             place: { select: { name: true } },
           },
         },

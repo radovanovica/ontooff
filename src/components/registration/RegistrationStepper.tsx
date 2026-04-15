@@ -142,31 +142,21 @@ export default function RegistrationStepper({
   const [mapSubMode, setMapSubMode] = useState<'virtual' | 'real'>('virtual');
   const allLocations = locations && locations.length > 0 ? locations : [location];
 
-  // Derive unique activity types from all locations (primary + additional)
+  // Derive unique activity types from all locations via join table
   const activityTypes = useMemo(() => {
     const seen = new Map<string, { id: string; name: string; icon: string | null; color: string | null }>();
     for (const loc of allLocations) {
-      // Primary activity type
-      if (loc.activityType && !seen.has(loc.activityTypeId)) {
-        seen.set(loc.activityTypeId, {
-          id: loc.activityTypeId,
-          name: loc.activityType.name,
-          icon: (loc.activityType as { icon?: string | null }).icon ?? null,
-          color: (loc.activityType as { color?: string | null }).color ?? null,
-        });
-      }
-      // Additional activity types via join table
-      const extras = (loc as unknown as Record<string, unknown>).additionalActivityTypes as
+      const types = (loc as unknown as Record<string, unknown>).activityTypes as
         | Array<{ activityTypeId: string; activityType: { name: string; icon?: string | null; color?: string | null } }>
         | undefined;
-      if (extras) {
-        for (const extra of extras) {
-          if (!seen.has(extra.activityTypeId)) {
-            seen.set(extra.activityTypeId, {
-              id: extra.activityTypeId,
-              name: extra.activityType.name,
-              icon: extra.activityType.icon ?? null,
-              color: extra.activityType.color ?? null,
+      if (types) {
+        for (const entry of types) {
+          if (!seen.has(entry.activityTypeId)) {
+            seen.set(entry.activityTypeId, {
+              id: entry.activityTypeId,
+              name: entry.activityType.name,
+              icon: entry.activityType.icon ?? null,
+              color: entry.activityType.color ?? null,
             });
           }
         }
@@ -190,15 +180,14 @@ export default function RegistrationStepper({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialActivityTypeId]);
 
-  // Filter locations by selected activity type (primary or additional)
+  // Filter locations by selected activity type via join table
   const availableLocations = useMemo(
     () => selectedActivityTypeId
       ? allLocations.filter((loc) => {
-          if (loc.activityTypeId === selectedActivityTypeId) return true;
-          const extras = (loc as unknown as Record<string, unknown>).additionalActivityTypes as
+          const types = (loc as unknown as Record<string, unknown>).activityTypes as
             | Array<{ activityTypeId: string }>
             | undefined;
-          return extras?.some((e) => e.activityTypeId === selectedActivityTypeId) ?? false;
+          return types?.some((e) => e.activityTypeId === selectedActivityTypeId) ?? false;
         })
       : allLocations,
     [allLocations, selectedActivityTypeId]
@@ -641,11 +630,10 @@ export default function RegistrationStepper({
                       <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{at.name}</Typography>
                       <Typography variant="caption" color="text.secondary">
                         {allLocations.filter((l) => {
-                          if (l.activityTypeId === at.id) return true;
-                          const extras = (l as unknown as Record<string, unknown>).additionalActivityTypes as
+                          const types = (l as unknown as Record<string, unknown>).activityTypes as
                             | Array<{ activityTypeId: string }>
                             | undefined;
-                          return extras?.some((e) => e.activityTypeId === at.id) ?? false;
+                          return types?.some((e) => e.activityTypeId === at.id) ?? false;
                         }).length} {tc('stepper.locationsAvailable')}
                       </Typography>
                     </Box>
@@ -731,7 +719,14 @@ export default function RegistrationStepper({
               />
             )}
             <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
-              {selectedLocation?.activityType?.name && `${selectedLocation.activityType.name} — `}{selectedLocation?.name}
+              {(() => {
+                const locTypes = (selectedLocation as unknown as Record<string, unknown> | null)?.activityTypes as
+                  | Array<{ activityTypeId: string; activityType: { name: string } }>
+                  | undefined;
+                const actName = locTypes?.find((e) => e.activityTypeId === selectedActivityTypeId)?.activityType.name
+                  ?? locTypes?.[0]?.activityType.name;
+                return actName ? `${actName} — ` : '';
+              })()}{selectedLocation?.name}
             </Typography>
           </Box>
         </Box>
@@ -919,16 +914,13 @@ export default function RegistrationStepper({
             <Grid container spacing={1.5} sx={{ mb: 2.5 }}>
               {availableLocations.map((loc) => {
                 const selected = selectedLocationId === loc.id;
-                // Determine which activity type label to show: prefer the selected one if it's an additional match
-                const extras = (loc as unknown as Record<string, unknown>).additionalActivityTypes as
+                // Find the display name for the selected activity type
+                const locTypes = (loc as unknown as Record<string, unknown>).activityTypes as
                   | Array<{ activityTypeId: string; activityType: { name: string } }>
                   | undefined;
-                const isAdditionalMatch = selectedActivityTypeId
-                  && loc.activityTypeId !== selectedActivityTypeId
-                  && extras?.some((e) => e.activityTypeId === selectedActivityTypeId);
-                const displayActivityName = isAdditionalMatch
-                  ? (extras?.find((e) => e.activityTypeId === selectedActivityTypeId)?.activityType.name ?? loc.activityType?.name ?? 'Activity')
-                  : (loc.activityType?.name ?? 'Activity');
+                const displayActivityName = locTypes?.find((e) => e.activityTypeId === selectedActivityTypeId)?.activityType.name
+                  ?? locTypes?.[0]?.activityType.name
+                  ?? 'Activity';
                 return (
                   <Grid size={{ xs: 12, sm: 6 }} key={loc.id}>
                     <Card
@@ -947,7 +939,7 @@ export default function RegistrationStepper({
                           {loc.description && (
                             <Typography variant="caption" color="text.secondary">{loc.description}</Typography>
                           )}
-                          {selected && <Chip size="small" color="primary" label={tc('stepper.selected')} sx={{ mt: 1 }} />}
+                          {selected && <Chip size="small" color="primary" label={tc('stepper.selected')} sx={{ mt: 1.5, mb: 0.5 }} />}
                         </CardContent>
                       </CardActionArea>
                     </Card>
@@ -984,15 +976,12 @@ export default function RegistrationStepper({
                   )}
                   <LocationMap
                     pins={gpsLocations.map((loc) => {
-                      const locExtras = (loc as unknown as Record<string, unknown>).additionalActivityTypes as
+                      const locTypes = (loc as unknown as Record<string, unknown>).activityTypes as
                         | Array<{ activityTypeId: string; activityType: { name: string } }>
                         | undefined;
-                      const isAdditional = selectedActivityTypeId
-                        && loc.activityTypeId !== selectedActivityTypeId
-                        && locExtras?.some((e) => e.activityTypeId === selectedActivityTypeId);
-                      const pinActivityName = isAdditional
-                        ? (locExtras?.find((e) => e.activityTypeId === selectedActivityTypeId)?.activityType.name ?? loc.activityType?.name ?? 'Activity')
-                        : (loc.activityType?.name ?? 'Activity');
+                      const pinActivityName = locTypes?.find((e) => e.activityTypeId === selectedActivityTypeId)?.activityType.name
+                        ?? locTypes?.[0]?.activityType.name
+                        ?? 'Activity';
                       return {
                         id: loc.id,
                         name: `${pinActivityName} — ${loc.name}`,

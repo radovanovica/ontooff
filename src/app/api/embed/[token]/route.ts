@@ -24,13 +24,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
     const locations = await prisma.activityLocation.findMany({
       where: { placeId: embedToken.placeId, isActive: true },
       include: {
-        activityType: { select: { id: true, name: true, icon: true, color: true } },
+        activityTypes: { include: { activityType: { select: { id: true, name: true, icon: true, color: true } } } },
         _count: { select: { spots: true } },
       },
       orderBy: { sortOrder: 'asc' },
     });
 
-    const activityTypeIds = [...new Set(locations.map((loc) => loc.activityTypeId))];
+    const activityTypeIds = [...new Set(locations.flatMap((loc) => loc.activityTypes.map((a) => a.activityTypeId)))];
     const pricingRules = await prisma.pricingRule.findMany({
       where: { isActive: true, activityTypeId: { in: activityTypeIds } },
       include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } },
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
 
     const enrichedLocations = locations.map((loc) => ({
       ...loc,
-      pricingRules: pricingByType.get(loc.activityTypeId) ?? [],
+      pricingRules: loc.activityTypes.flatMap((a) => pricingByType.get(a.activityTypeId) ?? []),
     }));
 
     return NextResponse.json({
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
   const location = await prisma.activityLocation.findUnique({
     where: { id: locationId, isActive: true },
     include: {
-      activityType: true,
+      activityTypes: { include: { activityType: true } },
       place: { select: { id: true, name: true, slug: true, timezone: true } },
       spots: { where: { status: 'AVAILABLE' }, orderBy: { sortOrder: 'asc' } },
     },
@@ -74,8 +74,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
     return NextResponse.json({ success: false, error: 'Location not found' }, { status: 404 });
   }
 
+  const locationActivityTypeIds = location.activityTypes.map((a) => a.activityTypeId);
   const pricingRules = await prisma.pricingRule.findMany({
-    where: { isActive: true, activityTypeId: location.activityTypeId },
+    where: { isActive: true, activityTypeId: { in: locationActivityTypeIds } },
     include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } },
     orderBy: { createdAt: 'desc' },
   });

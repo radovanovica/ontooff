@@ -76,10 +76,11 @@ export async function GET(req: NextRequest) {
   } else if (activityLocationId) {
     const location = await prisma.activityLocation.findUnique({
       where: { id: activityLocationId },
-      select: { activityTypeId: true },
+      select: { activityTypes: { select: { activityTypeId: true } } },
     });
-    if (location?.activityTypeId) {
-      where.activityTypeId = location.activityTypeId;
+    const typeIds = location?.activityTypes.map((a: { activityTypeId: string }) => a.activityTypeId) ?? [];
+    if (typeIds.length > 0) {
+      where.activityTypeId = { in: typeIds };
     }
   }
 

@@ -543,7 +543,7 @@ function SearchPage() {
 
             {/* Row 2: tag chips */}
             {allTags.length > 0 && (
-              <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
                 <FilterAlt fontSize="small" color="action" />
                 {allTags.map((tag) => (
                   <Chip

@@ -28,24 +28,20 @@ export async function GET(
   const rawLocations = await prisma.activityLocation.findMany({
     where: { placeId: place.id, isActive: true },
     include: {
-      activityType: { select: { id: true, name: true, icon: true, color: true } },
+      activityTypes: { include: { activityType: { select: { id: true, name: true, icon: true, color: true } } } },
       spots: { where: { status: 'AVAILABLE' }, orderBy: { sortOrder: 'asc' } },
       _count: { select: { spots: true } },
-      additionalActivityTypes: {
-        include: { activityType: { select: { id: true, name: true, icon: true, color: true } } },
-      },
     },
     orderBy: { sortOrder: 'asc' },
   });
   const locations = (rawLocations as unknown) as LocationWithPricing[];
 
-  // Collect all activity type IDs (primary + additional) for pricing lookup
+  // Collect all activity type IDs for pricing lookup
   const activityTypeIds = [
     ...new Set(
-      locations.flatMap((loc) => [
-        loc.activityTypeId,
-        ...(loc.additionalActivityTypes ?? []).map((a: Record<string, any>) => a.activityTypeId as string),
-      ])
+      locations.flatMap((loc) =>
+        (loc.activityTypes ?? []).map((a: Record<string, any>) => a.activityTypeId as string)
+      )
     ),
   ];
   const pricingRules = await prisma.pricingRule.findMany({
@@ -62,10 +58,12 @@ export async function GET(
     pricingByType.set(rule.activityTypeId, existing);
   }
 
-  const enrichedLocations: LocationWithPricing[] = locations.map((loc) => ({
-    ...loc,
-    pricingRules: pricingByType.get(loc.activityTypeId) ?? [],
-  }));
+  const enrichedLocations: LocationWithPricing[] = locations.map((loc) => {
+    // Collect pricing rules for all activity types assigned to this location
+    const locActivityTypeIds = (loc.activityTypes ?? []).map((a: Record<string, any>) => a.activityTypeId as string);
+    const locPricingRules = locActivityTypeIds.flatMap((atId: string) => pricingByType.get(atId) ?? []);
+    return { ...loc, pricingRules: locPricingRules };
+  });
 
   return NextResponse.json({
     success: true,

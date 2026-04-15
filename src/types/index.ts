@@ -206,7 +206,7 @@ export interface ActivityType {
   createdAt: Date;
   updatedAt: Date;
   place?: Place;
-  activityLocations?: ActivityLocation[];
+  locations?: Array<{ activityLocationId: string; activityLocation: ActivityLocation }>;
   tags?: ActivityTag[];
 }
 
@@ -233,7 +233,6 @@ export interface SvgMapSpotShape {
 export interface ActivityLocation {
   id: string;
   placeId: string;
-  activityTypeId: string;
   name: string;
   description: string | null;
   svgMapData: string | null;
@@ -252,7 +251,7 @@ export interface ActivityLocation {
   createdAt: Date;
   updatedAt: Date;
   place?: Place;
-  activityType?: ActivityType;
+  activityTypes?: Array<{ activityTypeId: string; activityType: ActivityType }>;
   spots?: Spot[];
 }
 
@@ -480,7 +479,7 @@ export interface ActivityTypeFormData {
 
 export interface ActivityLocationFormData {
   placeId: string;
-  activityTypeId: string;
+  activityTypeIds: string[];
   name: string;
   description?: string;
   maxCapacity?: number;

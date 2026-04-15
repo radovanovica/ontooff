@@ -45,7 +45,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         where: { isActive: true },
         orderBy: { sortOrder: 'asc' },
         include: {
-          activityType: true,
+          activityTypes: { include: { activityType: true } },
           spots: { orderBy: { sortOrder: 'asc' } },
         },
       },
