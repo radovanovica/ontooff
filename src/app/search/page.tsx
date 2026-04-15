@@ -390,7 +390,7 @@ function SearchPage() {
           bgcolor: 'background.paper',
           borderBottom: '1px solid',
           borderColor: 'divider',
-          py: 2,
+          py: { xs: 1, sm: 2 },
           position: 'sticky',
           top: { xs: '56px', sm: '64px' },
           zIndex: 99,
@@ -543,7 +543,7 @@ function SearchPage() {
 
             {/* Row 2: tag chips */}
             {allTags.length > 0 && (
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'nowrap', overflowX: 'auto', alignItems: 'center', '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none', pb: 0.5 }}>
                 <FilterAlt fontSize="small" color="action" />
                 {allTags.map((tag) => (
                   <Chip
@@ -551,9 +551,16 @@ function SearchPage() {
                     label={`${tag.icon ?? ''} ${t(`tags.${tag.slug}`, tag.name)}`.trim()}
                     size="small"
                     variant={selectedTags.includes(tag.slug) ? 'filled' : 'outlined'}
-                    color={selectedTags.includes(tag.slug) ? 'primary' : 'default'}
                     onClick={() => toggleTag(tag.slug)}
-                    sx={{ cursor: 'pointer' }}
+                    sx={{
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                      ...(selectedTags.includes(tag.slug) && {
+                        bgcolor: '#2d5a27',
+                        color: 'white',
+                        '&:hover': { bgcolor: '#1e3d1a' },
+                      }),
+                    }}
                   />
                 ))}
               </Box>

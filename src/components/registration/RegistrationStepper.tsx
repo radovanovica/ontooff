@@ -643,7 +643,7 @@ export default function RegistrationStepper({
                     overflow: 'hidden',
                     transition: 'border-color 0.18s, box-shadow 0.18s, transform 0.18s',
                     '&:hover': {
-                      borderColor: at.color ?? 'primary.main',
+                      borderColor: at.color ?? '#2d5a27',
                       boxShadow: 4,
                       transform: 'translateY(-2px)',
                     },
@@ -672,7 +672,7 @@ export default function RegistrationStepper({
                           width: 52,
                           height: 52,
                           borderRadius: '50%',
-                          bgcolor: at.color ?? 'primary.main',
+                          bgcolor: at.color ?? '#2d5a27',
                           opacity: 0.15,
                           mb: 0.5,
                         }}
@@ -1025,7 +1025,7 @@ export default function RegistrationStepper({
                       sx={{
                         borderRadius: 2,
                         border: '2px solid',
-                        borderColor: selected ? 'primary.main' : 'divider',
+                        borderColor: selected ? '#2d5a27' : 'divider',
                       }}
                     >
                       <CardActionArea onClick={() => setSelectedLocationId(loc.id)}>
@@ -1036,7 +1036,7 @@ export default function RegistrationStepper({
                           {loc.description && (
                             <Typography variant="caption" color="text.secondary">{loc.description}</Typography>
                           )}
-                          {selected && <Chip size="small" color="primary" label={tc('stepper.selected')} sx={{ mt: 1.5, mb: 0.5, mx:1 }} />}
+                          {selected && <Chip size="small" label={tc('stepper.selected')} sx={{ mt: 1.5, mb: 0.5, mx: 1, bgcolor: '#2d5a27', color: 'white' }} />}
                         </CardContent>
                       </CardActionArea>
                     </Card>
@@ -1092,8 +1092,8 @@ export default function RegistrationStepper({
                     onPinClick={(id) => setSelectedLocationId(id)}
                   />
                   {selectedLocationId && (
-                    <Box sx={{ px: 1.5, py: 1, bgcolor: 'primary.50', borderTop: '1px solid', borderColor: 'divider' }}>
-                      <Typography variant="caption" color="primary.main" sx={{ fontWeight: 700 }}>
+                    <Box sx={{ px: 1.5, py: 1, bgcolor: '#e8f5e9', borderTop: '1px solid', borderColor: 'divider' }}>
+                      <Typography variant="caption" sx={{ color: '#2d5a27', fontWeight: 700 }}>
                         Selected: {availableLocations.find((l) => l.id === selectedLocationId)?.name}
                       </Typography>
                     </Box>
@@ -1453,7 +1453,7 @@ export default function RegistrationStepper({
               <Divider sx={{ my: 1 }} />
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="subtitle2">{t('pricing.total')}</Typography>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2d5a27' }}>
                   {livePricing.currency} {Number(livePricing.totalAmount).toFixed(2)}
                 </Typography>
               </Box>
@@ -1542,7 +1542,7 @@ export default function RegistrationStepper({
                 <Divider sx={{ my: 1.2 }} />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography variant="subtitle2">{t('pricing.total')}</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d5a27' }}>
                     {(formData.pricing ?? livePricing)?.currency}{' '}
                     {(formData.pricing ?? livePricing)?.totalAmount?.toFixed(2)}
                   </Typography>
