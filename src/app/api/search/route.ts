@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withCache, searchCacheKey, CACHE_TTL } from '@/lib/redis';
 
 // Local types for the search result shape
 interface SearchLocation {
@@ -62,8 +63,44 @@ export async function GET(req: NextRequest) {
   const maxLat = searchParams.get('maxLat') ? Number(searchParams.get('maxLat')) : null;
   const minLng = searchParams.get('minLng') ? Number(searchParams.get('minLng')) : null;
   const maxLng = searchParams.get('maxLng') ? Number(searchParams.get('maxLng')) : null;
-  const hasBbox = minLat !== null && maxLat !== null && minLng !== null && maxLng !== null;
 
+  const cacheKey = searchCacheKey(searchParams);
+
+  const data = await withCache(cacheKey, CACHE_TTL.SEARCH, () =>
+    runSearch({ tagsParam, from, to, location, page, pageSize, minLat, maxLat, minLng, maxLng })
+  );
+
+  return NextResponse.json({ success: true, data });
+}
+
+// ── runSearch ─────────────────────────────────────────────────────────────────
+
+interface RunSearchParams {
+  tagsParam: string;
+  from: string;
+  to: string;
+  location: string;
+  page: number;
+  pageSize: number;
+  minLat: number | null;
+  maxLat: number | null;
+  minLng: number | null;
+  maxLng: number | null;
+}
+
+async function runSearch({
+  tagsParam,
+  from,
+  to,
+  location,
+  page,
+  pageSize,
+  minLat,
+  maxLat,
+  minLng,
+  maxLng,
+}: RunSearchParams) {
+  const hasBbox = minLat !== null && maxLat !== null && minLng !== null && maxLng !== null;
   const tagSlugs = tagsParam ? tagsParam.split(',').filter(Boolean) : [];
 
   // Build activityType filter if tags provided
@@ -287,15 +324,12 @@ export async function GET(req: NextRequest) {
   const offset = (page - 1) * pageSize;
   const pagedItems = allItems.slice(offset, offset + pageSize);
 
-  return NextResponse.json({
-    success: true,
-    data: {
-      items: pagedItems,
-      total: combinedTotal,
-      page,
-      pageSize,
-      totalPages: Math.ceil(combinedTotal / pageSize),
-      filters: { tags: tagSlugs, from, to, location },
-    },
-  });
+  return {
+    items: pagedItems,
+    total: combinedTotal,
+    page,
+    pageSize,
+    totalPages: Math.ceil(combinedTotal / pageSize),
+    filters: { tags: tagSlugs, from, to, location },
+  };
 }
