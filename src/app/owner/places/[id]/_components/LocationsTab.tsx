@@ -89,7 +89,7 @@ export default function LocationsTab({ placeId }: { placeId: string }) {
                       sx={{ ml: 'auto' }}
                     />
                   </Box>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1, mx:1 }}>
                     {loc.activityTypes.map(({ activityType: at }) => (
                       <Chip key={at.name} label={at.name} size="small" variant="outlined" />
                     ))}

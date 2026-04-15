@@ -594,54 +594,112 @@ export default function RegistrationStepper({
   if (hasMultipleActivityTypes && !selectedActivityTypeId) {
     return (
       <Box>
+        {/* Stepper — step 0 highlighted */}
+        <Stepper activeStep={-1} alternativeLabel sx={{ mb: 3 }}>
+          {STEPS.map((step, idx) => (
+            <Step key={step.label} completed={false}>
+              <StepLabel
+                slotProps={{
+                  label: { style: { opacity: idx === 0 ? 1 : 0.38 } },
+                }}
+              >
+                {step.label}
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+
         {/* Place branding */}
         {placeLogoUrl && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, p: 1.5, borderRadius: 2, bgcolor: 'grey.50', border: '1px solid', borderColor: 'divider' }}>
-            <Box component="img" src={placeLogoUrl} alt={placeName ?? ''} sx={{ width: 48, height: 48, borderRadius: 1.5, objectFit: 'cover', border: '1px solid', borderColor: 'divider' }} />
+            <Box component="img" src={placeLogoUrl} alt={placeName ?? ''} sx={{ width: 44, height: 44, borderRadius: 1.5, objectFit: 'cover', border: '1px solid', borderColor: 'divider' }} />
             {placeName && <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{placeName}</Typography>}
           </Box>
         )}
+
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
           {tc('stepper.selectActivity')}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
           {tc('stepper.selectActivityHint')}
         </Typography>
-        <Grid container spacing={1.5}>
-          {activityTypes.map((at) => (
-            <Grid size={{ xs: 12, sm: 6 }} key={at.id}>
-              <Card
-                variant="outlined"
-                sx={{
-                  borderRadius: 2,
-                  border: '2px solid',
-                  borderColor: 'divider',
-                  cursor: 'pointer',
-                  transition: 'border-color 0.15s, box-shadow 0.15s',
-                  '&:hover': { borderColor: at.color ?? 'primary.main', boxShadow: 2 },
-                }}
-              >
-                <CardActionArea onClick={() => setSelectedActivityTypeId(at.id)} sx={{ p: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    {at.icon && (
-                      <Typography sx={{ fontSize: '2rem', lineHeight: 1 }}>{at.icon}</Typography>
+
+        <Grid container spacing={2}>
+          {activityTypes.map((at) => {
+            const locationCount = allLocations.filter((l) => {
+              const types = (l as unknown as Record<string, unknown>).activityTypes as
+                | Array<{ activityTypeId: string }>
+                | undefined;
+              return types?.some((e) => e.activityTypeId === at.id) ?? false;
+            }).length;
+            return (
+              <Grid size={{ xs: 12, sm: 6 }} key={at.id}>
+                <CardActionArea
+                  onClick={() => setSelectedActivityTypeId(at.id)}
+                  sx={{
+                    borderRadius: 2.5,
+                    border: '2px solid',
+                    borderColor: 'divider',
+                    overflow: 'hidden',
+                    transition: 'border-color 0.18s, box-shadow 0.18s, transform 0.18s',
+                    '&:hover': {
+                      borderColor: at.color ?? 'primary.main',
+                      boxShadow: 4,
+                      transform: 'translateY(-2px)',
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 1,
+                      py: 3,
+                      px: 2,
+                      background: at.color
+                        ? `linear-gradient(135deg, ${at.color}18 0%, ${at.color}08 100%)`
+                        : 'linear-gradient(135deg, rgba(0,0,0,0.03) 0%, transparent 100%)',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {at.icon ? (
+                      <Typography sx={{ fontSize: '2.8rem', lineHeight: 1, mb: 0.5 }}>{at.icon}</Typography>
+                    ) : (
+                      <Box
+                        sx={{
+                          width: 52,
+                          height: 52,
+                          borderRadius: '50%',
+                          bgcolor: at.color ?? 'primary.main',
+                          opacity: 0.15,
+                          mb: 0.5,
+                        }}
+                      />
                     )}
-                    <Box>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{at.name}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {allLocations.filter((l) => {
-                          const types = (l as unknown as Record<string, unknown>).activityTypes as
-                            | Array<{ activityTypeId: string }>
-                            | undefined;
-                          return types?.some((e) => e.activityTypeId === at.id) ?? false;
-                        }).length} {tc('stepper.locationsAvailable')}
-                      </Typography>
-                    </Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                      {at.name}
+                    </Typography>
+                    <Chip
+                      label={`${locationCount} ${tc('stepper.locationsAvailable')}`}
+                      size="small"
+                      sx={{
+                        mt: 0.5,
+                        height: 22,
+                        fontSize: '0.7rem',
+                        fontWeight: 600,
+                        bgcolor: at.color ? `${at.color}22` : 'action.hover',
+                        color: at.color ?? 'text.secondary',
+                        border: '1px solid',
+                        borderColor: at.color ? `${at.color}44` : 'divider',
+                      }}
+                    />
                   </Box>
                 </CardActionArea>
-              </Card>
-            </Grid>
-          ))}
+              </Grid>
+            );
+          })}
         </Grid>
       </Box>
     );
@@ -657,24 +715,63 @@ export default function RegistrationStepper({
         ))}
       </Stepper>
 
-      {/* Activity type badge + change button when multi-activity */}
+      {/* Activity type breadcrumb — shown when an activity is already selected */}
       {hasMultipleActivityTypes && selectedActivityTypeId && (() => {
         const at = activityTypes.find((a) => a.id === selectedActivityTypeId);
         return at ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, px: 0.5 }}>
-            <Chip
-              label={`${at.icon ?? ''} ${at.name}`.trim()}
-              size="small"
-              sx={{ fontWeight: 700, bgcolor: at.color ?? 'primary.main', color: 'white' }}
-            />
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0,
+              mb: 3,
+              borderRadius: 2,
+              overflow: 'hidden',
+              border: '1.5px solid',
+              borderColor: at.color ? `${at.color}55` : 'divider',
+              bgcolor: at.color ? `${at.color}0f` : 'grey.50',
+              width: 'fit-content',
+            }}
+          >
+            {/* Activity pill */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.75,
+                px: 1.5,
+                py: 0.6,
+              }}
+            >
+              {at.icon && (
+                <Typography sx={{ fontSize: '1rem', lineHeight: 1 }}>{at.icon}</Typography>
+              )}
+              <Typography
+                variant="caption"
+                sx={{ fontWeight: 700, color: at.color ?? 'text.primary', letterSpacing: 0.2 }}
+              >
+                {at.name}
+              </Typography>
+            </Box>
+            {/* Divider */}
+            <Box sx={{ width: '1.5px', alignSelf: 'stretch', bgcolor: at.color ? `${at.color}44` : 'divider' }} />
+            {/* Change button */}
             <Button
               size="small"
-              variant="text"
-              sx={{ fontSize: '0.75rem', py: 0, minWidth: 'auto' }}
               onClick={() => {
                 setSelectedActivityTypeId(null);
                 setSelectedLocationId(null);
                 setActiveStep(0);
+              }}
+              sx={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                px: 1.25,
+                py: 0.6,
+                minWidth: 'auto',
+                borderRadius: 0,
+                color: 'text.secondary',
+                '&:hover': { bgcolor: at.color ? `${at.color}1a` : 'action.hover', color: at.color ?? 'text.primary' },
               }}
             >
               {tc('stepper.changeActivity')}
@@ -939,7 +1036,7 @@ export default function RegistrationStepper({
                           {loc.description && (
                             <Typography variant="caption" color="text.secondary">{loc.description}</Typography>
                           )}
-                          {selected && <Chip size="small" color="primary" label={tc('stepper.selected')} sx={{ mt: 1.5, mb: 0.5 }} />}
+                          {selected && <Chip size="small" color="primary" label={tc('stepper.selected')} sx={{ mt: 1.5, mb: 0.5, mx:1 }} />}
                         </CardContent>
                       </CardActionArea>
                     </Card>

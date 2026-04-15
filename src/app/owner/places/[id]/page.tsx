@@ -81,8 +81,8 @@ export default function PlaceDetailPage() {
 
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tab label={t('places.editPlace')} />
-        <Tab label={t('locations.title')} />
         <Tab label={t('activityTypes.title')} />
+        <Tab label={t('locations.title')} />
         <Tab label={t('embedTokens.title')} />
         <Tab label={t('bookings.title')} />
         <Tab label={t('reviews.tabLabel')} />
