@@ -245,6 +245,7 @@
     "selectTimeslot": "Izaberi termin",
     "wholeDay": "Ceo dan",
     "timeslotRequired": "Molimo izaberite termin",
-    "checkingAvailability": "Proveravam dostupnost mesta\u2026"
+    "checkingAvailability": "Proveravam dostupnost mesta…",
+    "activity": "Aktivnost"
   }
 }

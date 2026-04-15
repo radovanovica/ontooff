@@ -53,7 +53,16 @@
   },
   "pricing": {
     "breakdown": "Price summary",
-    "total": "Total"
+    "total": "Total",
+    "guests": "Guests"
+  },
+  "gallery": {
+    "more": "+{{count}} more"
+  },
+  "spot": {
+    "minDays": "Min {{count}} day(s)",
+    "maxDays": "Max {{count}} day(s)",
+    "stayRange": "{{min}}–{{max}} days"
   },
   "confirm": {
     "summaryTitle": "Booking Summary"
@@ -177,11 +186,27 @@
     "minDays": "Minimum booking is {{count}} day(s).",
     "maxDays": "Maximum booking is {{count}} day(s).",
     "maxPeople": "Maximum {{count}} people allowed.",
-    "minPeople": "Minimum {{count}} people required."
+    "minPeople": "Minimum {{count}} people required.",
+    "spotMinDays": "\"{{name}}\" requires a minimum stay of {{count}} day(s).",
+    "spotMaxDays": "\"{{name}}\" allows a maximum stay of {{count}} day(s).",
+    "ruleMinDays": "This pricing plan requires a minimum stay of {{count}} day(s).",
+    "ruleMaxDays": "This pricing plan allows a maximum stay of {{count}} day(s).",
+    "ruleMinPeople": "This pricing plan requires at least {{count}} guest(s).",
+    "ruleMaxPeople": "This pricing plan allows a maximum of {{count}} guest(s).",
+    "availabilityFailed": "Failed to check spot availability."
   },
   "validation": {
     "spotRequired": "Please select at least one spot to continue.",
-    "timeslotRequired": "Please select a timeslot for each selected spot"
+    "timeslotRequired": "Please select a timeslot for each selected spot.",
+    "startDateRequired": "Start date is required.",
+    "endDateRequired": "End date is required.",
+    "endDateAfterStart": "Departure date must be after arrival date.",
+    "firstNameRequired": "First name is required.",
+    "lastNameRequired": "Last name is required.",
+    "emailInvalid": "Please enter a valid email address.",
+    "paymentMethodRequired": "Please select a payment method to continue.",
+    "atLeastOneGuest": "Please add at least one guest.",
+    "selectLocation": "Please select a location from the list or map."
   },
   "review": {
     "title": "Leave a Review",

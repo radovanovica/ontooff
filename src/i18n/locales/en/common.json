@@ -245,6 +245,7 @@
     "selectTimeslot": "Select timeslot",
     "wholeDay": "Whole day",
     "timeslotRequired": "Please select a timeslot",
-    "checkingAvailability": "Checking spot availability…"
+    "checkingAvailability": "Checking spot availability…",
+    "activity": "Activity"
   }
 }

@@ -75,12 +75,12 @@ import ReviewForm from '@/components/reviews/ReviewForm';
 
 const step1Schema = z
   .object({
-    startDate: z.string().min(1, 'Start date is required'),
-    endDate: z.string().min(1, 'End date is required'),
+    startDate: z.string().min(1, 'validation.startDateRequired'),
+    endDate: z.string().min(1, 'validation.endDateRequired'),
     spotIds: z.array(z.string()),
   })
   .refine((d) => new Date(d.endDate) > new Date(d.startDate), {
-    message: 'End date must be after start date',
+    message: 'validation.endDateAfterStart',
     path: ['endDate'],
   });
 
@@ -92,9 +92,9 @@ const step2Schema = z.object({
 });
 
 const step3Schema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Invalid email'),
+  firstName: z.string().min(1, 'validation.firstNameRequired'),
+  lastName: z.string().min(1, 'validation.lastNameRequired'),
+  email: z.string().email('validation.emailInvalid'),
   phone: z.string().optional(),
   address: z.string().optional(),
 });
@@ -140,6 +140,7 @@ export default function RegistrationStepper({
   const [submittedPlaceId, setSubmittedPlaceId] = useState<string | null>(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIdx, setGalleryIdx] = useState(0);
+  const [step2Error, setStep2Error] = useState<string | null>(null);
 
   const [locationSelectMode, setLocationSelectMode] = useState<'list' | 'map'>('list');
   const [mapSubMode, setMapSubMode] = useState<'virtual' | 'real'>('virtual');
@@ -406,7 +407,7 @@ export default function RegistrationStepper({
         const res = await fetch(`/api/spots/availability?${params.toString()}`);
         const json = await res.json().catch(() => ({}));
         if (!res.ok || !json.success) {
-          throw new Error(json.error ?? 'Failed to check spot availability');
+          throw new Error(json.error ?? t('errors.availabilityFailed'));
         }
 
         const fetched = (json.data ?? []) as (SpotMapItem & { isAvailable?: boolean; minDays?: number | null; maxDays?: number | null; timeslots?: (Timeslot & { isAvailable?: boolean })[] })[];
@@ -424,7 +425,7 @@ export default function RegistrationStepper({
           return next;
         });
       } catch (err) {
-        setAvailabilityError(err instanceof Error ? err.message : 'Failed to check spot availability');
+        setAvailabilityError(err instanceof Error ? err.message : t('errors.availabilityFailed'));
       } finally {
         setAvailabilityLoading(false);
       }
@@ -451,11 +452,19 @@ export default function RegistrationStepper({
       setError1('spotIds', { message: t('validation.spotRequired') });
       return;
     }
-    // Validate that all selected spots with timeslots have a timeslot chosen
+    // Validate min/max days and timeslot selection per spot
     for (const spotId of values.spotIds ?? []) {
       const spot = availableSpots.find((s) => s.id === spotId);
+      if (spot?.minDays != null && numberOfDays < spot.minDays) {
+        setError1('spotIds', { message: t('errors.spotMinDays', { name: spot.name, count: spot.minDays }) });
+        return;
+      }
+      if (spot?.maxDays != null && numberOfDays > spot.maxDays) {
+        setError1('spotIds', { message: t('errors.spotMaxDays', { name: spot.name, count: spot.maxDays }) });
+        return;
+      }
       if ((spot?.timeslots ?? []).length > 0 && !spotTimeslotSelections[spotId]) {
-        setError1('spotIds', { message: t('validation.timeslotRequired', 'Please select a timeslot for each selected spot') });
+        setError1('spotIds', { message: t('validation.timeslotRequired') });
         return;
       }
     }
@@ -474,13 +483,45 @@ export default function RegistrationStepper({
   };
 
   const onStep2Submit = (values: Step2Values) => {
+    setStep2Error(null);
     // Normalize empty pricingRuleId to undefined
     const normalizedRuleId = values.pricingRuleId || undefined;
     const submittedRule = pricingRules.find((rule) => rule.id === normalizedRuleId) ?? null;
 
-    // Client-side payment method validation
+    // Payment method validation
     if (submittedRule?.requiresPayment && !values.paymentMethod) {
-      return; // ToggleButtonGroup already shows the options; this guards accidental bypass
+      setStep2Error(t('validation.paymentMethodRequired'));
+      return;
+    }
+
+    // At-least-one-guest for guest-driven pricing rules
+    const isGuestDrivenRule =
+      submittedRule?.pricingType === PricingType.PER_PERSON ||
+      submittedRule?.pricingType === PricingType.PER_PERSON_PER_DAY;
+    const totalGuests = Object.values(values.guestCounts ?? {}).reduce((s, v) => s + (v ?? 0), 0);
+    if (isGuestDrivenRule && totalGuests <= 0) {
+      setStep2Error(t('validation.atLeastOneGuest'));
+      return;
+    }
+
+    // Pricing rule date constraints
+    if (submittedRule?.minDays != null && numberOfDays < submittedRule.minDays) {
+      setStep2Error(t('errors.ruleMinDays', { count: submittedRule.minDays }));
+      return;
+    }
+    if (submittedRule?.maxDays != null && numberOfDays > submittedRule.maxDays) {
+      setStep2Error(t('errors.ruleMaxDays', { count: submittedRule.maxDays }));
+      return;
+    }
+
+    // Pricing rule guest count constraints
+    if (submittedRule?.minPeople != null && totalGuests < submittedRule.minPeople) {
+      setStep2Error(t('errors.ruleMinPeople', { count: submittedRule.minPeople }));
+      return;
+    }
+    if (submittedRule?.maxPeople != null && totalGuests > submittedRule.maxPeople) {
+      setStep2Error(t('errors.ruleMaxPeople', { count: submittedRule.maxPeople }));
+      return;
     }
 
     const submittedGuestCounts = { ...(values.guestCounts ?? {}) };
@@ -555,7 +596,7 @@ export default function RegistrationStepper({
       });
 
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? 'Registration failed');
+      if (!res.ok) throw new Error(json.error ?? t('errors.submitFailed'));
 
       const regNumber = json.data?.registrationNumber ?? json.registrationNumber;
       setRegistrationNumber(regNumber);
@@ -563,7 +604,7 @@ export default function RegistrationStepper({
       setSubmittedPlaceId(selectedLocation?.place?.id ?? null);
       onSuccess?.(regNumber);
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'An error occurred');
+      setSubmitError(err instanceof Error ? err.message : t('errors.submitFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -900,13 +941,13 @@ export default function RegistrationStepper({
                 </Typography>
               </Box>
               {galleryImages.length > 3 && (
-                <Button
-                  size="small"
-                  onClick={() => { setGalleryIdx(0); setGalleryOpen(true); }}
-                  sx={{ fontSize: '0.72rem', py: 0, minWidth: 'auto', color: 'text.secondary' }}
-                >
-                  +{galleryImages.length - 3} more
-                </Button>
+                  <Button
+                    size="small"
+                    onClick={() => { setGalleryIdx(0); setGalleryOpen(true); }}
+                    sx={{ fontSize: '0.72rem', py: 0, minWidth: 'auto', color: 'text.secondary' }}
+                  >
+                    {t('gallery.more', { count: galleryImages.length - 3 })}
+                  </Button>
               )}
             </Box>
 
@@ -1059,7 +1100,7 @@ export default function RegistrationStepper({
                   | undefined;
                 const displayActivityName = locTypes?.find((e) => e.activityTypeId === selectedActivityTypeId)?.activityType.name
                   ?? locTypes?.[0]?.activityType.name
-                  ?? 'Activity';
+                  ?? tc('stepper.activity');
                 return (
                   <Grid size={{ xs: 12, sm: 6 }} key={loc.id}>
                     <Card
@@ -1120,7 +1161,7 @@ export default function RegistrationStepper({
                         | undefined;
                       const pinActivityName = locTypes?.find((e) => e.activityTypeId === selectedActivityTypeId)?.activityType.name
                         ?? locTypes?.[0]?.activityType.name
-                        ?? 'Activity';
+                        ?? tc('stepper.activity');
                       return {
                         id: loc.id,
                         name: `${pinActivityName} — ${loc.name}`,
@@ -1136,7 +1177,7 @@ export default function RegistrationStepper({
                   {selectedLocationId && (
                     <Box sx={{ px: 1.5, py: 1, bgcolor: '#e8f5e9', borderTop: '1px solid', borderColor: 'divider' }}>
                       <Typography variant="caption" sx={{ color: '#2d5a27', fontWeight: 700 }}>
-                        Selected: {availableLocations.find((l) => l.id === selectedLocationId)?.name}
+                        {tc('stepper.selected')}: {availableLocations.find((l) => l.id === selectedLocationId)?.name}
                       </Typography>
                     </Box>
                   )}
@@ -1276,7 +1317,7 @@ export default function RegistrationStepper({
 
           {!selectedLocation && (
             <Alert severity="warning" sx={{ mb: 2.5 }}>
-              Select a location first from selection list or map.
+              {t('validation.selectLocation')}
             </Alert>
           )}
 
@@ -1302,8 +1343,8 @@ export default function RegistrationStepper({
               toValue={endDate}
               onFromChange={(v) => setValue1('startDate', v, { shouldValidate: true })}
               onToChange={(v) => setValue1('endDate', v, { shouldValidate: true })}
-              fromError={errors1.startDate?.message}
-              toError={errors1.endDate?.message}
+              fromError={errors1.startDate?.message ? t(errors1.startDate.message) : undefined}
+              toError={errors1.endDate?.message ? t(errors1.endDate.message) : undefined}
               minFrom={today}
             />
           </Box>
@@ -1341,10 +1382,10 @@ export default function RegistrationStepper({
                                   {(spot.minDays != null || spot.maxDays != null) && (
                                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                                       {spot.minDays != null && spot.maxDays != null
-                                        ? `${spot.minDays}–${spot.maxDays} days`
+                                        ? t('spot.stayRange', { min: spot.minDays, max: spot.maxDays })
                                         : spot.minDays != null
-                                          ? `Min ${spot.minDays} day${spot.minDays > 1 ? 's' : ''}`
-                                          : `Max ${spot.maxDays} day${(spot.maxDays ?? 0) > 1 ? 's' : ''}`}
+                                          ? t('spot.minDays', { count: spot.minDays })
+                                          : t('spot.maxDays', { count: spot.maxDays })}
                                     </Typography>
                                   )}
                                 </Box>
@@ -1420,13 +1461,13 @@ export default function RegistrationStepper({
         <Box component="form" onSubmit={handleSubmit3(onStep3Submit)}>
           <Grid container spacing={2} sx={{ mb: 3 }}>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField {...register3('firstName')} label={t('fields.firstName')} fullWidth error={!!errors3.firstName} helperText={errors3.firstName?.message} />
+              <TextField {...register3('firstName')} label={t('fields.firstName')} fullWidth error={!!errors3.firstName} helperText={errors3.firstName?.message ? t(errors3.firstName.message) : undefined} />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField {...register3('lastName')} label={t('fields.lastName')} fullWidth error={!!errors3.lastName} helperText={errors3.lastName?.message} />
+              <TextField {...register3('lastName')} label={t('fields.lastName')} fullWidth error={!!errors3.lastName} helperText={errors3.lastName?.message ? t(errors3.lastName.message) : undefined} />
             </Grid>
             <Grid size={{ xs: 12 }}>
-              <TextField {...register3('email')} label={t('fields.email')} type="email" fullWidth error={!!errors3.email} helperText={errors3.email?.message} />
+              <TextField {...register3('email')} label={t('fields.email')} type="email" fullWidth error={!!errors3.email} helperText={errors3.email?.message ? t(errors3.email.message) : undefined} />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField {...register3('phone')} label={t('fields.phone')} fullWidth slotProps={{ input: { startAdornment: <InputAdornment position="start">📞</InputAdornment> } }} />
@@ -1536,7 +1577,7 @@ export default function RegistrationStepper({
                 {t('pricing.breakdown')}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                Guests: {formatGuestSummary(guestCounts ?? {})}
+                {t('pricing.guests')}: {formatGuestSummary(guestCounts ?? {})}
               </Typography>
               {livePricing.breakdown.map((item, i) => (
                 <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
@@ -1576,6 +1617,8 @@ export default function RegistrationStepper({
               />
             )}
           />
+
+          {step2Error && <Alert severity="error" sx={{ mb: 2 }}>{step2Error}</Alert>}
 
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Button variant="outlined" onClick={() => setActiveStep(1)} fullWidth>{t('actions.back')}</Button>
@@ -1620,7 +1663,7 @@ export default function RegistrationStepper({
                 </Typography>
                 {summaryUsesGuestCounts ? (
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                    Guests: {formatGuestSummary((formData.guestCounts ?? guestCounts ?? {}) as Record<string, number>)}
+                    {t('pricing.guests')}: {formatGuestSummary((formData.guestCounts ?? guestCounts ?? {}) as Record<string, number>)}
                   </Typography>
                 ) : (
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>

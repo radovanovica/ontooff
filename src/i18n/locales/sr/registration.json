@@ -53,7 +53,16 @@
   },
   "pricing": {
     "breakdown": "Pregled cene",
-    "total": "Ukupno"
+    "total": "Ukupno",
+    "guests": "Gosti"
+  },
+  "gallery": {
+    "more": "+{{count}} više"
+  },
+  "spot": {
+    "minDays": "Min {{count}} dan(a)",
+    "maxDays": "Maks {{count}} dan(a)",
+    "stayRange": "{{min}}–{{max}} dana"
   },
   "confirm": {
     "summaryTitle": "Pregled rezervacije"
@@ -177,11 +186,27 @@
     "minDays": "Minimalna rezervacija je {{count}} dan/dana.",
     "maxDays": "Maksimalna rezervacija je {{count}} dan/dana.",
     "maxPeople": "Dozvoljeno je maksimalno {{count}} osoba.",
-    "minPeople": "Potrebno je minimum {{count}} osoba."
+    "minPeople": "Potrebno je minimum {{count}} osoba.",
+    "spotMinDays": "\"{{name}}\" zahteva minimalni boravak od {{count}} dan/dana.",
+    "spotMaxDays": "\"{{name}}\" dozvoljava maksimalni boravak od {{count}} dan/dana.",
+    "ruleMinDays": "Ovaj cenovni plan zahteva minimalni boravak od {{count}} dan/dana.",
+    "ruleMaxDays": "Ovaj cenovni plan dozvoljava maksimalni boravak od {{count}} dan/dana.",
+    "ruleMinPeople": "Ovaj cenovni plan zahteva najmanje {{count}} gost(a).",
+    "ruleMaxPeople": "Ovaj cenovni plan dozvoljava maksimalno {{count}} gost(a).",
+    "availabilityFailed": "Nije moguće proveriti dostupnost mesta."
   },
   "validation": {
     "spotRequired": "Molimo izaberite bar jedno mesto da biste nastavili.",
-    "timeslotRequired": "Molimo izaberite termin za svako izabrano mesto"
+    "timeslotRequired": "Molimo izaberite termin za svako izabrano mesto.",
+    "startDateRequired": "Datum dolaska je obavezan.",
+    "endDateRequired": "Datum odlaska je obavezan.",
+    "endDateAfterStart": "Datum odlaska mora biti posle datuma dolaska.",
+    "firstNameRequired": "Ime je obavezno.",
+    "lastNameRequired": "Prezime je obavezno.",
+    "emailInvalid": "Unesite ispravnu email adresu.",
+    "paymentMethodRequired": "Molimo izaberite način plaćanja da biste nastavili.",
+    "atLeastOneGuest": "Dodajte bar jednog gosta.",
+    "selectLocation": "Molimo prvo izaberite lokaciju sa liste ili mape."
   },
   "review": {
     "title": "Ostavite recenziju",
