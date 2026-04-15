@@ -643,11 +643,11 @@ export default function RegistrationStepper({
                     overflow: 'hidden',
                     transition: 'border-color 0.18s, box-shadow 0.18s, transform 0.18s',
                     '&:hover': {
-                      borderColor: at.color ?? '#2d5a27',
+                      borderColor: '#2d5a27',
                       boxShadow: 4,
                       transform: 'translateY(-2px)',
                     },
-                    '& .MuiTouchRipple-root': { color: at.color ?? '#2d5a27' },
+                    '& .MuiTouchRipple-root': { color: '#2d5a27' },
                   }}
                 >
                   <Box
@@ -659,7 +659,7 @@ export default function RegistrationStepper({
                       gap: 1,
                       py: 3,
                       px: 2,
-                      bgcolor: at.color ? `${at.color}22` : '#e8f5e9',
+                      bgcolor:'#e8f5e9',
                       textAlign: 'center',
                     }}
                   >
@@ -671,7 +671,7 @@ export default function RegistrationStepper({
                           width: 52,
                           height: 52,
                           borderRadius: '50%',
-                          bgcolor: at.color ?? '#2d5a27',
+                          bgcolor: '#2d5a27',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
