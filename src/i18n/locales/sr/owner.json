@@ -462,3 +462,4 @@
     "pending": "Vaša organizacija \"{{name}}\" čeka odobrenje admina. Moći ćete da kreirate mesta kada bude odobreno.",
     "statusBad": "Vaša organizacija \"{{name}}\" ima status {{status}}. Kontaktirajte podršku."
   }
+}
