@@ -49,12 +49,17 @@ export async function getAvailableSpots(
   activityLocationId: string,
   startDate: Date,
   endDate: Date,
-  excludeRegistrationId?: string
+  excludeRegistrationId?: string,
+  activityTypeId?: string | null
 ) {
   const allSpots = await prisma.spot.findMany({
     where: {
       activityLocationId,
       status: SpotStatus.AVAILABLE,
+      // If activityTypeId provided, show only spots matching that type OR spots with no type assigned
+      ...(activityTypeId
+        ? { OR: [{ activityTypeId }, { activityTypeId: null }] }
+        : undefined),
     },
   });
 

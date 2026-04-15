@@ -391,6 +391,10 @@ export default function RegistrationStepper({
           startDate,
           endDate,
         });
+        // Pass selected activity type so activity-specific spots are filtered server-side
+        if (selectedActivityTypeId) {
+          params.set('activityTypeId', selectedActivityTypeId);
+        }
         const res = await fetch(`/api/spots/availability?${params.toString()}`);
         const json = await res.json().catch(() => ({}));
         if (!res.ok || !json.success) {
@@ -412,7 +416,7 @@ export default function RegistrationStepper({
     };
 
     run();
-  }, [selectedLocation?.id, startDate, endDate]);
+  }, [selectedLocation?.id, startDate, endDate, selectedActivityTypeId]);
 
   const livePricing = useMemo(() => {
     if (!selectedRule || !selectedRuleId) return null;

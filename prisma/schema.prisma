@@ -206,6 +206,7 @@ model ActivityType {
   pricingRules      PricingRule[]
   tags              ActivityTypeTag[]
   additionalLocations ActivityLocationActivity[]
+  spots             Spot[]
 
   @@index([placeId])
   @@index([isActive])
@@ -269,6 +270,7 @@ model ActivityLocation {
 model Spot {
   id                 String     @id @default(cuid())
   activityLocationId String
+  activityTypeId     String?
   name               String
   description        String?    @db.Text
   code               String?
@@ -282,9 +284,11 @@ model Spot {
   updatedAt          DateTime   @updatedAt
 
   activityLocation  ActivityLocation   @relation(fields: [activityLocationId], references: [id], onDelete: Cascade)
+  activityType      ActivityType?      @relation(fields: [activityTypeId], references: [id], onDelete: SetNull)
   registrationSpots RegistrationSpot[]
 
   @@index([activityLocationId])
+  @@index([activityTypeId])
   @@index([status])
   @@map("spots")
 }

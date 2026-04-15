@@ -15,6 +15,7 @@ const schema = z.object({
   status: z.enum(['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'DISABLED']).default('AVAILABLE'),
   sortOrder: z.number().default(0),
   svgShapeData: z.string().optional(),
+  activityTypeId: z.string().nullable().optional(),
 });
 
 async function canAccessLocation(locationId: string, userId: string, role: UserRole) {
@@ -67,6 +68,7 @@ const patchSchema = z.object({
   amenities: z.array(z.string()).optional(),
   sortOrder: z.number().optional(),
   svgShapeData: z.string().optional(),
+  activityTypeId: z.string().nullable().optional(),
 });
 
 export async function PATCH(req: NextRequest) {

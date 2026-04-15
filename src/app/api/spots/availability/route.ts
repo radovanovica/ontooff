@@ -6,6 +6,7 @@ const querySchema = z.object({
   activityLocationId: z.string().min(1),
   startDate: z.string().min(1),
   endDate: z.string().min(1),
+  activityTypeId: z.string().optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -13,6 +14,7 @@ export async function GET(req: NextRequest) {
     activityLocationId: req.nextUrl.searchParams.get('activityLocationId') ?? '',
     startDate: req.nextUrl.searchParams.get('startDate') ?? '',
     endDate: req.nextUrl.searchParams.get('endDate') ?? '',
+    activityTypeId: req.nextUrl.searchParams.get('activityTypeId') ?? undefined,
   };
 
   const result = querySchema.safeParse(params);
@@ -23,7 +25,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const { activityLocationId, startDate, endDate } = result.data;
+  const { activityLocationId, startDate, endDate, activityTypeId } = result.data;
   const start = new Date(startDate);
   const end = new Date(endDate);
 
@@ -34,6 +36,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'End date must be after start date' }, { status: 422 });
   }
 
-  const spots = await getAvailableSpots(activityLocationId, start, end);
+  const spots = await getAvailableSpots(activityLocationId, start, end, undefined, activityTypeId);
   return NextResponse.json({ success: true, data: spots });
 }

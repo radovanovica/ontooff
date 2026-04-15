@@ -91,6 +91,7 @@ interface SpotData {
   status: string;
   amenities: string[];
   svgShapeData: string | null;
+  activityTypeId: string | null;
 }
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
@@ -115,6 +116,7 @@ const spotSchema = z.object({
   description: z.string().optional(),
   maxPeople: z.coerce.number().int().positive().default(1),
   status: z.enum(['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'DISABLED']).default('AVAILABLE'),
+  activityTypeId: z.string().nullable().optional(),
 });
 
 type LocationFormValues = z.input<typeof locationSchema>;
@@ -128,15 +130,15 @@ function TabPanel({ children, value, index }: { children?: React.ReactNode; valu
 
 // ─── Settings Tab ────────────────────────────────────────────────────────────
 
-function SettingsTab({ location, locationId, placeId, onUpdated }: { location: LocationData; locationId: string; placeId: string; onUpdated: () => void }) {
+function SettingsTab({ location, locationId, placeId, onUpdated, allActivityTypes }: { location: LocationData; locationId: string; placeId: string; onUpdated: () => void; allActivityTypes: Array<{ id: string; name: string; icon: string | null; color: string | null }> }) {
   const { t } = useTranslation('owner');
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mapPickerOpen, setMapPickerOpen] = useState(false);
 
-  // Additional activity types state
-  const [allActivityTypes, setAllActivityTypes] = useState<Array<{ id: string; name: string; icon: string | null }>>([]);
+  // Additional activity types state (all types except primary)
+  const otherActivityTypes = allActivityTypes.filter((at) => at.id !== location.activityType.id);
   const [additionalActivityTypeIds, setAdditionalActivityTypeIds] = useState<string[]>(
     location.additionalActivityTypes.map((a) => a.activityTypeId)
   );
@@ -154,25 +156,15 @@ function SettingsTab({ location, locationId, placeId, onUpdated }: { location: L
   const svgRef = useRef<SVGSVGElement>(null);
   const [savingZone, setSavingZone] = useState(false);
 
-  // Load place map data for virtual zone editor + all activity types for place
+  // Load place map data for virtual zone editor
   useEffect(() => {
     fetch(`/api/places/${placeId}`)
       .then((r) => r.json())
       .then((d) => {
-        if (d.success) {
-          setPlaceMap(d.data);
-          // d.data.activityTypes is the list of activity types for this place
-          if (Array.isArray(d.data.activityTypes)) {
-            setAllActivityTypes(
-              (d.data.activityTypes as Array<{ id: string; name: string; icon: string | null }>).filter(
-                (at) => at.id !== location.activityType.id // exclude primary
-              )
-            );
-          }
-        }
+        if (d.success) setPlaceMap(d.data);
       })
       .catch(() => null);
-  }, [placeId, location.activityType.id]);
+  }, [placeId]);
 
   const mapWidth = placeMap?.mapWidth ?? 900;
   const mapHeight = placeMap?.mapHeight ?? 600;
@@ -307,7 +299,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated }: { location: L
           />
         </Grid>
         {/* Additional Activity Types */}
-        {allActivityTypes.length > 0 && (
+        {otherActivityTypes.length > 0 && (
           <Grid size={{ xs: 12 }}>
             <Typography variant="subtitle2" gutterBottom>
               Also available for
@@ -316,7 +308,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated }: { location: L
               This location will appear under the selected activity types in addition to its primary activity ({location.activityType.name}).
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {allActivityTypes.map((at) => {
+              {otherActivityTypes.map((at) => {
                 const selected = additionalActivityTypeIds.includes(at.id);
                 return (
                   <Chip
@@ -605,10 +597,12 @@ function SpotsTab({
   locationId,
   spots,
   onUpdated,
+  allActivityTypes,
 }: {
   locationId: string;
   spots: SpotData[];
   onUpdated: () => void;
+  allActivityTypes: Array<{ id: string; name: string; icon: string | null }>;
 }) {
   const { t } = useTranslation('owner');
   const [open, setOpen] = useState(false);
@@ -616,19 +610,19 @@ function SpotsTab({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<SpotFormValues>({
+  const { register, handleSubmit, reset, formState: { errors }, setValue: setSpotValue, watch: watchSpot } = useForm<SpotFormValues>({
     resolver: zodResolver(spotSchema),
   });
 
   const openAdd = () => {
     setEditSpot(null);
-    reset({ name: '', code: '', description: '', maxPeople: 1, status: 'AVAILABLE' });
+    reset({ name: '', code: '', description: '', maxPeople: 1, status: 'AVAILABLE', activityTypeId: null });
     setOpen(true);
   };
 
   const openEdit = (spot: SpotData) => {
     setEditSpot(spot);
-    reset({ name: spot.name, code: spot.code ?? '', description: spot.description ?? '', maxPeople: spot.maxPeople, status: spot.status as SpotFormValues['status'] });
+    reset({ name: spot.name, code: spot.code ?? '', description: spot.description ?? '', maxPeople: spot.maxPeople, status: spot.status as SpotFormValues['status'], activityTypeId: spot.activityTypeId ?? null });
     setOpen(true);
   };
 
@@ -640,14 +634,14 @@ function SpotsTab({
         const res = await fetch(`/api/spots`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: editSpot.id, ...data }),
+          body: JSON.stringify({ id: editSpot.id, ...data, activityTypeId: data.activityTypeId || null }),
         });
         if (!res.ok) throw new Error(t('spots.errors.saveFailed'));
       } else {
         const res = await fetch('/api/spots', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ activityLocationId: locationId, ...data }),
+          body: JSON.stringify({ activityLocationId: locationId, ...data, activityTypeId: data.activityTypeId || null }),
         });
         if (!res.ok) throw new Error(t('spots.errors.createFailed'));
       }
@@ -695,6 +689,18 @@ function SpotsTab({
                     </Typography>
                     <Chip label={spot.status} color={STATUS_COLORS[spot.status] ?? 'default'} size="small" />
                   </Box>
+                  {spot.activityTypeId && (() => {
+                    const at = allActivityTypes.find((a) => a.id === spot.activityTypeId);
+                    return at ? (
+                      <Chip
+                        size="small"
+                        label={`${at.icon ?? ''} ${at.name}`.trim()}
+                        variant="outlined"
+                        color="primary"
+                        sx={{ mb: 1 }}
+                      />
+                    ) : null;
+                  })()}
                   {spot.description && <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{spot.description}</Typography>}
                   <Typography variant="caption" color="text.secondary">
                     {t('spots.maxPeopleLabel', { count: spot.maxPeople })}
@@ -741,6 +747,25 @@ function SpotsTab({
                   ))}
                 </TextField>
               </Grid>
+              {allActivityTypes.length > 0 && (
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Activity type (optional)"
+                    value={watchSpot('activityTypeId') ?? ''}
+                    onChange={(e) => setSpotValue('activityTypeId', e.target.value || null)}
+                    helperText="Leave blank to show this spot for all activity types at this location"
+                  >
+                    <MenuItem value="">All activities</MenuItem>
+                    {allActivityTypes.map((at) => (
+                      <MenuItem key={at.id} value={at.id}>
+                        {at.icon ? `${at.icon} ` : ''}{at.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              )}
             </Grid>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 3 }}>
@@ -1002,6 +1027,19 @@ export default function LocationDetailPage() {
   const [location, setLocation] = useState<LocationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [allActivityTypes, setAllActivityTypes] = useState<Array<{ id: string; name: string; icon: string | null; color: string | null }>>([]);
+
+  // Load all activity types for the place once
+  useEffect(() => {
+    fetch(`/api/places/${placeId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success && Array.isArray(d.data.activityTypes)) {
+          setAllActivityTypes(d.data.activityTypes);
+        }
+      })
+      .catch(() => null);
+  }, [placeId]);
 
   const loadLocation = useCallback(() => {
     setLoading(true);
@@ -1062,10 +1100,10 @@ export default function LocationDetailPage() {
       </Tabs>
 
       <TabPanel value={tab} index={0}>
-        <SettingsTab location={location} locationId={locationId} placeId={placeId} onUpdated={loadLocation} />
+        <SettingsTab location={location} locationId={locationId} placeId={placeId} onUpdated={loadLocation} allActivityTypes={allActivityTypes} />
       </TabPanel>
       <TabPanel value={tab} index={1}>
-        <SpotsTab locationId={locationId} spots={location.spots} onUpdated={loadLocation} />
+        <SpotsTab locationId={locationId} spots={location.spots} onUpdated={loadLocation} allActivityTypes={allActivityTypes} />
       </TabPanel>
       <TabPanel value={tab} index={2}>
         <GalleryTab location={location} locationId={locationId} onUpdated={loadLocation} />
