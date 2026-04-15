@@ -96,8 +96,8 @@ export default async function EmbedPage({ params }: Props) {
       <Container maxWidth="md">
         <Paper elevation={3} sx={{ p: { xs: 3, md: 5 }, borderRadius: 3 }}>
           <RegistrationStepper
-            location={serializedLocation as Parameters<typeof RegistrationStepper>[0]['location']}
-            locations={serializedLocations as Parameters<typeof RegistrationStepper>[0]['locations']}
+            location={serializedLocation as unknown as Parameters<typeof RegistrationStepper>[0]['location']}
+            locations={serializedLocations as unknown as Parameters<typeof RegistrationStepper>[0]['locations']}
             embedTokenId={embedToken.id}
           />
         </Paper>
