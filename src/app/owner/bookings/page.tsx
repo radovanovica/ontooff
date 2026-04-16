@@ -148,7 +148,7 @@ export default function OwnerBookingsPage() {
         ]}
         action={
           <Tooltip title={t('bookings.actions.refresh')}>
-            <IconButton onClick={loadBookings}>
+            <IconButton onClick={() => loadBookings()}>
               <Refresh />
             </IconButton>
           </Tooltip>
