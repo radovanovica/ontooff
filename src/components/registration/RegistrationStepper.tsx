@@ -17,6 +17,7 @@ import {
   Person,
   Payment,
   CheckCircle,
+  LocalActivity,
 } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -693,7 +694,7 @@ useEffect(() => {
                           mb: 0.5,
                         }}
                       >
-                        <Typography sx={{ fontSize: '1.4rem', color: 'white', lineHeight: 1 }}>ðŸŒ¿</Typography>
+                        <LocalActivity sx={{ fontSize: '1.6rem', color: 'white' }} />
                       </Box>
                     )}
                     <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
