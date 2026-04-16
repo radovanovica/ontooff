@@ -199,13 +199,14 @@ export default function OwnerBookingsPage() {
           <CircularProgress />
         </Box>
       ) : (
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant="body2" color="text.secondary">
-          {t('bookings.totalCount', { count: total })}
-        </Typography>
-      </Box>
+        <>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              {t('bookings.totalCount', { count: total })}
+            </Typography>
+          </Box>
 
-      <TableContainer component={Card} elevation={2}>
+          <TableContainer component={Card} elevation={2}>
           <Table size="small">
             <TableHead>
               <TableRow sx={{ bgcolor: 'grey.50' }}>
@@ -307,6 +308,7 @@ export default function OwnerBookingsPage() {
             />
           </Box>
         )}
+        </>
       )}
     </Box>
   );
