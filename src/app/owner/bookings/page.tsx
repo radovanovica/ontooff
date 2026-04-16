@@ -26,6 +26,7 @@ import {
   Link as MuiLink,
 } from '@mui/material';
 import { Refresh } from '@mui/icons-material';
+import { Pagination } from '@mui/material';
 import { useTranslation } from '@/i18n/client';
 import { format } from 'date-fns';
 import { RegistrationStatus } from '@/types';
@@ -68,6 +69,11 @@ export default function OwnerBookingsPage() {
   const [error, setError] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+
+  const PAGE_SIZE = 20;
 
   const loadLocations = useCallback(async () => {
     try {
@@ -81,23 +87,25 @@ export default function OwnerBookingsPage() {
     }
   }, []);
 
-  const loadBookings = useCallback(async () => {
+  const loadBookings = useCallback(async (p = page) => {
     setLoading(true);
     setError('');
     try {
-      const params = new URLSearchParams({ pageSize: '100' });
+      const params = new URLSearchParams({ pageSize: String(PAGE_SIZE), page: String(p) });
       if (locationFilter) params.set('activityLocationId', locationFilter);
       if (statusFilter) params.set('status', statusFilter);
       const res = await fetch(`/api/registrations?${params.toString()}`);
       if (!res.ok) throw new Error(t('bookings.errors.fetchFailed'));
       const data = await res.json();
       setBookings(data.data?.items ?? data.items ?? []);
+      setTotal(data.data?.total ?? 0);
+      setTotalPages(data.data?.totalPages ?? 1);
     } catch {
       setError(t('bookings.errors.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [locationFilter, statusFilter]);
+  }, [locationFilter, statusFilter, page]);
 
   useEffect(() => {
     loadLocations();
@@ -106,6 +114,11 @@ export default function OwnerBookingsPage() {
   useEffect(() => {
     loadBookings();
   }, [loadBookings]);
+
+  const handleFilterChange = (setter: (v: string) => void) => (e: SelectChangeEvent) => {
+    setter(e.target.value);
+    setPage(1);
+  };
 
   const handleStatusChange = async (bookingId: string, newStatus: RegistrationStatus) => {
     try {
@@ -151,7 +164,7 @@ export default function OwnerBookingsPage() {
               <Select
                 value={locationFilter}
                 label={t('bookings.filters.allLocations')}
-                onChange={(e: SelectChangeEvent) => setLocationFilter(e.target.value)}
+                onChange={handleFilterChange(setLocationFilter)}
               >
                 <MenuItem value="">{t('bookings.filters.allLocations')}</MenuItem>
                 {locations.map((loc) => (
@@ -167,7 +180,7 @@ export default function OwnerBookingsPage() {
               <Select
                 value={statusFilter}
                 label={t('bookings.filters.allStatuses')}
-                onChange={(e: SelectChangeEvent) => setStatusFilter(e.target.value)}
+                onChange={handleFilterChange(setStatusFilter)}
               >
                 <MenuItem value="">{t('bookings.filters.allStatuses')}</MenuItem>
                 {statuses.map((s) => (
@@ -186,7 +199,13 @@ export default function OwnerBookingsPage() {
           <CircularProgress />
         </Box>
       ) : (
-        <TableContainer component={Card} elevation={2}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+        <Typography variant="body2" color="text.secondary">
+          {t('bookings.totalCount', { count: total })}
+        </Typography>
+      </Box>
+
+      <TableContainer component={Card} elevation={2}>
           <Table size="small">
             <TableHead>
               <TableRow sx={{ bgcolor: 'grey.50' }}>
@@ -276,6 +295,18 @@ export default function OwnerBookingsPage() {
             </TableBody>
           </Table>
         </TableContainer>
+
+        {totalPages > 1 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={(_, p) => { setPage(p); loadBookings(p); }}
+              color="primary"
+              shape="rounded"
+            />
+          </Box>
+        )}
       )}
     </Box>
   );

@@ -33,6 +33,7 @@ import {
   ToggleButton,
 } from '@mui/material';
 import { OpenInNew, Add } from '@mui/icons-material';
+import { Pagination } from '@mui/material';
 import { useState, useEffect, useCallback } from 'react';
 import { format, differenceInCalendarDays } from 'date-fns';
 import { useTranslation } from '@/i18n/client';
@@ -109,6 +110,10 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
   const [rows, setRows] = useState<BookingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const PAGE_SIZE = 20;
 
   // Manual booking dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -118,18 +123,20 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
   const [formError, setFormError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (p = page) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/registrations?placeId=${placeId}&pageSize=50`);
+      const res = await fetch(`/api/registrations?placeId=${placeId}&pageSize=${PAGE_SIZE}&page=${p}`);
       const data = await res.json();
       setRows(data.data?.items ?? data.items ?? []);
+      setTotal(data.data?.total ?? 0);
+      setTotalPages(data.data?.totalPages ?? 1);
     } catch {
       setError(t('bookings.errors.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [placeId]);
+  }, [placeId, page]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -247,8 +254,10 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
     <Box>
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      {/* Header row with Add Booking button */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="body2" color="text.secondary">
+          {t('bookings.totalCount', { count: total })}
+        </Typography>
         <Button
           variant="contained"
           startIcon={<Add />}
@@ -330,6 +339,18 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {totalPages > 1 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, p) => { setPage(p); fetchData(p); }}
+            color="primary"
+            shape="rounded"
+          />
+        </Box>
+      )}
 
       {/* Manual Booking Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>

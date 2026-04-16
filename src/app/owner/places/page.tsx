@@ -11,9 +11,11 @@ import {
   CircularProgress,
   Alert,
   Chip,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
-import { Add, Settings } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { Add, Settings, Search } from '@mui/icons-material';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '@/i18n/client';
 import PageHeader from '@/components/ui/PageHeader';
@@ -36,6 +38,7 @@ export default function OwnerPlacesPage() {
   const [places, setPlaces] = useState<PlaceData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetch('/api/places')
@@ -44,6 +47,17 @@ export default function OwnerPlacesPage() {
       .catch(() => setError('Failed to load places'))
       .finally(() => setLoading(false));
   }, []);
+
+  const filteredPlaces = useMemo(() => {
+    if (!search.trim()) return places;
+    const q = search.toLowerCase();
+    return places.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        (p.city ?? '').toLowerCase().includes(q) ||
+        (p.country ?? '').toLowerCase().includes(q)
+    );
+  }, [places, search]);
 
   if (loading) {
     return (
@@ -72,7 +86,28 @@ export default function OwnerPlacesPage() {
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      {places.length === 0 ? (
+      {places.length > 0 && (
+        <Box sx={{ mb: 3 }}>
+          <TextField
+            size="small"
+            placeholder={t('places.search', 'Search places…')}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search fontSize="small" color="action" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            sx={{ minWidth: 260 }}
+          />
+        </Box>
+      )}
+
+      {filteredPlaces.length === 0 && !loading ? (
         <EmptyState
           title={t('dashboard.noPlaces')}
           description={t('dashboard.addFirstPlace')}
@@ -84,7 +119,7 @@ export default function OwnerPlacesPage() {
         />
       ) : (
         <Grid container spacing={3}>
-          {places.map((place) => (
+          {filteredPlaces.map((place) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={place.id}>
               <Card elevation={2} sx={{ borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
                 {/* Header band */}

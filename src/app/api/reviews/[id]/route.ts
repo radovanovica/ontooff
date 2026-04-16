@@ -73,6 +73,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { searchParams } = req.nextUrl;
   const status = searchParams.get('status'); // 'pending' | 'approved' | 'rejected' | null
+  const page = Math.max(1, Number(searchParams.get('page') ?? 1));
+  const pageSize = Math.min(Math.max(1, Number(searchParams.get('pageSize') ?? 20)), 50);
 
   const place = await prisma.place.findUnique({ where: { id }, select: { ownerId: true } });
   if (!place) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
@@ -85,14 +87,22 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (status === 'approved') { where.status = 'APPROVED'; }
   if (status === 'rejected') { where.status = 'REJECTED'; }
 
-  const reviews = await prisma.review.findMany({
-    where,
-    orderBy: { createdAt: 'desc' },
-    include: {
-      activityLocation: { select: { id: true, name: true } },
-      registration: { select: { registrationNumber: true, startDate: true, endDate: true } },
-    },
-  });
+  const [total, reviews] = await Promise.all([
+    prisma.review.count({ where }),
+    prisma.review.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: {
+        activityLocation: { select: { id: true, name: true } },
+        registration: { select: { registrationNumber: true, startDate: true, endDate: true } },
+      },
+    }),
+  ]);
 
-  return NextResponse.json({ success: true, data: reviews });
+  return NextResponse.json({
+    success: true,
+    data: { items: reviews, total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+  });
 }

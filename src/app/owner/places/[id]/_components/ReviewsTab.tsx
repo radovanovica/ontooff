@@ -26,6 +26,7 @@ import {
   Delete,
   FormatQuote,
 } from '@mui/icons-material';
+import { Pagination } from '@mui/material';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '@/i18n/client';
 
@@ -55,30 +56,44 @@ export default function ReviewsTab({ placeId }: ReviewsTabProps) {
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
   const [confirmDelete, setConfirmDelete] = useState<ReviewData | null>(null);
 
-  const fetchReviews = useCallback(() => {
+  const fetchReviews = useCallback((p = page) => {
     setLoading(true);
-    const qs = statusFilter !== 'all' ? `?status=${statusFilter}` : '';
-    fetch(`/api/reviews/${placeId}${qs}`)
+    const params = new URLSearchParams({ page: String(p), pageSize: '10' });
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    fetch(`/api/reviews/${placeId}?${params}`)
       .then((r) => r.json())
       .then((d) => {
         if (!d.success) throw new Error(d.error ?? 'Failed to load reviews');
-        setReviews(d.data);
+        setReviews(d.data.items);
+        setTotal(d.data.total);
+        setTotalPages(d.data.totalPages);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [placeId, statusFilter]);
+  }, [placeId, statusFilter, page]);
 
   // Always fetch pending count for the badge
   useEffect(() => {
-    fetch(`/api/reviews/${placeId}?status=pending`)
+    fetch(`/api/reviews/${placeId}?status=pending&pageSize=1`)
       .then((r) => r.json())
-      .then((d) => { if (d.success) setPendingCount(d.data.length); })
+      .then((d) => { if (d.success) setPendingCount(d.data.total); })
       .catch(() => {});
   }, [placeId]);
 
+  const refreshPendingCount = useCallback(() => {
+    fetch(`/api/reviews/${placeId}?status=pending&pageSize=1`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setPendingCount(d.data.total); })
+      .catch(() => {});
+  }, [placeId]);
+
+  useEffect(() => { setPage(1); }, [statusFilter]);
   useEffect(() => { fetchReviews(); }, [fetchReviews]);
 
   const handleAction = async (reviewId: string, action: 'approve' | 'reject') => {
@@ -90,11 +105,7 @@ export default function ReviewsTab({ placeId }: ReviewsTabProps) {
     });
     if (!res.ok) { setActionError(t('reviews.actionFailed')); return; }
     fetchReviews();
-    // Refresh pending count
-    fetch(`/api/reviews/${placeId}?status=pending`)
-      .then((r) => r.json())
-      .then((d) => { if (d.success) setPendingCount(d.data.length); })
-      .catch(() => {});
+    refreshPendingCount();
   };
 
   const handleDelete = async () => {
@@ -104,11 +115,12 @@ export default function ReviewsTab({ placeId }: ReviewsTabProps) {
     setConfirmDelete(null);
     if (!res.ok) { setActionError(t('reviews.actionFailed')); return; }
     fetchReviews();
+    refreshPendingCount();
   };
 
-  const totalReviews = reviews.length;
-  const averageRating = totalReviews > 0
-    ? (reviews.reduce((s, r) => s + r.rating, 0) / totalReviews).toFixed(1)
+  const totalReviews = statusFilter === 'all' ? total : reviews.length;
+  const averageRating = reviews.length > 0
+    ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
     : null;
 
   return (
@@ -126,7 +138,7 @@ export default function ReviewsTab({ placeId }: ReviewsTabProps) {
             </Box>
           </Paper>
           <Paper variant="outlined" sx={{ px: 3, py: 1.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>{totalReviews}</Typography>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>{total}</Typography>
             <Typography variant="caption" color="text.secondary">{t('reviews.totalReviews')}</Typography>
           </Paper>
           {pendingCount > 0 && (
@@ -272,6 +284,18 @@ export default function ReviewsTab({ placeId }: ReviewsTabProps) {
             </Paper>
           ))}
         </Stack>
+      )}
+
+      {totalPages > 1 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(_, p) => { setPage(p); fetchReviews(p); }}
+            color="primary"
+            shape="rounded"
+          />
+        </Box>
       )}
 
       {/* Delete confirmation dialog */}
