@@ -29,12 +29,14 @@ import {
   InputLabel,
   FormControl,
   Snackbar,
+  ToggleButtonGroup,
+  ToggleButton,
 } from '@mui/material';
 import { OpenInNew, Add } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
-import { format } from 'date-fns';
+import { format, differenceInCalendarDays } from 'date-fns';
 import { useTranslation } from '@/i18n/client';
-import { RegistrationStatus } from '@/types';
+import { RegistrationStatus, PaymentMethod } from '@/types';
 
 interface BookingRow {
   id: string;
@@ -53,7 +55,18 @@ interface ActivityLocation {
   id: string;
   name: string;
   activityTypes: Array<{ activityType: { name: string } }>;
-  spots: { id: string; name: string; code: string | null }[];
+  spots: { id: string; name: string; code: string | null; minDays?: number | null; maxDays?: number | null }[];
+  pricingRules?: Array<{
+    id: string;
+    name: string;
+    requiresPayment: boolean;
+    paymentMethod: PaymentMethod | null;
+    pricingType: string;
+    minDays?: number | null;
+    maxDays?: number | null;
+    minPeople?: number | null;
+    maxPeople?: number | null;
+  }>;
 }
 
 interface ManualBookingForm {
@@ -69,6 +82,8 @@ interface ManualBookingForm {
   notes: string;
   initialStatus: 'PENDING' | 'CONFIRMED';
   sendConfirmation: boolean;
+  pricingRuleId: string;
+  paymentMethod: string;
 }
 
 const EMPTY_FORM: ManualBookingForm = {
@@ -84,6 +99,8 @@ const EMPTY_FORM: ManualBookingForm = {
   notes: '',
   initialStatus: 'CONFIRMED',
   sendConfirmation: false,
+  pricingRuleId: '',
+  paymentMethod: '',
 };
 
 export default function BookingsTab({ placeId }: { placeId: string }) {
@@ -150,6 +167,41 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
     if (!form.activityLocationId) { setFormError(t('bookings.manual.selectLocation')); return; }
     if (!form.firstName || !form.lastName || !form.email) { setFormError(t('bookings.manual.errors.fillRequired')); return; }
     if (!form.startDate || !form.endDate) { setFormError(t('bookings.manual.errors.selectDates')); return; }
+    if (new Date(form.endDate) <= new Date(form.startDate)) { setFormError(t('bookings.manual.errors.endDateAfterStart')); return; }
+
+    const numberOfDays = differenceInCalendarDays(new Date(form.endDate), new Date(form.startDate));
+    const selectedLoc = locations.find((l) => l.id === form.activityLocationId);
+    const selectedRule = selectedLoc?.pricingRules?.find((r) => r.id === form.pricingRuleId) ?? null;
+
+    // Spot-level min/max days validation
+    for (const spotId of form.spotIds) {
+      const spot = selectedLoc?.spots.find((s) => s.id === spotId);
+      if (spot?.minDays != null && numberOfDays < spot.minDays) {
+        setFormError(t('bookings.manual.errors.spotMinDays', { name: spot.name, count: spot.minDays })); return;
+      }
+      if (spot?.maxDays != null && numberOfDays > spot.maxDays) {
+        setFormError(t('bookings.manual.errors.spotMaxDays', { name: spot.name, count: spot.maxDays })); return;
+      }
+    }
+
+    // Pricing rule constraints
+    if (selectedRule) {
+      if (selectedRule.minDays != null && numberOfDays < selectedRule.minDays) {
+        setFormError(t('bookings.manual.errors.ruleMinDays', { count: selectedRule.minDays })); return;
+      }
+      if (selectedRule.maxDays != null && numberOfDays > selectedRule.maxDays) {
+        setFormError(t('bookings.manual.errors.ruleMaxDays', { count: selectedRule.maxDays })); return;
+      }
+      if (selectedRule.minPeople != null && form.adults < selectedRule.minPeople) {
+        setFormError(t('bookings.manual.errors.ruleMinPeople', { count: selectedRule.minPeople })); return;
+      }
+      if (selectedRule.maxPeople != null && form.adults > selectedRule.maxPeople) {
+        setFormError(t('bookings.manual.errors.ruleMaxPeople', { count: selectedRule.maxPeople })); return;
+      }
+      if (selectedRule.requiresPayment && !form.paymentMethod) {
+        setFormError(t('bookings.manual.errors.paymentMethodRequired')); return;
+      }
+    }
 
     setSubmitting(true);
     try {
@@ -169,6 +221,8 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
           notes: form.notes || undefined,
           initialStatus: form.initialStatus,
           sendConfirmation: form.sendConfirmation,
+          pricingRuleId: form.pricingRuleId || undefined,
+          paymentMethod: form.paymentMethod || undefined,
           source: 'MANUAL',
         }),
       });
@@ -343,7 +397,53 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
 
             <Divider />
 
-            {/* Guest info */}
+            {/* Pricing rule + payment method */}
+            {(() => {
+              const selectedLoc = locations.find((l) => l.id === form.activityLocationId);
+              const pricingRules = selectedLoc?.pricingRules ?? [];
+              if (pricingRules.length === 0) return null;
+              const selectedRule = pricingRules.find((r) => r.id === form.pricingRuleId) ?? null;
+              return (
+                <>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>{t('bookings.manual.pricingRule')}</InputLabel>
+                    <Select
+                      value={form.pricingRuleId}
+                      label={t('bookings.manual.pricingRule')}
+                      onChange={(e) => setForm((prev) => ({ ...prev, pricingRuleId: e.target.value, paymentMethod: '' }))}
+                    >
+                      <MenuItem value="">{t('bookings.manual.noPaymentRequired')}</MenuItem>
+                      {pricingRules.map((rule) => (
+                        <MenuItem key={rule.id} value={rule.id}>{rule.name}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  {selectedRule?.requiresPayment && (
+                    <Box>
+                      <Typography variant="body2" sx={{ mb: 0.75, fontWeight: 500 }}>
+                        {t('bookings.manual.paymentMethod')}
+                      </Typography>
+                      <ToggleButtonGroup
+                        value={form.paymentMethod}
+                        exclusive
+                        size="small"
+                        onChange={(_, val) => val && setForm((prev) => ({ ...prev, paymentMethod: val }))}
+                      >
+                        {(selectedRule.paymentMethod === PaymentMethod.BOTH || selectedRule.paymentMethod === PaymentMethod.CASH) && (
+                          <ToggleButton value={PaymentMethod.CASH}>💵 {tReg('paymentMethods.cash')}</ToggleButton>
+                        )}
+                        {(selectedRule.paymentMethod === PaymentMethod.BOTH || selectedRule.paymentMethod === PaymentMethod.CARD) && (
+                          <ToggleButton value={PaymentMethod.CARD}>💳 {tReg('paymentMethods.card')}</ToggleButton>
+                        )}
+                      </ToggleButtonGroup>
+                    </Box>
+                  )}
+                </>
+              );
+            })()}
+
+            <Divider />
             <Stack direction="row" spacing={2}>
               <TextField
               label={tReg('fields.firstName')}

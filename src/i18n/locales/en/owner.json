@@ -378,7 +378,25 @@
       "sendConfirmation": "Send confirmation email to guest",
       "initialStatus": "Initial status",
       "adults": "Adults",
-      "notes": "Notes (optional)"
+      "notes": "Notes (optional)",
+      "pricingRule": "Pricing plan",
+      "paymentMethod": "Payment method",
+      "noPaymentRequired": "Free — no payment required",
+      "datesSummary": "{{count}} night(s)",
+      "errors": {
+        "fillRequired": "Please fill in all required fields.",
+        "selectDates": "Please select start and end dates.",
+        "createFailed": "Error creating booking",
+        "networkError": "Network error",
+        "endDateAfterStart": "End date must be after start date.",
+        "paymentMethodRequired": "Please select a payment method.",
+        "spotMinDays": "\"{{name}}\" requires a minimum stay of {{count}} day(s).",
+        "spotMaxDays": "\"{{name}}\" allows a maximum of {{count}} day(s).",
+        "ruleMinDays": "Pricing plan requires a minimum of {{count}} day(s).",
+        "ruleMaxDays": "Pricing plan allows a maximum of {{count}} day(s).",
+        "ruleMinPeople": "Pricing plan requires at least {{count}} guest(s).",
+        "ruleMaxPeople": "Pricing plan allows a maximum of {{count}} guest(s)."
+      }
     },
     "actions": {
       "refresh": "Refresh",
@@ -407,14 +425,6 @@
       "fetchFailed": "Failed to fetch bookings",
       "loadFailed": "Failed to load bookings.",
       "updateStatusFailed": "Failed to update status."
-    },
-    "manual": {
-      "errors": {
-        "fillRequired": "Please fill in all required fields.",
-        "selectDates": "Please select start and end dates.",
-        "createFailed": "Error creating booking",
-        "networkError": "Network error"
-      }
     },
     "confirmed": "Booking confirmed! The guest has been notified by email.",
     "alreadyConfirmed": "This booking was already confirmed."

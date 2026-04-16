@@ -376,7 +376,25 @@
       "sendConfirmation": "Pošalji potvrdu gostu na email",
       "initialStatus": "Početni status",
       "adults": "Odrasli",
-      "notes": "Napomene (opciono)"
+      "notes": "Napomene (opciono)",
+      "pricingRule": "Plan cena",
+      "paymentMethod": "Način plaćanja",
+      "noPaymentRequired": "Besplatno — bez plaćanja",
+      "datesSummary": "{{count}} noć(i)",
+      "errors": {
+        "fillRequired": "Molimo popunite sva obavezna polja.",
+        "selectDates": "Molimo izaberite datume dolaska i odlaska.",
+        "createFailed": "Greška pri kreiranju rezervacije",
+        "networkError": "Greška mreže",
+        "endDateAfterStart": "Datum odlaska mora biti posle datuma dolaska.",
+        "paymentMethodRequired": "Molimo izaberite način plaćanja.",
+        "spotMinDays": "\"{{name}}\" zahteva minimalni boravak od {{count}} dan(a).",
+        "spotMaxDays": "\"{{name}}\" dozvoljava maksimalno {{count}} dan(a).",
+        "ruleMinDays": "Plan cena zahteva minimum {{count}} dan(a).",
+        "ruleMaxDays": "Plan cena dozvoljava maksimalno {{count}} dan(a).",
+        "ruleMinPeople": "Plan cena zahteva najmanje {{count}} gost(a).",
+        "ruleMaxPeople": "Plan cena dozvoljava maksimalno {{count}} gost(a)."
+      }
     },
     "actions": {
       "refresh": "Osveži",
@@ -405,14 +423,6 @@
       "fetchFailed": "Neuspešno preuzimanje rezervacija",
       "loadFailed": "Neuspešno učitavanje rezervacija.",
       "updateStatusFailed": "Neuspešno ažuriranje statusa."
-    },
-    "manual": {
-      "errors": {
-        "fillRequired": "Molimo popunite sva obavezna polja.",
-        "selectDates": "Molimo izaberite datume dolaska i odlaska.",
-        "createFailed": "Greška pri kreiranju rezervacije",
-        "networkError": "Greška mreže"
-      }
     },
     "confirmed": "Rezervacija potvrđena! Gost je obavešten emailom.",
     "alreadyConfirmed": "Ova rezervacija je već bila potvrđena."

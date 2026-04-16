@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   Box,
@@ -7,71 +7,38 @@ import {
   StepLabel,
   Button,
   Typography,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormHelperText,
-  Divider,
-  Alert,
-  CircularProgress,
-  Grid,
-  InputAdornment,
-  ToggleButtonGroup,
-  ToggleButton,
-  Paper,
   Chip,
-  Card,
+  Grid,
   CardActionArea,
-  CardContent,
-  Checkbox,
-  Stack,
-  Dialog,
-  DialogContent,
-  Fade,
-  IconButton,
 } from '@mui/material';
-import DateRangePicker from '@/components/ui/DateRangePicker';
 import {
   CalendarMonth,
   Group,
   Person,
   Payment,
   CheckCircle,
-  Map as MapIcon,
-  ViewList,
-  PhotoLibrary,
-  ChevronLeft,
-  ChevronRight,
-  Close,
-  AccessTime,
-  WbSunny,
 } from '@mui/icons-material';
-import dynamic from 'next/dynamic';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from '@/i18n/client';
-
-const LocationMap = dynamic(
-  () => import('@/components/map/LocationMap'),
-  { ssr: false, loading: () => null }
-);
 import { format, differenceInCalendarDays, addDays } from 'date-fns';
 import type { SpotMapItem } from '@/components/map/SpotMap';
 import { calculatePricing as calculatePricingLocal, getPricingTierGuestKey, formatGuestSummary } from '@/lib/pricing';
 import {
-  ActivityLocation,
   PricingRule,
-  PricingCalculation,
   PaymentMethod,
   PricingType,
   RegistrationFormData,
-  Timeslot,
 } from '@/types';
 import ReviewForm from '@/components/reviews/ReviewForm';
+import GallerySection from './GallerySection';
+import StepLocation from './steps/StepLocation';
+import StepContact from './steps/StepContact';
+import StepGuestsPayment from './steps/StepGuestsPayment';
+import StepConfirm from './steps/StepConfirm';
+import type { LocationWithDetails, AvailableSpot, Step1Values, Step2Values, Step3Values } from './types';
 
 const step1Schema = z
   .object({
@@ -99,15 +66,6 @@ const step3Schema = z.object({
   address: z.string().optional(),
 });
 
-type Step1Values = z.infer<typeof step1Schema>;
-type Step2Values = z.infer<typeof step2Schema>;
-type Step3Values = z.infer<typeof step3Schema>;
-
-type LocationWithDetails = ActivityLocation & {
-  place?: { name: string; id: string; slug: string; logoUrl?: string | null };
-  spots?: SpotMapItem[];
-  pricingRules?: PricingRule[];
-};
 
 interface RegistrationStepperProps {
   location: LocationWithDetails;
@@ -138,8 +96,6 @@ export default function RegistrationStepper({
   const [registrationNumber, setRegistrationNumber] = useState<string | null>(null);
   const [submittedEditToken, setSubmittedEditToken] = useState<string | null>(null);
   const [submittedPlaceId, setSubmittedPlaceId] = useState<string | null>(null);
-  const [galleryOpen, setGalleryOpen] = useState(false);
-  const [galleryIdx, setGalleryIdx] = useState(0);
   const [step2Error, setStep2Error] = useState<string | null>(null);
 
   const [locationSelectMode, setLocationSelectMode] = useState<'list' | 'map'>('list');
@@ -197,23 +153,14 @@ export default function RegistrationStepper({
     [allLocations, selectedActivityTypeId]
   );
 
-  // Which map modes are available
-  const hasVirtualMap = availableLocations.some((loc) => !!loc.svgMapData);
-  const hasRealMap = availableLocations.some(
-    (loc) => loc.latitude != null && loc.longitude != null
-  );
-  const gpsLocations = availableLocations.filter(
-    (loc): loc is typeof loc & { latitude: number; longitude: number } =>
-      loc.latitude != null && loc.longitude != null
-  );
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
   const selectedLocation = availableLocations.find((loc) => loc.id === selectedLocationId) ?? null;
 
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
-  const [availableSpots, setAvailableSpots] = useState<(SpotMapItem & { isAvailable?: boolean; minDays?: number | null; maxDays?: number | null; timeslots?: (Timeslot & { isAvailable?: boolean })[] })[]>([]);
+  const [availableSpots, setAvailableSpots] = useState<AvailableSpot[]>([]);
 
-  // spotId → selected timeslotId
+  // spotId â†’ selected timeslotId
   const [spotTimeslotSelections, setSpotTimeslotSelections] = useState<Record<string, string>>({});
 
   const selectTimeslot = (spotId: string, timeslotId: string) => {
@@ -319,19 +266,7 @@ export default function RegistrationStepper({
     resolver: zodResolver(step3Schema),
   });
 
-  const parseLocationZone = (svgMapData?: string | null) => {
-    if (!svgMapData) return null;
-    try {
-      const parsed = JSON.parse(svgMapData) as { type?: string; cx?: number; cy?: number; r?: number };
-      if (parsed.type !== 'circle') return null;
-      if (typeof parsed.cx !== 'number' || typeof parsed.cy !== 'number') return null;
-      return { cx: parsed.cx, cy: parsed.cy, r: parsed.r ?? 28 };
-    } catch {
-      return null;
-    }
-  };
-
-  useEffect(() => {
+useEffect(() => {
     if (!selectedLocation) {
       setAvailableSpots([]);
       return;
@@ -410,7 +345,7 @@ export default function RegistrationStepper({
           throw new Error(json.error ?? t('errors.availabilityFailed'));
         }
 
-        const fetched = (json.data ?? []) as (SpotMapItem & { isAvailable?: boolean; minDays?: number | null; maxDays?: number | null; timeslots?: (Timeslot & { isAvailable?: boolean })[] })[];
+        const fetched = (json.data ?? []) as AvailableSpot[];
         setAvailableSpots(fetched);
 
         const stillAvailableIds = new Set(
@@ -670,11 +605,11 @@ export default function RegistrationStepper({
   const placeLogoUrl = selectedLocation?.place?.logoUrl ?? availableLocations[0]?.place?.logoUrl ?? allLocations[0]?.place?.logoUrl ?? null;
   const placeName = selectedLocation?.place?.name ?? availableLocations[0]?.place?.name ?? allLocations[0]?.place?.name ?? null;
 
-  // ── Activity selection screen (multi-activity places) ───────────────
+  // â”€â”€ Activity selection screen (multi-activity places) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (hasMultipleActivityTypes && !selectedActivityTypeId) {
     return (
       <Box>
-        {/* Stepper — step 0 highlighted */}
+        {/* Stepper â€” step 0 highlighted */}
         <Stepper activeStep={-1} alternativeLabel sx={{ mb: 3 }}>
           {STEPS.map((step, idx) => (
             <Step key={step.label} completed={false}>
@@ -758,7 +693,7 @@ export default function RegistrationStepper({
                           mb: 0.5,
                         }}
                       >
-                        <Typography sx={{ fontSize: '1.4rem', color: 'white', lineHeight: 1 }}>🌿</Typography>
+                        <Typography sx={{ fontSize: '1.4rem', color: 'white', lineHeight: 1 }}>ðŸŒ¿</Typography>
                       </Box>
                     )}
                     <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
@@ -798,7 +733,7 @@ export default function RegistrationStepper({
         ))}
       </Stepper>
 
-      {/* Activity type breadcrumb — shown when an activity is already selected */}
+      {/* Activity type breadcrumb â€” shown when an activity is already selected */}
       {hasMultipleActivityTypes && selectedActivityTypeId && (() => {
         const at = activityTypes.find((a) => a.id === selectedActivityTypeId);
         return at ? (
@@ -863,7 +798,7 @@ export default function RegistrationStepper({
         ) : null;
       })()}
 
-      {/* Place branding header — cover photo or logo bar */}
+      {/* Place branding header â€” cover photo or logo bar */}
       {coverImageUrl ? (
         <Box
           sx={{
@@ -905,7 +840,7 @@ export default function RegistrationStepper({
                   | undefined;
                 const actName = locTypes?.find((e) => e.activityTypeId === selectedActivityTypeId)?.activityType.name
                   ?? locTypes?.[0]?.activityType.name;
-                return actName ? `${actName} — ` : '';
+                return actName ? `${actName} â€” ` : '';
               })()}{selectedLocation?.name}
             </Typography>
           </Box>
@@ -924,807 +859,85 @@ export default function RegistrationStepper({
         </Box>
       ) : null}
 
-      {/* Gallery — grid preview + lightbox */}
-      {(() => {
-        const galleryImages: string[] = [];
-        if (selectedLocation?.gallery) {
-          try { galleryImages.push(...(JSON.parse(selectedLocation.gallery) as string[])); } catch { /* ignore */ }
-        }
-        if (galleryImages.length === 0) return null;
-        return (
-          <Box sx={{ mb: 2.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <PhotoLibrary sx={{ fontSize: 18, color: 'text.secondary' }} />
-                <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-                  {tc('stepper.photos')} ({galleryImages.length})
-                </Typography>
-              </Box>
-              {galleryImages.length > 3 && (
-                  <Button
-                    size="small"
-                    onClick={() => { setGalleryIdx(0); setGalleryOpen(true); }}
-                    sx={{ fontSize: '0.72rem', py: 0, minWidth: 'auto', color: 'text.secondary' }}
-                  >
-                    {t('gallery.more', { count: galleryImages.length - 3 })}
-                  </Button>
-              )}
-            </Box>
-
-            {/* Grid preview */}
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: galleryImages.length === 1 ? '1fr' : galleryImages.length === 2 ? '1fr 1fr' : '2fr 1fr',
-                gridTemplateRows: galleryImages.length >= 3 ? '120px 120px' : '160px',
-                gap: 0.75,
-                borderRadius: 1.5,
-                overflow: 'hidden',
-              }}
-            >
-              {/* Image 1 */}
-              <Box
-                onClick={() => { setGalleryIdx(0); setGalleryOpen(true); }}
-                sx={{ gridRow: galleryImages.length >= 3 ? 'span 2' : 'auto', position: 'relative', overflow: 'hidden', cursor: 'pointer', '&:hover img': { transform: 'scale(1.04)' } }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={galleryImages[0]} alt="photo 1" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }} />
-              </Box>
-              {/* Image 2 */}
-              {galleryImages.length >= 2 && (
-                <Box
-                  onClick={() => { setGalleryIdx(1); setGalleryOpen(true); }}
-                  sx={{ position: 'relative', overflow: 'hidden', cursor: 'pointer', '&:hover img': { transform: 'scale(1.04)' } }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={galleryImages[1]} alt="photo 2" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }} />
-                </Box>
-              )}
-              {/* Image 3 — with +N overlay */}
-              {galleryImages.length >= 3 && (
-                <Box
-                  onClick={() => { setGalleryIdx(2); setGalleryOpen(true); }}
-                  sx={{ position: 'relative', overflow: 'hidden', cursor: 'pointer', '&:hover img': { transform: 'scale(1.04)' } }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={galleryImages[2]} alt="photo 3" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }} />
-                  {galleryImages.length > 3 && (
-                    <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.52)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Typography variant="h6" sx={{ color: 'white', fontWeight: 800 }}>+{galleryImages.length - 3}</Typography>
-                    </Box>
-                  )}
-                </Box>
-              )}
-            </Box>
-
-            {/* Lightbox */}
-            <Dialog
-              open={galleryOpen}
-              onClose={() => setGalleryOpen(false)}
-              maxWidth={false}
-              slotProps={{ paper: { sx: { bgcolor: 'rgba(0,0,0,0.95)', borderRadius: 0, m: 0, maxWidth: '100vw', width: '100vw', height: '100vh', maxHeight: '100vh' } } }}
-            >
-              <DialogContent sx={{ p: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', position: 'relative' }}>
-                <IconButton
-                  onClick={() => setGalleryOpen(false)}
-                  sx={{ position: 'absolute', top: 16, right: 16, color: 'white', bgcolor: 'rgba(255,255,255,0.12)', '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' }, zIndex: 10 }}
-                >
-                  <Close />
-                </IconButton>
-                <Typography variant="caption" sx={{ position: 'absolute', top: 22, left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,255,255,0.7)', zIndex: 10 }}>
-                  {galleryIdx + 1} / {galleryImages.length}
-                </Typography>
-                {galleryImages.length > 1 && (
-                  <IconButton
-                    onClick={() => setGalleryIdx((i) => (i - 1 + galleryImages.length) % galleryImages.length)}
-                    sx={{ position: 'absolute', left: 16, color: 'white', bgcolor: 'rgba(255,255,255,0.12)', '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' }, zIndex: 10 }}
-                  >
-                    <ChevronLeft sx={{ fontSize: 36 }} />
-                  </IconButton>
-                )}
-                <Fade in key={galleryIdx}>
-                  <Box sx={{ maxWidth: '90vw', maxHeight: '90vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={galleryImages[galleryIdx]}
-                      alt={`photo ${galleryIdx + 1}`}
-                      style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', borderRadius: 8 }}
-                    />
-                  </Box>
-                </Fade>
-                {galleryImages.length > 1 && (
-                  <IconButton
-                    onClick={() => setGalleryIdx((i) => (i + 1) % galleryImages.length)}
-                    sx={{ position: 'absolute', right: 16, color: 'white', bgcolor: 'rgba(255,255,255,0.12)', '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' }, zIndex: 10 }}
-                  >
-                    <ChevronRight sx={{ fontSize: 36 }} />
-                  </IconButton>
-                )}
-                {galleryImages.length > 1 && (
-                  <Stack
-                    direction="row"
-                    spacing={0.75}
-                    sx={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', maxWidth: '80vw', overflowX: 'auto', pb: 0.5 }}
-                  >
-                    {galleryImages.map((src, i) => (
-                      <Box
-                        key={i}
-                        onClick={() => setGalleryIdx(i)}
-                        sx={{
-                          width: 52, height: 36, borderRadius: 1, overflow: 'hidden', cursor: 'pointer', flexShrink: 0,
-                          border: '2px solid', borderColor: i === galleryIdx ? 'white' : 'transparent',
-                          opacity: i === galleryIdx ? 1 : 0.55,
-                          transition: 'opacity 0.2s, border-color 0.2s',
-                          '&:hover': { opacity: 1 },
-                        }}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={src} alt={`thumb ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                      </Box>
-                    ))}
-                  </Stack>
-                )}
-              </DialogContent>
-            </Dialog>
-          </Box>
-        );
+      {/* Gallery */}
+      {selectedLocation?.gallery && (() => {
+        const galleryImages: string[] = (() => { try { return JSON.parse(selectedLocation.gallery!) as string[]; } catch { return []; } })();
+        return galleryImages.length > 0 ? <GallerySection images={galleryImages} /> : null;
       })()}
 
+
+
       {activeStep === 0 && (
-        <Box component="form" onSubmit={handleSubmit1(onStep1Submit)}>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-            <ToggleButtonGroup
-              value={locationSelectMode}
-              exclusive
-              onChange={(_, value) => {
-                if (!value) return;
-                setLocationSelectMode(value);
-                // Default sub-mode: real map if no virtual map exists
-                if (value === 'map' && !hasVirtualMap && hasRealMap) setMapSubMode('real');
-                if (value === 'map' && hasVirtualMap) setMapSubMode('virtual');
-              }}
-              size="small"
-            >
-              <ToggleButton value="list"><ViewList sx={{ mr: 0.75 }} fontSize="small" /> {tc('stepper.selectionList')}</ToggleButton>
-              <ToggleButton value="map"><MapIcon sx={{ mr: 0.75 }} fontSize="small" /> {tc('stepper.selectOnMap')}</ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
-
-          {locationSelectMode === 'list' && (
-            <Grid container spacing={1.5} sx={{ mb: 2.5 }}>
-              {availableLocations.map((loc) => {
-                const selected = selectedLocationId === loc.id;
-                // Find the display name for the selected activity type
-                const locTypes = (loc as unknown as Record<string, unknown>).activityTypes as
-                  | Array<{ activityTypeId: string; activityType: { name: string } }>
-                  | undefined;
-                const displayActivityName = locTypes?.find((e) => e.activityTypeId === selectedActivityTypeId)?.activityType.name
-                  ?? locTypes?.[0]?.activityType.name
-                  ?? tc('stepper.activity');
-                return (
-                  <Grid size={{ xs: 12, sm: 6 }} key={loc.id}>
-                    <Card
-                      variant={selected ? 'elevation' : 'outlined'}
-                      sx={{
-                        borderRadius: 2,
-                        border: '2px solid',
-                        borderColor: selected ? '#2d5a27' : 'divider',
-                      }}
-                    >
-                      <CardActionArea onClick={() => setSelectedLocationId(loc.id)}>
-                        <CardContent>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                            {displayActivityName} — {loc.name}
-                          </Typography>
-                          {loc.description && (
-                            <Typography variant="caption" color="text.secondary">{loc.description}</Typography>
-                          )}
-                          {selected && <Chip size="small" label={tc('stepper.selected')} sx={{ mt: 1.5, mb: 0.5, mx: 1, bgcolor: '#2d5a27', color: 'white' }} />}
-                        </CardContent>
-                      </CardActionArea>
-                    </Card>
-                  </Grid>
-                );
-              })}
-            </Grid>
-          )}
-
-          {locationSelectMode === 'map' && (
-            <Box sx={{ mb: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
-              {/* Sub-mode toggle when both virtual and real maps are available */}
-              {hasVirtualMap && hasRealMap && (
-                <Box sx={{ px: 1.5, py: 1, borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-                  <ToggleButtonGroup
-                    value={mapSubMode}
-                    exclusive
-                    onChange={(_, v) => v && setMapSubMode(v)}
-                    size="small"
-                  >
-                    <ToggleButton value="virtual">{tc('stepper.virtualMap')}</ToggleButton>
-                    <ToggleButton value="real">{tc('stepper.realMap')}</ToggleButton>
-                  </ToggleButtonGroup>
-                </Box>
-              )}
-
-              {/* Real-world Leaflet map */}
-              {(hasRealMap && (!hasVirtualMap || mapSubMode === 'real')) && (
-                <Box>
-                  {!hasVirtualMap && (
-                    <Typography variant="caption" sx={{ display: 'block', px: 1.5, py: 0.75, color: 'text.secondary', borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-                      {tc('stepper.clickPinToSelect')}
-                    </Typography>
-                  )}
-                  <LocationMap
-                    pins={gpsLocations.map((loc) => {
-                      const locTypes = (loc as unknown as Record<string, unknown>).activityTypes as
-                        | Array<{ activityTypeId: string; activityType: { name: string } }>
-                        | undefined;
-                      const pinActivityName = locTypes?.find((e) => e.activityTypeId === selectedActivityTypeId)?.activityType.name
-                        ?? locTypes?.[0]?.activityType.name
-                        ?? tc('stepper.activity');
-                      return {
-                        id: loc.id,
-                        name: `${pinActivityName} — ${loc.name}`,
-                        description: loc.description ?? undefined,
-                        latitude: loc.latitude,
-                        longitude: loc.longitude,
-                        color: selectedLocationId === loc.id ? '#0d47a1' : '#1b5e20',
-                      };
-                    })}
-                    height={360}
-                    onPinClick={(id) => setSelectedLocationId(id)}
-                  />
-                  {selectedLocationId && (
-                    <Box sx={{ px: 1.5, py: 1, bgcolor: '#e8f5e9', borderTop: '1px solid', borderColor: 'divider' }}>
-                      <Typography variant="caption" sx={{ color: '#2d5a27', fontWeight: 700 }}>
-                        {tc('stepper.selected')}: {availableLocations.find((l) => l.id === selectedLocationId)?.name}
-                      </Typography>
-                    </Box>
-                  )}
-                </Box>
-              )}
-
-              {/* Virtual SVG map */}
-              {(hasVirtualMap && (!hasRealMap || mapSubMode === 'virtual')) && (
-                <Box>
-                  <Box
-                    sx={{
-                      px: 1.5,
-                      py: 1,
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: 1,
-                      alignItems: 'center',
-                      borderBottom: '1px solid',
-                      borderColor: 'divider',
-                      bgcolor: 'background.paper',
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ fontWeight: 700, mr: 0.5 }}>
-                      {tc('stepper.legend')}
-                    </Typography>
-                    <Chip
-                      size="small"
-                      label={tc('stepper.selectable')}
-                      sx={{
-                        bgcolor: '#1b5e20',
-                        color: 'white',
-                        fontWeight: 700,
-                        '& .MuiChip-label': { px: 1.25 },
-                      }}
-                    />
-                    <Chip
-                      size="small"
-                      label={tc('stepper.selected')}
-                      sx={{
-                        bgcolor: '#0d47a1',
-                        color: 'white',
-                        fontWeight: 700,
-                        border: '2px solid #ffeb3b',
-                        '& .MuiChip-label': { px: 1.25 },
-                      }}
-                    />
-                  </Box>
-                  <svg
-                    viewBox={`0 0 ${selectedLocation?.mapWidth ?? 900} ${selectedLocation?.mapHeight ?? 600}`}
-                    style={{ width: '100%', height: 'auto', display: 'block', background: '#f0ebe3' }}
-                  >
-                    {(availableLocations.find((loc) => !!loc.mapImageUrl)?.mapImageUrl || selectedLocation?.mapImageUrl) && (
-                      <image
-                        href={availableLocations.find((loc) => !!loc.mapImageUrl)?.mapImageUrl || selectedLocation?.mapImageUrl || ''}
-                        x={0}
-                        y={0}
-                        width={selectedLocation?.mapWidth ?? 900}
-                        height={selectedLocation?.mapHeight ?? 600}
-                        preserveAspectRatio="xMidYMid slice"
-                      />
-                    )}
-                    {availableLocations.map((loc) => {
-                      const zone = parseLocationZone(loc.svgMapData);
-                      if (!zone) return null;
-                      const selected = selectedLocationId === loc.id;
-                      const baseRadius = zone.r;
-                      return (
-                        <g key={loc.id} onClick={() => setSelectedLocationId(loc.id)} style={{ cursor: 'pointer' }}>
-                          <circle
-                            cx={zone.cx}
-                            cy={zone.cy}
-                            r={selected ? baseRadius + 8 : baseRadius + 5}
-                            fill="rgba(0,0,0,0.18)"
-                          />
-                          <circle
-                            cx={zone.cx}
-                            cy={zone.cy}
-                            r={selected ? baseRadius + 5 : baseRadius + 2}
-                            fill="none"
-                            stroke={selected ? '#ffeb3b' : 'rgba(255,255,255,0.95)'}
-                            strokeWidth={selected ? 4 : 3}
-                          />
-                          <circle
-                            cx={zone.cx}
-                            cy={zone.cy}
-                            r={baseRadius}
-                            fill={selected ? '#0d47a1' : '#1b5e20'}
-                            fillOpacity={selected ? 0.95 : 0.82}
-                            stroke="white"
-                            strokeWidth={selected ? 3 : 2}
-                          />
-                          {selected && (
-                            <text
-                              x={zone.cx}
-                              y={zone.cy + 4}
-                              textAnchor="middle"
-                              fill="white"
-                              fontSize={14}
-                              fontWeight={900}
-                              stroke="rgba(0,0,0,0.55)"
-                              strokeWidth={2}
-                              paintOrder="stroke"
-                            >
-                              ✓
-                            </text>
-                          )}
-                          <text
-                            x={zone.cx}
-                            y={zone.cy + baseRadius + 16}
-                            textAnchor="middle"
-                            fill={selected ? '#0d47a1' : 'rgba(0,0,0,0.9)'}
-                            fontSize={selected ? 12 : 11}
-                            fontWeight={selected ? 900 : 700}
-                            stroke="rgba(255,255,255,0.98)"
-                            strokeWidth={4}
-                            paintOrder="stroke"
-                          >
-                            {selected ? `${tc('stepper.selected')}: ${loc.name}` : loc.name}
-                          </text>
-                        </g>
-                      );
-                    })}
-                  </svg>
-                </Box>
-              )}
-
-              {/* Fallback: no map data at all */}
-              {!hasVirtualMap && !hasRealMap && (
-                <Box sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {tc('stepper.noMapAvailable')}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          )}
-
-          {!selectedLocation && (
-            <Alert severity="warning" sx={{ mb: 2.5 }}>
-              {t('validation.selectLocation')}
-            </Alert>
-          )}
-
-          {/* Show location instructions if available */}
-          {selectedLocation?.instructions && (
-            <Alert
-              severity="info"
-              icon={<MapIcon />}
-              sx={{ mb: 2.5, '& .MuiAlert-message': { width: '100%' } }}
-            >
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
-                {t('locationInstructions')}
-              </Typography>
-              <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
-                {selectedLocation.instructions}
-              </Typography>
-            </Alert>
-          )}
-
-          <Box sx={{ mb: 3 }}>
-            <DateRangePicker
-              fromValue={startDate}
-              toValue={endDate}
-              onFromChange={(v) => setValue1('startDate', v, { shouldValidate: true })}
-              onToChange={(v) => setValue1('endDate', v, { shouldValidate: true })}
-              fromError={errors1.startDate?.message ? t(errors1.startDate.message) : undefined}
-              toError={errors1.endDate?.message ? t(errors1.endDate.message) : undefined}
-              minFrom={today}
-            />
-          </Box>
-
-          {selectedLocation?.requiresSpot && (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
-                {t('steps.spotSelection')}
-              </Typography>
-              {availabilityError && <Alert severity="error" sx={{ mb: 1.5 }}>{availabilityError}</Alert>}
-              {errors1.spotIds && <Alert severity="warning" sx={{ mb: 1.5 }}>{errors1.spotIds.message}</Alert>}
-              {availabilityLoading ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircularProgress size={18} />
-                  <Typography variant="body2" color="text.secondary">{tc('stepper.checkingAvailability')}</Typography>
-                </Box>
-              ) : (
-                <Stack spacing={1}>
-                  {availableSpots.filter((s) => s.isAvailable !== false).length === 0 ? (
-                    <Alert severity="info">{tc('stepper.noAvailableSpots')}</Alert>
-                  ) : (
-                    availableSpots
-                      .filter((s) => s.isAvailable !== false)
-                      .map((spot) => {
-                        const checked = (selectedSpotIds ?? []).includes(spot.id);
-                        return (
-                          <Card key={spot.id} variant="outlined" sx={{ borderRadius: 2 }}>
-                            <CardActionArea onClick={() => handleSpotToggle(spot)}>
-                              <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Box>
-                                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                                    {spot.name}{spot.code ? ` (${spot.code})` : ''}
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">{tc('stepper.maxPeople', { count: spot.maxPeople })}</Typography>
-                                  {(spot.minDays != null || spot.maxDays != null) && (
-                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                      {spot.minDays != null && spot.maxDays != null
-                                        ? t('spot.stayRange', { min: spot.minDays, max: spot.maxDays })
-                                        : spot.minDays != null
-                                          ? t('spot.minDays', { count: spot.minDays })
-                                          : t('spot.maxDays', { count: spot.maxDays })}
-                                    </Typography>
-                                  )}
-                                </Box>
-                                <Checkbox checked={checked} />
-                              </CardContent>
-                            </CardActionArea>
-
-                            {/* Timeslot selector — shown for selected spots with timeslots */}
-                            {checked && (spot.timeslots ?? []).length > 0 && (
-                              <Box sx={{ px: 2, pb: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1.5, mb: 1 }}>
-                                  <AccessTime fontSize="small" color="action" />
-                                  <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                                    {tc('stepper.selectTimeslot', 'Select timeslot')}
-                                  </Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                  {(spot.timeslots ?? []).map((ts) => {
-                                    const isSelected = spotTimeslotSelections[spot.id] === ts.id;
-                                    const isUnavailable = ts.isAvailable === false;
-                                    return (
-                                      <Chip
-                                        key={ts.id}
-                                        size="small"
-                                        icon={ts.isWholeDay ? <WbSunny fontSize="small" /> : <AccessTime fontSize="small" />}
-                                        label={
-                                          ts.isWholeDay
-                                            ? tc('stepper.wholeDay', 'Whole day')
-                                            : `${ts.startTime} – ${ts.endTime}`
-                                        }
-                                        onClick={() => !isUnavailable && selectTimeslot(spot.id, ts.id)}
-                                        disabled={isUnavailable}
-                                        sx={{
-                                          cursor: isUnavailable ? 'default' : 'pointer',
-                                          ...(isSelected && {
-                                            bgcolor: '#2d5a27',
-                                            color: 'white',
-                                            '& .MuiChip-icon': { color: 'white' },
-                                            '&:hover': { bgcolor: '#1e3d1a' },
-                                          }),
-                                          ...(isUnavailable && {
-                                            opacity: 0.45,
-                                            textDecoration: 'line-through',
-                                          }),
-                                        }}
-                                      />
-                                    );
-                                  })}
-                                </Box>
-                                {!spotTimeslotSelections[spot.id] && (
-                                  <Typography variant="caption" color="error.main" sx={{ mt: 0.5, display: 'block' }}>
-                                    {tc('stepper.timeslotRequired', 'Please select a timeslot')}
-                                  </Typography>
-                                )}
-                              </Box>
-                            )}
-                          </Card>
-                        );
-                      })
-                  )}
-                </Stack>
-              )}
-            </Box>
-          )}
-
-          <Button type="submit" variant="contained" fullWidth size="large" disabled={!selectedLocation || availabilityLoading || !!(selectedLocation?.requiresSpot && (selectedSpotIds ?? []).length === 0)}>
-            {t('actions.continue')}
-          </Button>
-        </Box>
+        <StepLocation
+          availableLocations={availableLocations}
+          selectedLocationId={selectedLocationId}
+          onLocationSelect={setSelectedLocationId}
+          locationSelectMode={locationSelectMode}
+          onLocationSelectModeChange={setLocationSelectMode}
+          mapSubMode={mapSubMode}
+          onMapSubModeChange={setMapSubMode}
+          selectedActivityTypeId={selectedActivityTypeId}
+          selectedLocation={selectedLocation}
+          startDate={startDate}
+          endDate={endDate}
+          numberOfDays={numberOfDays}
+          today={today}
+          startDateError={errors1.startDate?.message ? t(errors1.startDate.message) : undefined}
+          endDateError={errors1.endDate?.message ? t(errors1.endDate.message) : undefined}
+          onStartDateChange={(v) => setValue1('startDate', v, { shouldValidate: true })}
+          onEndDateChange={(v) => setValue1('endDate', v, { shouldValidate: true })}
+          availableSpots={availableSpots}
+          availabilityLoading={availabilityLoading}
+          availabilityError={availabilityError}
+          selectedSpotIds={selectedSpotIds ?? []}
+          spotTimeslotSelections={spotTimeslotSelections}
+          spotError={errors1.spotIds?.message}
+          onSpotToggle={handleSpotToggle}
+          onSelectTimeslot={selectTimeslot}
+          onFormSubmit={handleSubmit1(onStep1Submit)}
+        />
       )}
 
-      {activeStep === 1 && (
-        <Box component="form" onSubmit={handleSubmit3(onStep3Submit)}>
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField {...register3('firstName')} label={t('fields.firstName')} fullWidth error={!!errors3.firstName} helperText={errors3.firstName?.message ? t(errors3.firstName.message) : undefined} />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField {...register3('lastName')} label={t('fields.lastName')} fullWidth error={!!errors3.lastName} helperText={errors3.lastName?.message ? t(errors3.lastName.message) : undefined} />
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <TextField {...register3('email')} label={t('fields.email')} type="email" fullWidth error={!!errors3.email} helperText={errors3.email?.message ? t(errors3.email.message) : undefined} />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField {...register3('phone')} label={t('fields.phone')} fullWidth slotProps={{ input: { startAdornment: <InputAdornment position="start">📞</InputAdornment> } }} />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField {...register3('address')} label={t('fields.address')} fullWidth />
-            </Grid>
-          </Grid>
 
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button variant="outlined" onClick={() => setActiveStep(0)} fullWidth>{t('actions.back')}</Button>
-            <Button type="submit" variant="contained" fullWidth size="large">{t('actions.continue')}</Button>
-          </Box>
-        </Box>
+      {activeStep === 1 && (
+        <StepContact
+          register={register3}
+          errors={errors3}
+          onFormSubmit={handleSubmit3(onStep3Submit)}
+          onBack={() => setActiveStep(0)}
+        />
       )}
 
       {activeStep === 2 && (
-        <Box component="form" onSubmit={handleSubmit2(onStep2Submit)}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>{t('fields.guestCounts')}</Typography>
-          {isGuestCountRule ? (
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-              {dynamicGuestFields.map(({ key, label }) => (
-                <Grid size={{ xs: 6, sm: 3 }} key={key}>
-                  <Controller
-                    name={`guestCounts.${key}`}
-                    control={control2}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                        label={label}
-                        type="number"
-                        fullWidth
-                        slotProps={{ htmlInput: { min: 0 } }}
-                        size="small"
-                      />
-                    )}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          ) : (
-            <Alert severity="info" sx={{ mb: 3 }}>
-              {tc('stepper.fixedRatePricing')}
-            </Alert>
-          )}
-
-          {pricingRules.length > 0 && (
-            <Controller
-              name="pricingRuleId"
-              control={control2}
-              render={({ field }) => (
-                <FormControl fullWidth sx={{ mb: 2 }}>
-                  <InputLabel>{t('fields.pricingRule')}</InputLabel>
-                  <Select {...field} label={t('fields.pricingRule')}>
-                    {pricingRules.map((rule) => (
-                      <MenuItem key={rule.id} value={rule.id}>{rule.name}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-            />
-          )}
-
-          {pricingRules.length > 0 && selectedRule?.requiresPayment && (
-            <Controller
-              name="paymentMethod"
-              control={control2}
-              render={({ field }) => (
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                    {t('fields.paymentMethod')}
-                  </Typography>
-                  <ToggleButtonGroup
-                    value={field.value}
-                    exclusive
-                    onChange={(_, val) => val && field.onChange(val)}
-                    size="small"
-                  >
-                    {(selectedRule?.paymentMethod === PaymentMethod.BOTH || selectedRule?.paymentMethod === PaymentMethod.CASH) && (
-                      <ToggleButton value={PaymentMethod.CASH}>💵 {t('paymentMethods.cash')}</ToggleButton>
-                    )}
-                    {(selectedRule?.paymentMethod === PaymentMethod.BOTH || selectedRule?.paymentMethod === PaymentMethod.CARD) && (
-                      <ToggleButton value={PaymentMethod.CARD}>💳 {t('paymentMethods.card')}</ToggleButton>
-                    )}
-                  </ToggleButtonGroup>
-                </Box>
-              )}
-            />
-          )}
-
-          {pricingRules.length > 0 && selectedRule && !selectedRule.requiresPayment && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              ✅ {tc('stepper.noPaymentRequired')}
-            </Alert>
-          )}
-
-          {pricingRules.length === 0 && (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              {tc('stepper.noPricingRule')}
-            </Alert>
-          )}
-
-          {livePricing && (
-            <Paper variant="outlined" sx={{ p: 2, mb: 3, borderRadius: 2 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                {t('pricing.breakdown')}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                {t('pricing.guests')}: {formatGuestSummary(guestCounts ?? {})}
-              </Typography>
-              {livePricing.breakdown.map((item, i) => (
-                <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
-                  <Box>
-                    <Typography variant="body2">{item.label}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {item.quantity} × {livePricing.currency} {item.unitPrice.toFixed(2)}
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {livePricing.currency} {item.totalPrice.toFixed(2)}
-                  </Typography>
-                </Box>
-              ))}
-              <Divider sx={{ my: 1 }} />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="subtitle2">{t('pricing.total')}</Typography>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2d5a27' }}>
-                  {livePricing.currency} {Number(livePricing.totalAmount).toFixed(2)}
-                </Typography>
-              </Box>
-            </Paper>
-          )}
-
-          <Controller
-            name="notes"
-            control={control2}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label={t('fields.notes')}
-                multiline
-                rows={3}
-                fullWidth
-                sx={{ mb: 3 }}
-                placeholder={t('fields.notesPlaceholder')}
-              />
-            )}
-          />
-
-          {step2Error && <Alert severity="error" sx={{ mb: 2 }}>{step2Error}</Alert>}
-
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button variant="outlined" onClick={() => setActiveStep(1)} fullWidth>{t('actions.back')}</Button>
-            <Button type="submit" variant="contained" fullWidth size="large">{t('actions.continue')}</Button>
-          </Box>
-        </Box>
+        <StepGuestsPayment
+          control={control2}
+          pricingRules={pricingRules}
+          selectedRule={selectedRule}
+          dynamicGuestFields={dynamicGuestFields}
+          isGuestCountRule={isGuestCountRule}
+          livePricing={livePricing}
+          guestCounts={guestCounts ?? {}}
+          step2Error={step2Error}
+          onFormSubmit={handleSubmit2(onStep2Submit)}
+          onBack={() => setActiveStep(1)}
+          formatGuestSummary={formatGuestSummary}
+        />
       )}
 
       {activeStep === 3 && (
-        <Box>
-          <Paper variant="outlined" sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>{t('confirm.summaryTitle')}</Typography>
-
-            {selectedLocation && (
-              <Box sx={{ mb: 1.5 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{t('fields.location')}</Typography>
-                <Typography variant="body2">{selectedLocation.name}</Typography>
-              </Box>
-            )}
-
-            <Box sx={{ mb: 1.5 }}>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{t('fields.dates')}</Typography>
-              <Typography variant="body2">{formData.startDate} → {formData.endDate} ({numberOfDays} {t('fields.nights')})</Typography>
-            </Box>
-
-            {(formData.spotIds?.length ?? 0) > 0 && (
-              <Box sx={{ mb: 1.5 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{t('fields.selectedSpots')}</Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                  {availableSpots
-                    .filter((s) => formData.spotIds?.includes(s.id))
-                    .map((s) => <Chip key={s.id} label={s.name} size="small" />)}
-                </Box>
-              </Box>
-            )}
-
-            {(formData.pricing ?? livePricing) && (
-              <>
-                <Divider sx={{ my: 1.5 }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                  {t('pricing.breakdown')}
-                </Typography>
-                {summaryUsesGuestCounts ? (
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                    {t('pricing.guests')}: {formatGuestSummary((formData.guestCounts ?? guestCounts ?? {}) as Record<string, number>)}
-                  </Typography>
-                ) : (
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                    {tc('stepper.fixedRatePricing')}
-                  </Typography>
-                )}
-                {(formData.pricing ?? livePricing)?.breakdown?.map((item, index) => (
-                  <Box key={`${item.label}-${index}`} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.35 }}>
-                    <Box>
-                      <Typography variant="body2">{item.label}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {item.quantity} × {(formData.pricing ?? livePricing)?.currency} {item.unitPrice.toFixed(2)}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {(formData.pricing ?? livePricing)?.currency} {item.totalPrice.toFixed(2)}
-                    </Typography>
-                  </Box>
-                ))}
-                <Divider sx={{ my: 1.2 }} />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="subtitle2">{t('pricing.total')}</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d5a27' }}>
-                    {(formData.pricing ?? livePricing)?.currency}{' '}
-                    {(formData.pricing ?? livePricing)?.totalAmount?.toFixed(2)}
-                  </Typography>
-                </Box>
-                {formData.paymentMethod && (
-                  <Box sx={{ mt: 1 }}>
-                    <Typography variant="caption" color="text.secondary">{t('fields.paymentMethod')}: </Typography>
-                    <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                      {formData.paymentMethod === PaymentMethod.CASH ? `💵 ${t('paymentMethods.cash')}` : `💳 ${t('paymentMethods.card')}`}
-                    </Typography>
-                  </Box>
-                )}
-              </>
-            )}
-
-            {summaryRule && !summaryRule.requiresPayment && (
-              <Alert severity="success" sx={{ mt: 1.5 }}>
-                ✅ {tc('stepper.noPaymentRequired')}
-              </Alert>
-            )}
-          </Paper>
-
-          {submitError && <Alert severity="error" sx={{ mb: 2 }}>{submitError}</Alert>}
-
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button variant="outlined" onClick={() => setActiveStep(2)} fullWidth disabled={submitting}>{t('actions.back')}</Button>
-            <Button
-              variant="contained"
-              fullWidth
-              size="large"
-              onClick={handleFinalSubmit}
-              disabled={submitting}
-              startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <CheckCircle />}
-            >
-              {submitting ? t('actions.submitting') : t('actions.confirm')}
-            </Button>
-          </Box>
-        </Box>
+        <StepConfirm
+          formData={formData}
+          selectedLocation={selectedLocation}
+          availableSpots={availableSpots}
+          numberOfDays={numberOfDays}
+          livePricing={livePricing}
+          summaryUsesGuestCounts={summaryUsesGuestCounts}
+          submitError={submitError}
+          submitting={submitting}
+          onBack={() => setActiveStep(2)}
+          onConfirm={handleFinalSubmit}
+          formatGuestSummary={formatGuestSummary}
+        />
       )}
     </Box>
   );
