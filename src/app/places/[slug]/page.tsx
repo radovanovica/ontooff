@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { useEffect, useState, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   Box,
   Container,
@@ -48,6 +48,7 @@ interface PlaceDetail {
 
 function PlaceContent() {
   const params = useParams<{ slug: string }>();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const [place, setPlace] = useState<PlaceDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,9 +65,10 @@ function PlaceContent() {
   const [selectedActivityTypeId, setSelectedActivityTypeId] = useState<string | null>(null);
   const bookingRef = useRef<HTMLDivElement>(null);
 
-  // Reviews
+  // Reviews — auto-open form if editToken present in URL
+  const urlEditToken = searchParams.get('editToken') ?? undefined;
   const [reviewMeta, setReviewMeta] = useState<{ averageRating: number | null; totalRatings: number } | null>(null);
-  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(!!urlEditToken);
   const [reviewRefresh, setReviewRefresh] = useState(0);
 
   useEffect(() => {
@@ -361,6 +363,7 @@ function PlaceContent() {
                 <Box sx={{ mb: 3 }}>
                   <ReviewForm
                     placeId={place.id}
+                    editToken={urlEditToken}
                     onSubmitted={() => { setShowReviewForm(false); setReviewRefresh((n) => n + 1); }}
                   />
                 </Box>

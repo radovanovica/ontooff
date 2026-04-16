@@ -10,6 +10,7 @@ import {
   Alert,
   Stack,
   Avatar,
+  Button,
 } from '@mui/material';
 import { Star, StarBorder } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
@@ -29,6 +30,8 @@ interface ReviewMeta {
   total: number;
   averageRating: number | null;
   totalRatings: number;
+  ratingBreakdown?: Record<number, number>;
+  totalPages?: number;
 }
 
 interface ReviewListProps {
@@ -41,12 +44,14 @@ interface ReviewListProps {
 export default function ReviewList({ placeId, locationId, freeLocationId, refreshTrigger = 0 }: ReviewListProps) {
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [meta, setMeta] = useState<ReviewMeta | null>(null);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setLoading(true);
-    const params = new URLSearchParams();
+  const fetchPage = (p: number, append: boolean) => {
+    if (p === 1) setLoading(true); else setLoadingMore(true);
+    const params = new URLSearchParams({ page: String(p), pageSize: '20' });
     if (placeId) params.set('placeId', placeId);
     if (locationId) params.set('locationId', locationId);
     if (freeLocationId) params.set('freeLocationId', freeLocationId);
@@ -55,11 +60,17 @@ export default function ReviewList({ placeId, locationId, freeLocationId, refres
       .then((r) => r.json())
       .then((d) => {
         if (!d.success) throw new Error(d.error ?? 'Failed to load reviews');
-        setReviews(d.data);
+        setReviews((prev) => append ? [...prev, ...d.data] : d.data);
         setMeta(d.meta);
+        setPage(p);
       })
       .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
+      .finally(() => { setLoading(false); setLoadingMore(false); });
+  };
+
+  useEffect(() => {
+    fetchPage(1, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [placeId, locationId, freeLocationId, refreshTrigger]);
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>;
@@ -99,9 +110,9 @@ export default function ReviewList({ placeId, locationId, freeLocationId, refres
             </Box>
           </Box>
 
-          {/* Rating distribution chips */}
+          {/* Rating distribution chips — sourced from API aggregate, not page slice */}
           {[5, 4, 3, 2, 1].map((star) => {
-            const count = reviews.filter((r) => r.rating === star).length;
+            const count = meta?.ratingBreakdown?.[star] ?? 0;
             if (count === 0) return null;
             return (
               <Chip
@@ -176,6 +187,20 @@ export default function ReviewList({ placeId, locationId, freeLocationId, refres
           </Box>
         ))}
       </Stack>
+
+      {/* Load More */}
+      {meta && page < (meta.totalPages ?? 1) && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => fetchPage(page + 1, true)}
+            disabled={loadingMore}
+          >
+            {loadingMore ? 'Loading…' : `Load more (${meta.total - reviews.length} remaining)`}
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 }

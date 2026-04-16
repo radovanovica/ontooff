@@ -196,12 +196,24 @@ export async function GET(req: NextRequest) {
     prisma.review.count({ where }),
   ]);
 
-  // Aggregate rating
-  const agg = await prisma.review.aggregate({
-    where,
-    _avg: { rating: true },
-    _count: { rating: true },
-  });
+  // Aggregate rating + per-star breakdown
+  const [agg, breakdown] = await Promise.all([
+    prisma.review.aggregate({
+      where,
+      _avg: { rating: true },
+      _count: { rating: true },
+    }),
+    prisma.review.groupBy({
+      by: ['rating'],
+      where,
+      _count: { rating: true },
+    }),
+  ]);
+
+  const ratingBreakdown: Record<number, number> = {};
+  for (const b of breakdown) {
+    ratingBreakdown[b.rating] = b._count.rating;
+  }
 
   return NextResponse.json({
     success: true,
@@ -213,6 +225,7 @@ export async function GET(req: NextRequest) {
       totalPages: Math.ceil(total / pageSize),
       averageRating: agg._avg.rating ? Math.round(agg._avg.rating * 10) / 10 : null,
       totalRatings: agg._count.rating,
+      ratingBreakdown,
     },
   });
 }
