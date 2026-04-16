@@ -156,6 +156,12 @@ export default function StepLocation({
 
   const hasVirtualMap = availableLocations.some((loc) => !!loc.svgMapData);
   const hasRealMap = availableLocations.some((loc) => loc.latitude != null && loc.longitude != null);
+
+  // Use dimensions from the first location that has them (not selected location,
+  // so the map renders correctly even before a location is chosen)
+  const mapDimSource = availableLocations.find((l) => !!l.mapWidth && !!l.mapHeight) ?? availableLocations[0];
+  const svgWidth = mapDimSource?.mapWidth ?? 900;
+  const svgHeight = mapDimSource?.mapHeight ?? 600;
   const gpsLocations = availableLocations.filter(
     (loc): loc is typeof loc & { latitude: number; longitude: number } =>
       loc.latitude != null && loc.longitude != null
@@ -332,15 +338,15 @@ export default function StepLocation({
                     <Chip size="small" label={tc('stepper.selected')} sx={{ bgcolor: '#0d47a1', color: 'white', fontWeight: 700, border: '2px solid #ffeb3b', '& .MuiChip-label': { px: 1.25 } }} />
                   </Box>
                   <svg
-                    viewBox={`0 0 ${selectedLocation?.mapWidth ?? 900} ${selectedLocation?.mapHeight ?? 600}`}
+                    viewBox={`0 0 ${svgWidth} ${svgHeight}`}
                     style={{ width: '100%', height: 'auto', display: 'block', background: '#f0ebe3' }}
                   >
                     {(availableLocations.find((loc) => !!loc.mapImageUrl)?.mapImageUrl || selectedLocation?.mapImageUrl) && (
                       <image
                         href={availableLocations.find((loc) => !!loc.mapImageUrl)?.mapImageUrl || selectedLocation?.mapImageUrl || ''}
                         x={0} y={0}
-                        width={selectedLocation?.mapWidth ?? 900}
-                        height={selectedLocation?.mapHeight ?? 600}
+                        width={svgWidth}
+                        height={svgHeight}
                         preserveAspectRatio="xMidYMid slice"
                       />
                     )}

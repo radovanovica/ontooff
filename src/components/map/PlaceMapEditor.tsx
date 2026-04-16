@@ -91,6 +91,10 @@ export default function PlaceMapEditor({
   const [imageUrl, setImageUrl] = useState(initialImageUrl ?? '');
   const [imageDirty, setImageDirty] = useState(false);
 
+  // Use local state for map dimensions so they update when a new image is uploaded
+  const [mapW, setMapW] = useState(mapWidth);
+  const [mapH, setMapH] = useState(mapHeight);
+
   const [placing, setPlacing] = useState<string | null>(null); // zone id being placed
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ dx: 0, dy: 0 });
@@ -123,11 +127,11 @@ export default function PlaceMapEditor({
       if (!el) return { x: 0, y: 0 };
       const rect = el.getBoundingClientRect();
       return {
-        x: (clientX - rect.left) * (mapWidth / rect.width),
-        y: (clientY - rect.top) * (mapHeight / rect.height),
+        x: (clientX - rect.left) * (mapW / rect.width),
+        y: (clientY - rect.top) * (mapH / rect.height),
       };
     },
-    [mapWidth, mapHeight]
+    [mapW, mapH]
   );
 
   // ── SVG click — place selected zone ─────────────────────────────────────
@@ -204,14 +208,17 @@ export default function PlaceMapEditor({
 
   // ── Map image upload (saves to place immediately) ──────────────────────
 
-  const saveImageToPlace = async (url: string | null) => {
+  const saveImageToPlace = async (url: string | null, width?: number, height?: number) => {
     setImageUploading(true);
     setImageError(null);
     try {
+      const body: Record<string, unknown> = { mapImageUrl: url };
+      if (width !== undefined) body.mapWidth = width;
+      if (height !== undefined) body.mapHeight = height;
       const res = await fetch(`/api/places/${placeId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mapImageUrl: url }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error('Failed to save image');
       setImageUrl(url ?? '');
@@ -234,7 +241,16 @@ export default function PlaceMapEditor({
     setImageError(null);
     try {
       const url = await uploadFileToS3(file, 'images/map');
-      await saveImageToPlace(url);
+      // Auto-detect natural image dimensions
+      const dims = await new Promise<{ w: number; h: number }>((resolve) => {
+        const img = new window.Image();
+        img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        img.onerror = () => resolve({ w: mapW, h: mapH });
+        img.src = url;
+      });
+      setMapW(dims.w);
+      setMapH(dims.h);
+      await saveImageToPlace(url, dims.w, dims.h);
     } catch (err) {
       setImageError(err instanceof Error ? err.message : 'Upload failed');
       setImageUploading(false);
@@ -261,8 +277,8 @@ export default function PlaceMapEditor({
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               mapImageUrl: imageUrl || null,
-              mapWidth,
-              mapHeight,
+              mapWidth: mapW,
+              mapHeight: mapH,
             }),
           })
         );
@@ -285,8 +301,8 @@ export default function PlaceMapEditor({
                 name: zone.name,
                 svgMapData,
                 requiresSpot: true,
-                mapWidth,
-                mapHeight,
+                mapWidth: mapW,
+                mapHeight: mapH,
                 mapImageUrl: imageUrl || undefined,
               }),
             })
@@ -411,7 +427,7 @@ export default function PlaceMapEditor({
 
             <svg
               ref={svgRef}
-              viewBox={`0 0 ${mapWidth} ${mapHeight}`}
+              viewBox={`0 0 ${mapW} ${mapH}`}
               style={{ width: '100%', height: 'auto', display: 'block', maxHeight: 560, userSelect: 'none' }}
               onClick={handleSvgClick}
               onMouseMove={handleSvgMouseMove}
@@ -420,17 +436,17 @@ export default function PlaceMapEditor({
             >
               {/* Background */}
               {imageUrl ? (
-                <image href={imageUrl} x={0} y={0} width={mapWidth} height={mapHeight} preserveAspectRatio="xMidYMid slice" />
+                <image href={imageUrl} x={0} y={0} width={mapW} height={mapH} preserveAspectRatio="xMidYMid slice" />
               ) : (
                 <>
-                  <rect x={0} y={0} width={mapWidth} height={mapHeight} fill="#e8e0d4" />
-                  {Array.from({ length: Math.floor(mapWidth / 80) }, (_, i) => (
-                    <line key={`v${i}`} x1={(i + 1) * 80} y1={0} x2={(i + 1) * 80} y2={mapHeight} stroke="rgba(0,0,0,0.07)" strokeWidth={1} />
+                  <rect x={0} y={0} width={mapW} height={mapH} fill="#e8e0d4" />
+                  {Array.from({ length: Math.floor(mapW / 80) }, (_, i) => (
+                    <line key={`v${i}`} x1={(i + 1) * 80} y1={0} x2={(i + 1) * 80} y2={mapH} stroke="rgba(0,0,0,0.07)" strokeWidth={1} />
                   ))}
-                  {Array.from({ length: Math.floor(mapHeight / 80) }, (_, i) => (
-                    <line key={`h${i}`} x1={0} y1={(i + 1) * 80} x2={mapWidth} y2={(i + 1) * 80} stroke="rgba(0,0,0,0.07)" strokeWidth={1} />
+                  {Array.from({ length: Math.floor(mapH / 80) }, (_, i) => (
+                    <line key={`h${i}`} x1={0} y1={(i + 1) * 80} x2={mapW} y2={(i + 1) * 80} stroke="rgba(0,0,0,0.07)" strokeWidth={1} />
                   ))}
-                  <text x={mapWidth / 2} y={mapHeight / 2} textAnchor="middle" dominantBaseline="middle" fill="rgba(0,0,0,0.2)" fontSize={16}>
+                  <text x={mapW / 2} y={mapH / 2} textAnchor="middle" dominantBaseline="middle" fill="rgba(0,0,0,0.2)" fontSize={16}>
                     Set a background image, then click to place location zones
                   </text>
                 </>

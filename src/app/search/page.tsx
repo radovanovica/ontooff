@@ -113,6 +113,8 @@ export interface MapPin {
   longitude: number;
   color: string;
   highlighted?: boolean;
+  coverUrl?: string;
+  href?: string;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -422,6 +424,8 @@ function SearchPage() {
           longitude: l.longitude!,
           color: place.isFree ? '#7b3f00' : '#1976d2',
           highlighted: highlightedId === place.id,
+          coverUrl: place.coverUrl ?? undefined,
+          href: place.isFree ? `/locations/${place.slug}` : `/places/${place.slug}`,
         }))
     ),
     [places, highlightedId]
@@ -878,12 +882,7 @@ function SearchPage() {
                   const realId = id.startsWith('free__')
                     ? id.replace('free__', '')
                     : id;
-                  const place = places.find((p) => p.id === realId);
-                  if (place) {
-                    router.push(
-                      place.isFree ? `/locations/${place.slug}` : `/places/${place.slug}`
-                    );
-                  }
+                  setHighlightedId(realId);
                 }}
               />
             </Box>

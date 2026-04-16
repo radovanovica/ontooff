@@ -115,8 +115,6 @@ const locationSchema = z.object({
   maxCapacity: z.coerce.number().int().positive().optional().or(z.literal('')),
   requiresSpot: z.boolean(),
   isActive: z.boolean(),
-  mapWidth: z.coerce.number().int().positive().optional().or(z.literal('')),
-  mapHeight: z.coerce.number().int().positive().optional().or(z.literal('')),
   sortOrder: z.coerce.number().default(0),
   latitude: z.coerce.number().optional().or(z.literal('')),
   longitude: z.coerce.number().optional().or(z.literal('')),
@@ -234,8 +232,6 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
       maxCapacity: location.maxCapacity ?? undefined,
       requiresSpot: location.requiresSpot,
       isActive: location.isActive,
-      mapWidth: location.mapWidth ?? undefined,
-      mapHeight: location.mapHeight ?? undefined,
       sortOrder: location.sortOrder,
       latitude: location.latitude ?? '',
       longitude: location.longitude ?? '',
@@ -253,8 +249,6 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
           ...data,
           instructions: data.instructions || undefined,
           maxCapacity: data.maxCapacity === '' ? null : Number(data.maxCapacity) || null,
-          mapWidth: data.mapWidth === '' ? null : Number(data.mapWidth) || null,
-          mapHeight: data.mapHeight === '' ? null : Number(data.mapHeight) || null,
           latitude: data.latitude === '' ? null : data.latitude === undefined ? null : Number(data.latitude),
           longitude: data.longitude === '' ? null : data.longitude === undefined ? null : Number(data.longitude),
           activityTypeIds,
@@ -348,27 +342,6 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
             type="number"
             fullWidth
           />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <TextField
-            {...register('mapWidth')}
-            label={t('locations.form.mapWidth')}
-            type="number"
-            fullWidth
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <TextField
-            {...register('mapHeight')}
-            label={t('locations.form.mapHeight')}
-            type="number"
-            fullWidth
-          />
-        </Grid>
-        <Grid size={{ xs: 12 }}>
-          <Alert severity="info">
-            {t('locations.mapManagedHint')}
-          </Alert>
         </Grid>
         <Grid size={{ xs: 12 }}>
           <Divider sx={{ my: 1 }}>{t('locations.form.mapPinLocation')}</Divider>
