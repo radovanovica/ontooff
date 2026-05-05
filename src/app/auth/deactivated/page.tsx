@@ -1,8 +1,12 @@
+'use client';
+
 import { Box, Button, Paper, Typography } from '@mui/material';
 import { Block } from '@mui/icons-material';
 import Link from 'next/link';
+import { useTranslation } from '@/i18n/client';
 
 export default function DeactivatedPage() {
+  const { t } = useTranslation('auth');
   return (
     <Box
       sx={{
@@ -17,14 +21,14 @@ export default function DeactivatedPage() {
       <Paper elevation={3} sx={{ p: 5, width: '100%', maxWidth: 420, borderRadius: 3, textAlign: 'center' }}>
         <Block sx={{ fontSize: 64, color: 'error.main', mb: 2 }} />
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-          Account Deactivated
+          {t('deactivated.title')}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-          Your account has been deactivated. Please contact support if you believe this is a mistake.
+          {t('deactivated.body')}
         </Typography>
         <Link href="mailto:support@ontooff.com" style={{ textDecoration: 'none', display: 'block' }}>
           <Button variant="contained" fullWidth>
-            Contact Support
+            {t('deactivated.contactSupport')}
           </Button>
         </Link>
       </Paper>

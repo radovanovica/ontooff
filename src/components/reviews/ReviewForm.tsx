@@ -63,13 +63,13 @@ export default function ReviewForm({
       <Paper variant="outlined" sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
         <Login sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
         <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 0.5 }}>
-          Sign in to leave a review
+          {t('review.communitySignIn')}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Share your experience with the community.
+          {t('review.communitySignInSubtitle')}
         </Typography>
         <Button variant="contained" href="/auth/signin" size="small">
-          Sign in
+          {t('review.communitySignInButton')}
         </Button>
       </Paper>
     );
@@ -151,7 +151,7 @@ export default function ReviewForm({
   if (submitted) {
     return (
       <Alert severity="success" icon={<Star />}>
-        {error ?? (communityMode ? 'Thank you for your review!' : t('review.submitted'))}
+        {error ?? (communityMode ? t('review.communitySubmitted') : t('review.submitted'))}
       </Alert>
     );
   }
@@ -196,12 +196,12 @@ export default function ReviewForm({
       {communityMode && session?.user && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Posting as <strong>{session.user.name ?? session.user.email}</strong>
+            {t('review.communityPostingAs')} <strong>{session.user.name ?? session.user.email}</strong>
           </Typography>
         </Box>
       )}
       <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-        {communityMode ? 'Write a review' : t('review.title')}
+        {communityMode ? t('review.communityTitle') : t('review.title')}
       </Typography>
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 

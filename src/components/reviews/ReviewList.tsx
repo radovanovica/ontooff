@@ -15,6 +15,7 @@ import {
 import { Star, StarBorder } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
+import { useTranslation } from '@/i18n/client';
 
 interface ReviewItem {
   id: string;
@@ -42,6 +43,7 @@ interface ReviewListProps {
 }
 
 export default function ReviewList({ placeId, locationId, freeLocationId, refreshTrigger = 0 }: ReviewListProps) {
+  const { t } = useTranslation('registration');
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [meta, setMeta] = useState<ReviewMeta | null>(null);
   const [page, setPage] = useState(1);
@@ -59,7 +61,7 @@ export default function ReviewList({ placeId, locationId, freeLocationId, refres
     fetch(`/api/reviews?${params}`)
       .then((r) => r.json())
       .then((d) => {
-        if (!d.success) throw new Error(d.error ?? 'Failed to load reviews');
+        if (!d.success) throw new Error(d.error ?? t('review.loadFailed'));
         setReviews((prev) => append ? [...prev, ...d.data] : d.data);
         setMeta(d.meta);
         setPage(p);
@@ -79,7 +81,7 @@ export default function ReviewList({ placeId, locationId, freeLocationId, refres
     if (freeLocationId) {
       return (
         <Typography variant="body2" color="text.secondary" sx={{ py: 2, fontStyle: 'italic' }}>
-          No reviews yet. Be the first to share your experience!
+          {t('review.noReviews')}
         </Typography>
       );
     }
@@ -105,7 +107,7 @@ export default function ReviewList({ placeId, locationId, freeLocationId, refres
                 emptyIcon={<StarBorder fontSize="inherit" />}
               />
               <Typography variant="caption" color="text.secondary">
-                {meta.totalRatings} {meta.totalRatings === 1 ? 'review' : 'reviews'}
+                {meta.totalRatings} {t('review.countSuffix', { count: meta.totalRatings })}
               </Typography>
             </Box>
           </Box>
@@ -197,7 +199,7 @@ export default function ReviewList({ placeId, locationId, freeLocationId, refres
             onClick={() => fetchPage(page + 1, true)}
             disabled={loadingMore}
           >
-            {loadingMore ? 'Loading…' : `Load more (${meta.total - reviews.length} remaining)`}
+            {loadingMore ? t('review.loadingMore') : t('review.loadMore', { count: meta.total - reviews.length })}
           </Button>
         </Box>
       )}

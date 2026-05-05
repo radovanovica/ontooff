@@ -20,6 +20,8 @@ import { ArrowBack, LocationOn, Phone, Email, Language, Star, RateReview } from 
 import ReviewForm from '@/components/reviews/ReviewForm';
 import { Rating } from '@mui/material';
 import Link from 'next/link';
+import InstagramStoryShare from '@/components/blog/InstagramStoryShare';
+import { useTranslation } from '@/i18n/client';
 import Navbar from '@/components/layout/Navbar';
 import RegistrationStepper from '@/components/registration/RegistrationStepper';
 import ReviewList from '@/components/reviews/ReviewList';
@@ -47,6 +49,7 @@ interface PlaceDetail {
 }
 
 function PlaceContent() {
+  const { t } = useTranslation('common');
   const params = useParams<{ slug: string }>();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -116,7 +119,7 @@ function PlaceContent() {
     return (
       <Container maxWidth="md" sx={{ py: 8 }}>
         <Alert severity="error" sx={{ mb: 3 }}>{error ?? 'Place not found'}</Alert>
-        <Button startIcon={<ArrowBack />} onClick={() => router.back()}>Go Back</Button>
+        <Button startIcon={<ArrowBack />} onClick={() => router.back()}>{t('places.goBack')}</Button>
       </Container>
     );
   }
@@ -142,14 +145,26 @@ function PlaceContent() {
         }}
       >
         <Container maxWidth="lg">
-          <Button
-            component={Link}
-            href="/search"
-            startIcon={<ArrowBack />}
-            sx={{ color: 'rgba(255,255,255,0.7)', mb: 2, '&:hover': { color: 'white' } }}
-          >
-            Back to Search
-          </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Button
+              component={Link}
+              href="/search"
+              startIcon={<ArrowBack />}
+              sx={{ color: 'rgba(255,255,255,0.7)', '&:hover': { color: 'white' } }}
+            >
+              {t('places.backToSearch')}
+            </Button>
+            <InstagramStoryShare
+              title={place.name}
+              excerpt={place.description}
+              category={place.activityTypes[0]?.name}
+              categoryColor={place.activityTypes[0]?.color}
+              coverUrl={place.coverUrl}
+              slug={place.slug}
+              pageUrl={`https://ontooff.com/places/${place.slug}`}
+              subtitle={[place.city, place.country].filter(Boolean).join(', ') || undefined}
+            />
+          </Box>
 
           {/* Logo + name row */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
@@ -187,7 +202,7 @@ function PlaceContent() {
                 emptyIcon={<Star fontSize="inherit" sx={{ color: 'rgba(255,255,255,0.3)' }} />}
               />
               <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
-                {reviewMeta.averageRating?.toFixed(1)} · {reviewMeta.totalRatings} {reviewMeta.totalRatings === 1 ? 'review' : 'reviews'}
+                {reviewMeta.averageRating?.toFixed(1)} · {t('places.review', { count: reviewMeta.totalRatings })}
               </Typography>
             </Box>
           )}
@@ -217,7 +232,7 @@ function PlaceContent() {
           {/* Left: info */}
           <Box sx={{ flex: '0 0 300px' }}>
             <Paper variant="outlined" sx={{ p: 3, borderRadius: 2, mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>About</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{t('places.about')}</Typography>
               {place.description && (
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.7 }}>
                   {place.description}
@@ -255,7 +270,7 @@ function PlaceContent() {
 
             {/* Activities offered — clickable to filter booking */}
             <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Activities</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{t('places.activities')}</Typography>
               <Stack spacing={1}>
                 {place.activityTypes.map((at) => {
                   const isSelected = selectedActivityTypeId === at.id;
@@ -280,7 +295,7 @@ function PlaceContent() {
                       {at.icon && <Typography sx={{ fontSize: '1.2rem', lineHeight: 1 }}>{at.icon}</Typography>}
                       <Typography variant="body2" sx={{ fontWeight: 600, flex: 1 }}>{at.name}</Typography>
                       {isSelected && (
-                        <Chip label="Book" size="small" sx={{ bgcolor: at.color ?? 'primary.main', color: 'white', fontWeight: 700, height: 20, fontSize: '0.65rem' }} />
+                        <Chip label={t('places.book')} size="small" sx={{ bgcolor: at.color ?? 'primary.main', color: 'white', fontWeight: 700, height: 20, fontSize: '0.65rem' }} />
                       )}
                     </Box>
                   );
@@ -288,7 +303,7 @@ function PlaceContent() {
               </Stack>
               {place.activityTypes.length > 1 && (
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5, lineHeight: 1.4 }}>
-                  Click an activity to filter the booking widget
+                  {t('places.filterBookingHint')}
                 </Typography>
               )}
             </Paper>
@@ -300,7 +315,7 @@ function PlaceContent() {
           <Box ref={bookingRef} sx={{ flex: 1, minWidth: 0 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
               <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                Book a Spot
+                {t('places.bookASpot')}
               </Typography>
               {selectedActivityTypeId && (() => {
                 const at = place.activityTypes.find((a) => a.id === selectedActivityTypeId);
@@ -323,13 +338,13 @@ function PlaceContent() {
 
             {bookingError && (
               <Alert severity="info">
-                Online booking is not available for this place yet. Please contact them directly.
+                {t('places.noBookingAvailable')}
               </Alert>
             )}
 
             {bookingData && bookingData.locations && (bookingData.locations as unknown[]).length === 0 && (
               <Alert severity="info">
-                No active locations found. Please add a location and spots in the owner dashboard.
+                {t('places.noLocationsFound')}
               </Alert>
             )}
 
@@ -349,14 +364,14 @@ function PlaceContent() {
             {/* Reviews */}
             <Box sx={{ mt: 6 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h5" sx={{ fontWeight: 700 }}>Reviews</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>{t('places.reviews')}</Typography>
                 <Button
                   variant="outlined"
                   size="small"
                   startIcon={<RateReview />}
                   onClick={() => setShowReviewForm((p) => !p)}
                 >
-                  {showReviewForm ? 'Hide form' : 'Write a Review'}
+                  {showReviewForm ? t('places.hideReviewForm') : t('places.writeReview')}
                 </Button>
               </Box>
               {showReviewForm && (

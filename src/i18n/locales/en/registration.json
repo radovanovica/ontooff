@@ -227,6 +227,18 @@
     "verifying": "Verifying…",
     "notFound": "Booking not found. Please check your number and email.",
     "notEligible": "Reviews can only be submitted for confirmed or completed bookings.",
-    "stars": "{{count}} star(s)"
+    "stars": "{{count}} star(s)",
+    "communitySignIn": "Sign in to leave a review",
+    "communitySignInSubtitle": "Share your experience with the community.",
+    "communitySignInButton": "Sign in",
+    "communityPostingAs": "Posting as",
+    "communityTitle": "Write a review",
+    "communitySubmitted": "Thank you for your review!",
+    "loadFailed": "Failed to load reviews",
+    "noReviews": "No reviews yet. Be the first to share your experience!",
+    "loadMore": "Load more ({{count}} remaining)",
+    "loadingMore": "Loading…",
+    "countSuffix_one": "review",
+    "countSuffix_other": "reviews"
   }
 }

@@ -10,6 +10,7 @@ import { Search, OpenInNew, CheckCircle, Archive, Delete, Add } from '@mui/icons
 import Link from 'next/link';
 import { format } from 'date-fns';
 import PageHeader from '@/components/ui/PageHeader';
+import { useTranslation } from '@/i18n/client';
 
 interface PostRow {
   id: string;
@@ -31,6 +32,7 @@ const STATUS_COLORS: Record<string, 'default' | 'warning' | 'success' | 'error'>
 };
 
 export default function AdminBlogPage() {
+  const { t } = useTranslation('blog');
   const [posts, setPosts] = useState<PostRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export default function AdminBlogPage() {
       setTotal(data.meta?.total ?? 0);
       setTotalPages(data.meta?.totalPages ?? 1);
     } catch {
-      setError('Failed to load posts');
+      setError(t('admin.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -74,7 +76,7 @@ export default function AdminBlogPage() {
   };
 
   const handleDelete = async (slug: string) => {
-    if (!confirm('Permanently delete this post?')) return;
+    if (!confirm(t('admin.deleteConfirm'))) return;
     await fetch(`/api/blog/${slug}`, { method: 'DELETE' });
     fetchPosts(page);
   };
@@ -82,13 +84,13 @@ export default function AdminBlogPage() {
   return (
     <Box>
       <PageHeader
-        title="Blog Management"
-        subtitle="Review, publish and moderate blog posts"
-        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Blog' }]}
-        badge={statusFilter === 'DRAFT' && total > 0 ? `${total} pending` : undefined}
+        title={t('admin.managementTitle')}
+        subtitle={t('admin.managementSubtitle')}
+        breadcrumbs={[{ label: t('admin.breadcrumbAdmin'), href: '/admin' }, { label: t('admin.breadcrumbBlog') }]}
+        badge={statusFilter === 'DRAFT' && total > 0 ? t('admin.pendingBadge', { count: total }) : undefined}
         action={
           <Button variant="contained" startIcon={<Add />} component={Link} href="/contributor/posts/new">
-            New Post
+            {t('admin.newPost')}
           </Button>
         }
       />
@@ -97,7 +99,7 @@ export default function AdminBlogPage() {
         <TextField
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Search posts…"
+          placeholder={t('admin.searchPlaceholder')}
           size="small"
           sx={{ minWidth: 240 }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
@@ -109,10 +111,10 @@ export default function AdminBlogPage() {
           size="small"
           sx={{ minWidth: 160 }}
         >
-          <MenuItem value="">All statuses</MenuItem>
-          <MenuItem value="DRAFT">Draft (Pending)</MenuItem>
-          <MenuItem value="PUBLISHED">Published</MenuItem>
-          <MenuItem value="ARCHIVED">Archived</MenuItem>
+          <MenuItem value="">{t('admin.allStatusesFilter')}</MenuItem>
+          <MenuItem value="DRAFT">{t('admin.draftPending')}</MenuItem>
+          <MenuItem value="PUBLISHED">{t('published')}</MenuItem>
+          <MenuItem value="ARCHIVED">{t('archived')}</MenuItem>
         </Select>
       </Box>
 
@@ -122,14 +124,14 @@ export default function AdminBlogPage() {
         <Table size="small">
           <TableHead>
             <TableRow sx={{ bgcolor: 'grey.50' }}>
-              <TableCell sx={{ fontWeight: 700 }}>Title</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Author</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Category</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Place</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Views</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('admin.tableTitle')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('admin.author')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('admin.status')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('admin.category')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('admin.tablePlace')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('admin.tableViews')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('admin.tableDate')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('admin.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -142,7 +144,7 @@ export default function AdminBlogPage() {
             ) : posts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
-                  <Typography color="text.secondary">No posts found.</Typography>
+                  <Typography color="text.secondary">{t('admin.noPostsFound')}</Typography>
                 </TableCell>
               </TableRow>
             ) : (
@@ -191,27 +193,27 @@ export default function AdminBlogPage() {
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                       {post.status === 'DRAFT' && (
-                        <Tooltip title="Publish">
+                        <Tooltip title={t('admin.publish')}>
                           <IconButton size="small" color="success" onClick={() => changeStatus(post.slug, 'PUBLISHED')}>
                             <CheckCircle fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       )}
                       {post.status === 'PUBLISHED' && (
-                        <Tooltip title="Archive">
+                        <Tooltip title={t('admin.archive')}>
                           <IconButton size="small" onClick={() => changeStatus(post.slug, 'ARCHIVED')}>
                             <Archive fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       )}
                       {post.status === 'PUBLISHED' && (
-                        <Tooltip title="View live">
+                        <Tooltip title={t('admin.tooltipViewLive')}>
                           <IconButton size="small" component={Link} href={`/blog/${post.slug}`} target="_blank">
                             <OpenInNew fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       )}
-                      <Tooltip title="Delete">
+                      <Tooltip title={t('admin.tooltipDelete')}>
                         <IconButton size="small" color="error" onClick={() => handleDelete(post.slug)}>
                           <Delete fontSize="small" />
                         </IconButton>
@@ -227,7 +229,7 @@ export default function AdminBlogPage() {
 
       {totalPages > 1 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3, gap: 1 }}>
-          <Typography variant="caption" color="text.secondary">{total} total posts</Typography>
+          <Typography variant="caption" color="text.secondary">{t('admin.totalPostsCount', { count: total })}</Typography>
           <Pagination
             count={totalPages}
             page={page}

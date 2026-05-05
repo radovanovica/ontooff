@@ -67,7 +67,7 @@ export default function AdminUsersPage() {
       setTotal(data.data?.total ?? 0);
       setTotalPages(data.data?.totalPages ?? 1);
     } catch {
-      setError('Failed to load users');
+      setError(t('users.errors.loadFailed'));
     } finally {
       setLoading(false);
     }

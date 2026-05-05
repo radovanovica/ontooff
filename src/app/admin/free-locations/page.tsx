@@ -213,7 +213,7 @@ export default function AdminFreeLocationsPage() {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Delete "${name}"?`)) return;
+    if (!confirm(t('freeLocations.deleteConfirm', { name }))) return;
     await fetch(`/api/free-locations/${id}`, { method: 'DELETE' });
     load();
   };
@@ -311,8 +311,8 @@ export default function AdminFreeLocationsPage() {
         title={t('freeLocations.title')}
         subtitle={t('freeLocations.subtitle')}
         breadcrumbs={[
-          { label: 'Admin', href: '/admin' },
-          { label: 'Free Locations' },
+          { label: t('freeLocations.breadcrumbAdmin'), href: '/admin' },
+          { label: t('freeLocations.breadcrumbFreeLocations') },
         ]}
         action={
           <Button
@@ -470,7 +470,7 @@ export default function AdminFreeLocationsPage() {
                   error={!!errors.slug}
                   helperText={
                     errors.slug?.message ??
-                    `Preview: /locations/${watchName ? slugify(String(watchName)) : '...'}`
+                    t('freeLocations.slugPreview', { slug: watchName ? slugify(String(watchName)) : '...' })
                   }
                 />
               </Grid>

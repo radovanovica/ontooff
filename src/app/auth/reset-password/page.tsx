@@ -12,7 +12,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { Visibility, VisibilityOff, CheckCircle, ArrowBack, LockReset } from '@mui/icons-material';
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
@@ -21,24 +21,27 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from '@/i18n/client';
 
-const schema = z
-  .object({
-    password: z
-      .string()
-      .min(8, 'At least 8 characters')
-      .regex(/[A-Z]/, 'Must contain uppercase letter')
-      .regex(/[0-9]/, 'Must contain a number'),
-    confirmPassword: z.string().min(1),
-  })
-  .refine((d) => d.password === d.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+function buildSchema(t: (key: string) => string) {
+  return z
+    .object({
+      password: z
+        .string()
+        .min(8, t('resetPassword.passwordMin'))
+        .regex(/[A-Z]/, t('resetPassword.passwordUppercase'))
+        .regex(/[0-9]/, t('resetPassword.passwordNumber')),
+      confirmPassword: z.string().min(1),
+    })
+    .refine((d) => d.password === d.confirmPassword, {
+      message: t('resetPassword.passwordMismatch'),
+      path: ['confirmPassword'],
+    });
+}
 
-type FormValues = z.infer<typeof schema>;
+type FormValues = { password: string; confirmPassword: string };
 
 function ResetPasswordContent() {
   const { t } = useTranslation('auth');
+  const schema = useMemo(() => buildSchema(t), [t]);
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 
@@ -56,7 +59,7 @@ function ResetPasswordContent() {
 
   const onSubmit = async (data: FormValues) => {
     if (!token) {
-      setError('Invalid reset link. Please request a new one.');
+      setError(t('resetPassword.invalidLink'));
       return;
     }
     setLoading(true);
@@ -68,7 +71,7 @@ function ResetPasswordContent() {
         body: JSON.stringify({ token, password: data.password }),
       });
       const json = await res.json();
-      if (!json.success) throw new Error(json.error ?? 'Reset failed');
+      if (!json.success) throw new Error(json.error ?? t('resetPassword.resetFailed'));
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -81,8 +84,8 @@ function ResetPasswordContent() {
     return (
       <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
         <Alert severity="error" sx={{ maxWidth: 440, width: '100%' }}>
-          Invalid or missing reset token. Please{' '}
-          <Link href="/auth/forgot-password" style={{ color: 'inherit' }}>request a new reset link</Link>.
+          {t('resetPassword.invalidLinkBody')}{' '}
+          <Link href="/auth/forgot-password" style={{ color: 'inherit' }}>{t('resetPassword.invalidLinkRequest')}</Link>.
         </Alert>
       </Box>
     );

@@ -10,6 +10,7 @@ import {
 import { Search, Add, Close, PersonAdd } from '@mui/icons-material';
 import { format } from 'date-fns';
 import PageHeader from '@/components/ui/PageHeader';
+import { useTranslation } from '@/i18n/client';
 
 interface PlaceAccess {
   place: { id: string; name: string; city: string | null };
@@ -28,6 +29,7 @@ interface PlaceOption { id: string; name: string; city: string | null }
 interface UserOption { id: string; name: string | null; email: string; role: string; }
 
 export default function AdminContributorsPage() {
+  const { t } = useTranslation('blog');
   const [contributors, setContributors] = useState<ContributorRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,11 +72,11 @@ export default function AdminContributorsPage() {
       setTotal(data.meta?.total ?? 0);
       setTotalPages(data.meta?.totalPages ?? 1);
     } catch {
-      setError('Failed to load contributors');
+      setError(t('admin.contributorsLoadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, t]);
 
   useEffect(() => {
     const t = setTimeout(() => fetchContributors(1), 300);
@@ -110,7 +112,7 @@ export default function AdminContributorsPage() {
   };
 
   const handleRevoke = async (contributorId: string, placeId: string) => {
-    if (!confirm('Revoke access to this place?')) return;
+    if (!confirm(t('admin.revokeConfirm'))) return;
     await fetch(`/api/admin/contributors/${contributorId}/places/${placeId}`, { method: 'DELETE' });
     fetchContributors(page);
   };
@@ -144,7 +146,7 @@ export default function AdminContributorsPage() {
       setPromoteSearch('');
       fetchContributors(1);
     } catch {
-      setError('Failed to promote user');
+      setError(t('admin.contributorsLoadFailed'));
     } finally {
       setPromoting(false);
     }
@@ -162,7 +164,7 @@ export default function AdminContributorsPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setCreateError(data.error ?? 'Failed to create user');
+        setCreateError(data.error ?? t('admin.createDialog.create'));
         return;
       }
       setCreateOpen(false);
@@ -171,7 +173,7 @@ export default function AdminContributorsPage() {
       setCreatePassword('');
       fetchContributors(1);
     } catch {
-      setCreateError('Failed to create user');
+      setCreateError(t('admin.createDialog.create'));
     } finally {
       setCreating(false);
     }
@@ -180,16 +182,16 @@ export default function AdminContributorsPage() {
   return (
     <Box>
       <PageHeader
-        title="Contributors"
-        subtitle="Manage blog contributors and their place access"
-        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Contributors' }]}
+        title={t('admin.contributorsTitle')}
+        subtitle={t('admin.contributorsSubtitle')}
+        breadcrumbs={[{ label: t('admin.breadcrumbAdmin'), href: '/admin' }, { label: t('admin.contributorsTitle') }]}
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
         <TextField
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Search contributors…"
+          placeholder={t('admin.searchContributors')}
           size="small"
           sx={{ minWidth: 240 }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
@@ -199,14 +201,14 @@ export default function AdminContributorsPage() {
           startIcon={<PersonAdd />}
           onClick={() => setPromoteOpen(true)}
         >
-          Add Contributor
+          {t('admin.addContributor')}
         </Button>
         <Button
           variant="outlined"
           startIcon={<Add />}
           onClick={() => { setCreateError(null); setCreateOpen(true); }}
         >
-          Create New
+          {t('admin.createNew')}
         </Button>
       </Box>
 
@@ -216,11 +218,11 @@ export default function AdminContributorsPage() {
         <Table size="small">
           <TableHead>
             <TableRow sx={{ bgcolor: 'grey.50' }}>
-              <TableCell sx={{ fontWeight: 700 }}>Contributor</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Posts</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Place Access</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Since</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('admin.tableContributor')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('admin.tablePosts')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('admin.placeAccess')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('admin.tableSince')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('admin.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -233,7 +235,7 @@ export default function AdminContributorsPage() {
             ) : contributors.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
-                  <Typography color="text.secondary">No contributors yet.</Typography>
+                  <Typography color="text.secondary">{t('admin.noContributors')}</Typography>
                 </TableCell>
               </TableRow>
             ) : (
@@ -256,7 +258,7 @@ export default function AdminContributorsPage() {
                   <TableCell>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                       {c.placeAccess.length === 0 ? (
-                        <Typography variant="caption" color="text.secondary">No places</Typography>
+                        <Typography variant="caption" color="text.secondary">{t('admin.noPlaces')}</Typography>
                       ) : (
                         c.placeAccess.map((a) => (
                           <Chip
@@ -275,7 +277,7 @@ export default function AdminContributorsPage() {
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Tooltip title="Grant place access">
+                    <Tooltip title={t('admin.tooltipGrantAccess')}>
                       <IconButton size="small" color="primary" onClick={() => openGrant(c)}>
                         <Add fontSize="small" />
                       </IconButton>
@@ -290,7 +292,7 @@ export default function AdminContributorsPage() {
 
       {totalPages > 1 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3, gap: 1 }}>
-          <Typography variant="caption" color="text.secondary">{total} contributors</Typography>
+          <Typography variant="caption" color="text.secondary">{t('admin.totalContributors', { count: total })}</Typography>
           <Pagination
             count={totalPages}
             page={page}
@@ -304,14 +306,14 @@ export default function AdminContributorsPage() {
       {/* Grant Place Access Dialog */}
       <Dialog open={!!grantTarget} onClose={() => setGrantTarget(null)} maxWidth="xs" fullWidth>
         <DialogTitle>
-          Grant Place Access
+          {t('admin.grantDialog.title')}
           <IconButton onClick={() => setGrantTarget(null)} sx={{ position: 'absolute', right: 8, top: 8 }}>
             <Close />
           </IconButton>
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            Allow <strong>{grantTarget?.name ?? grantTarget?.email}</strong> to link posts to:
+            {t('admin.grantDialog.body', { name: grantTarget?.name ?? grantTarget?.email })}
           </Typography>
           <Autocomplete
             options={allPlaces.filter(
@@ -321,37 +323,37 @@ export default function AdminContributorsPage() {
             value={selectedPlace}
             onChange={(_, val) => setSelectedPlace(val)}
             renderInput={(params) => (
-              <TextField {...params} size="small" label="Select place" fullWidth />
+              <TextField {...params} size="small" label={t('admin.grantDialog.selectPlaceLabel')} fullWidth />
             )}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setGrantTarget(null)}>Cancel</Button>
+          <Button onClick={() => setGrantTarget(null)}>{t('admin.grantDialog.cancel')}</Button>
           <Button
             variant="contained"
             onClick={handleGrant}
             disabled={granting || !selectedPlace}
             startIcon={granting ? <CircularProgress size={16} color="inherit" /> : <PersonAdd />}
           >
-            Grant Access
+            {t('admin.grantDialog.grant')}
           </Button>
         </DialogActions>
       </Dialog>
       {/* Create New Contributor Dialog */}
       <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>
-          Create New Contributor
+          {t('admin.createDialog.title')}
           <IconButton onClick={() => setCreateOpen(false)} sx={{ position: 'absolute', right: 8, top: 8 }}>
             <Close />
           </IconButton>
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Create a new user account with the Contributor role.
+            {t('admin.createDialog.body')}
           </Typography>
           {createError && <Alert severity="error" sx={{ mb: 2 }}>{createError}</Alert>}
           <TextField
-            label="Full Name"
+            label={t('admin.createDialog.nameLabel')}
             value={createName}
             onChange={(e) => setCreateName(e.target.value)}
             fullWidth
@@ -360,7 +362,7 @@ export default function AdminContributorsPage() {
             sx={{ mb: 2 }}
           />
           <TextField
-            label="Email"
+            label={t('admin.createDialog.emailLabel')}
             type="email"
             value={createEmail}
             onChange={(e) => setCreateEmail(e.target.value)}
@@ -370,25 +372,25 @@ export default function AdminContributorsPage() {
             sx={{ mb: 2 }}
           />
           <TextField
-            label="Password"
+            label={t('admin.createDialog.passwordLabel')}
             type="password"
             value={createPassword}
             onChange={(e) => setCreatePassword(e.target.value)}
             fullWidth
             required
             size="small"
-            helperText="Minimum 8 characters"
+            helperText={t('admin.createDialog.passwordHint')}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreateOpen(false)}>Cancel</Button>
+          <Button onClick={() => setCreateOpen(false)}>{t('admin.createDialog.cancel')}</Button>
           <Button
             variant="contained"
             onClick={handleCreateContributor}
             disabled={creating || !createName.trim() || !createEmail.trim() || createPassword.length < 8}
             startIcon={creating ? <CircularProgress size={16} color="inherit" /> : <PersonAdd />}
           >
-            Create Contributor
+            {t('admin.createDialog.create')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -396,14 +398,14 @@ export default function AdminContributorsPage() {
       {/* Add Contributor Dialog */}
       <Dialog open={promoteOpen} onClose={() => { setPromoteOpen(false); setPromoteSelected(null); setPromoteSearch(''); }} maxWidth="sm" fullWidth>
         <DialogTitle>
-          Add Contributor
+          {t('admin.promoteDialog.title')}
           <IconButton onClick={() => { setPromoteOpen(false); setPromoteSelected(null); setPromoteSearch(''); }} sx={{ position: 'absolute', right: 8, top: 8 }}>
             <Close />
           </IconButton>
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Search for an existing user and promote them to the Contributor role. You can grant them place access afterwards.
+            {t('admin.promoteDialog.body')}
           </Typography>
           <Autocomplete<UserOption>
             options={promoteUsers}
@@ -414,9 +416,9 @@ export default function AdminContributorsPage() {
             inputValue={promoteSearch}
             onInputChange={(_, val) => setPromoteSearch(val)}
             filterOptions={(x) => x}
-            noOptionsText={promoteSearch.length < 2 ? 'Type to search users…' : 'No matching users'}
+            noOptionsText={promoteSearch.length < 2 ? t('admin.promoteDialog.typeToSearch') : t('admin.promoteDialog.noMatchingUsers')}
             renderInput={(params) => (
-              <TextField {...params} label="Search users" size="small" fullWidth placeholder="Name or email…" />
+              <TextField {...params} label={t('admin.promoteDialog.searchUsers')} size="small" fullWidth placeholder={t('admin.promoteDialog.searchPlaceholder')} />
             )}
             renderOption={(props, o) => (
               <Box component="li" {...props} key={o.id}>
@@ -433,20 +435,20 @@ export default function AdminContributorsPage() {
           {promoteSelected && (
             <Box sx={{ mt: 2, p: 1.5, bgcolor: 'info.50', borderRadius: 1, border: '1px solid', borderColor: 'info.200' }}>
               <Typography variant="body2">
-                <strong>{promoteSelected.name ?? promoteSelected.email}</strong> will be promoted from <strong>{promoteSelected.role}</strong> to <strong>CONTRIBUTOR</strong>.
+                {t('admin.promoteDialog.willBePromoted', { name: promoteSelected.name ?? promoteSelected.email, from: promoteSelected.role })}
               </Typography>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => { setPromoteOpen(false); setPromoteSelected(null); setPromoteSearch(''); }}>Cancel</Button>
+          <Button onClick={() => { setPromoteOpen(false); setPromoteSelected(null); setPromoteSearch(''); }}>{t('admin.promoteDialog.cancel')}</Button>
           <Button
             variant="contained"
             onClick={handlePromote}
             disabled={promoting || !promoteSelected}
             startIcon={promoting ? <CircularProgress size={16} color="inherit" /> : <PersonAdd />}
           >
-            Make Contributor
+            {t('admin.promoteDialog.makeContributor')}
           </Button>
         </DialogActions>
       </Dialog>

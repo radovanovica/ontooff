@@ -60,7 +60,9 @@
       "continueToMap": "Nastavi na podešavanje mape",
       "replaceImage": "Zameni sliku",
       "uploadImage": "Otpremi sliku",
-      "removeImage": "Ukloni"
+      "removeImage": "Ukloni",
+      "skipMapSetup": "Preskoči — uradiću ovo kasnije",
+      "saveMapAndGo": "Sačuvaj mapu i idi na mesto"
     },
     "mapSetupSuccess": "Mesto je kreirano! Sada podesite pozadinu mape — koristiće se kao osnovna mapa za sve zone lokacija. Ovo možete i kasnije.",
     "mapBackground": "Pozadina mape",

@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { useSession } from 'next-auth/react';
 import PageHeader from '@/components/ui/PageHeader';
+import { useTranslation } from '@/i18n/client';
 
 interface PostRow {
   id: string;
@@ -31,6 +32,7 @@ const STATUS_COLORS: Record<string, 'default' | 'warning' | 'success' | 'error'>
 
 export default function ContributorPostsPage() {
   const { data: session } = useSession();
+  const { t } = useTranslation('blog');
   const [posts, setPosts] = useState<PostRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export default function ContributorPostsPage() {
       setTotal(data.meta?.total ?? 0);
       setTotalPages(data.meta?.totalPages ?? 1);
     } catch {
-      setError('Failed to load posts');
+      setError(t('contributor.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -70,7 +72,7 @@ export default function ContributorPostsPage() {
   }, [fetchPosts]);
 
   const handleDelete = async (slug: string) => {
-    if (!confirm('Delete this post permanently?')) return;
+    if (!confirm(t('contributor.deletePostConfirm'))) return;
     await fetch(`/api/blog/${slug}`, { method: 'DELETE' });
     fetchPosts(page);
   };
@@ -78,8 +80,8 @@ export default function ContributorPostsPage() {
   return (
     <Box>
       <PageHeader
-        title="My Posts"
-        breadcrumbs={[{ label: 'Contributor', href: '/contributor' }, { label: 'Posts' }]}
+        title={t('contributor.myPosts')}
+        breadcrumbs={[{ label: t('contributor.breadcrumbContributor'), href: '/contributor' }, { label: t('contributor.breadcrumbPosts') }]}
         action={
           <Button variant="contained" startIcon={<Add />} component={Link} href="/contributor/posts/new">
             New Post
@@ -91,7 +93,7 @@ export default function ContributorPostsPage() {
         <TextField
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Search posts…"
+          placeholder={t('contributor.searchPosts')}
           size="small"
           sx={{ minWidth: 240 }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
@@ -103,10 +105,10 @@ export default function ContributorPostsPage() {
           size="small"
           sx={{ minWidth: 140 }}
         >
-          <MenuItem value="">All statuses</MenuItem>
-          <MenuItem value="DRAFT">Draft</MenuItem>
-          <MenuItem value="PUBLISHED">Published</MenuItem>
-          <MenuItem value="ARCHIVED">Archived</MenuItem>
+          <MenuItem value="">{t('contributor.allStatuses')}</MenuItem>
+          <MenuItem value="DRAFT">{t('contributor.statusDraft')}</MenuItem>
+          <MenuItem value="PUBLISHED">{t('contributor.statusPublished')}</MenuItem>
+          <MenuItem value="ARCHIVED">{t('contributor.statusArchived')}</MenuItem>
         </Select>
       </Box>
 
@@ -116,12 +118,12 @@ export default function ContributorPostsPage() {
         <Table size="small">
           <TableHead>
             <TableRow sx={{ bgcolor: 'grey.50' }}>
-              <TableCell sx={{ fontWeight: 700 }}>Title</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Category</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Views</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('contributor.postTitle')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('contributor.status')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('contributor.category')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('contributor.views')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('contributor.date')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('contributor.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -134,7 +136,7 @@ export default function ContributorPostsPage() {
             ) : posts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                  <Typography color="text.secondary">No posts found.</Typography>
+                  <Typography color="text.secondary">{t('contributor.noPostsFound')}</Typography>
                 </TableCell>
               </TableRow>
             ) : (
@@ -169,19 +171,19 @@ export default function ContributorPostsPage() {
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
-                      <Tooltip title="Edit">
+                      <Tooltip title={t('contributor.edit')}>
                         <IconButton size="small" component={Link} href={`/contributor/posts/${post.slug}/edit`}>
                           <Edit fontSize="small" />
                         </IconButton>
                       </Tooltip>
                       {post.status === 'PUBLISHED' && (
-                        <Tooltip title="View">
+                        <Tooltip title={t('contributor.view')}>
                           <IconButton size="small" component={Link} href={`/blog/${post.slug}`} target="_blank">
                             <OpenInNew fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       )}
-                      <Tooltip title="Delete">
+                      <Tooltip title={t('contributor.delete')}>
                         <IconButton size="small" color="error" onClick={() => handleDelete(post.slug)}>
                           <Delete fontSize="small" />
                         </IconButton>
@@ -197,7 +199,7 @@ export default function ContributorPostsPage() {
 
       {totalPages > 1 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3, gap: 1 }}>
-          <Typography variant="caption" color="text.secondary">{total} total posts</Typography>
+          <Typography variant="caption" color="text.secondary">{t('contributor.totalPostsCount', { count: total })}</Typography>
           <Pagination
             count={totalPages}
             page={page}

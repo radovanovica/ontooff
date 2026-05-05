@@ -27,7 +27,7 @@ import {
   VisibilityOff,
   Edit,
 } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
@@ -39,28 +39,32 @@ import { format } from 'date-fns';
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
-const profileSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  phone: z.string().optional(),
-});
-
-const passwordSchema = z
-  .object({
-    currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: z
-      .string()
-      .min(8, 'At least 8 characters')
-      .regex(/[A-Z]/, 'Must contain uppercase letter')
-      .regex(/[0-9]/, 'Must contain a number'),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
-  })
-  .refine((d) => d.newPassword === d.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
+function buildProfileSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string().min(2, t('profile.nameMin')),
+    phone: z.string().optional(),
   });
+}
 
-type ProfileFormValues = z.infer<typeof profileSchema>;
-type PasswordFormValues = z.infer<typeof passwordSchema>;
+function buildPasswordSchema(t: (key: string) => string) {
+  return z
+    .object({
+      currentPassword: z.string().min(1, t('profile.currentPasswordRequired')),
+      newPassword: z
+        .string()
+        .min(8, t('resetPassword.passwordMin'))
+        .regex(/[A-Z]/, t('resetPassword.passwordUppercase'))
+        .regex(/[0-9]/, t('resetPassword.passwordNumber')),
+      confirmPassword: z.string().min(1, t('profile.confirmPasswordRequired')),
+    })
+    .refine((d) => d.newPassword === d.confirmPassword, {
+      message: t('resetPassword.passwordMismatch'),
+      path: ['confirmPassword'],
+    });
+}
+
+type ProfileFormValues = { name: string; phone?: string };
+type PasswordFormValues = { currentPassword: string; newPassword: string; confirmPassword: string };
 
 // ─── TabPanel ────────────────────────────────────────────────────────────────
 
@@ -83,6 +87,7 @@ interface UserProfile {
 
 function ProfileTab({ user, onUpdated }: { user: UserProfile; onUpdated: (updated: UserProfile) => void }) {
   const { t } = useTranslation('auth');
+  const profileSchema = useMemo(() => buildProfileSchema(t), [t]);
   const { update } = useSession();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -140,7 +145,7 @@ function ProfileTab({ user, onUpdated }: { user: UserProfile; onUpdated: (update
           <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
             <Chip label={user.role} size="small" color="primary" variant="outlined" />
             {user.emailVerified && (
-              <Chip label="✓ Email verified" size="small" color="success" variant="outlined" />
+              <Chip label={t('profile.emailVerified')} size="small" color="success" variant="outlined" />
             )}
           </Box>
         </Box>
@@ -208,6 +213,7 @@ function ProfileTab({ user, onUpdated }: { user: UserProfile; onUpdated: (update
 
 function ChangePasswordTab() {
   const { t } = useTranslation('auth');
+  const passwordSchema = useMemo(() => buildPasswordSchema(t), [t]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);

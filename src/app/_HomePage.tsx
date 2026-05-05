@@ -525,128 +525,165 @@ export default function HomePage() {
             </Box>
 
             {/* Featured latest post */}
-            <Card
-              elevation={0}
-              sx={{
-                display: 'flex',
-                flexDirection: { xs: 'column', md: 'row' },
-                borderRadius: 3,
-                border: '1px solid',
-                borderColor: 'divider',
-                overflow: 'hidden',
-                mb: 4,
-                bgcolor: 'white',
-                transition: 'box-shadow 0.2s',
-                '&:hover': { boxShadow: 6 },
-              }}
+            <Box
+              component={Link}
+              href={`/blog/${latestPosts[0].slug}`}
+              sx={{ textDecoration: 'none', display: 'block', mb: 4 }}
             >
-              {latestPosts[0].coverUrl && (
+              <Card
+                elevation={0}
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', md: 'row' },
+                  borderRadius: 3,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  overflow: 'hidden',
+                  bgcolor: 'white',
+                  transition: 'box-shadow 0.2s, transform 0.15s',
+                  '&:hover': { boxShadow: 8, transform: 'translateY(-2px)' },
+                }}
+              >
+                {/* Cover or gradient fallback */}
                 <Box
                   sx={{
                     position: 'relative',
-                    width: { xs: '100%', md: '55%' },
-                    height: { xs: 220, md: 400 },
+                    width: { xs: '100%', md: '52%' },
+                    height: { xs: 220, md: 420 },
                     flexShrink: 0,
+                    background: latestPosts[0].coverUrl
+                      ? undefined
+                      : 'linear-gradient(135deg, #1a3d17 0%, #2d5a27 50%, #4a8c40 100%)',
                   }}
                 >
-                  <Image
-                    src={latestPosts[0].coverUrl}
-                    alt={latestPosts[0].title}
-                    fill
-                    unoptimized
-                    sizes="(max-width:900px) 100vw, 55vw"
-                    style={{ objectFit: 'cover' }}
-                  />
-                </Box>
-              )}
-              <Box sx={{ flex: 1, p: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                  {latestPosts[0].category && (
-                    <Chip
-                      label={latestPosts[0].category.name}
-                      size="small"
-                      sx={{
-                        height: 22,
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
-                        ...(latestPosts[0].category.color
-                          ? { bgcolor: latestPosts[0].category.color, color: 'white' }
-                          : { bgcolor: '#2d5a2720', color: '#2d5a27' }),
-                      }}
+                  {latestPosts[0].coverUrl ? (
+                    <Image
+                      src={latestPosts[0].coverUrl}
+                      alt={latestPosts[0].title}
+                      fill
+                      unoptimized
+                      sizes="(max-width:900px) 100vw, 52vw"
+                      style={{ objectFit: 'cover' }}
                     />
+                  ) : (
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                      <Article sx={{ fontSize: 96, color: 'rgba(255,255,255,0.18)' }} />
+                    </Box>
                   )}
-                  {latestPosts[0].publishedAt && (
-                    <Typography variant="caption" color="text.secondary">
-                      {new Date(latestPosts[0].publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    </Typography>
-                  )}
+                  {/* LATEST badge */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 16,
+                      left: 16,
+                      bgcolor: '#2d5a27',
+                      color: 'white',
+                      px: 1.5,
+                      py: 0.4,
+                      borderRadius: 5,
+                      fontSize: '0.7rem',
+                      fontWeight: 800,
+                      letterSpacing: 1,
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {t('home.latestBadge')}
+                  </Box>
                 </Box>
 
-                <Typography
-                  variant="h4"
-                  component="h2"
-                  sx={{
-                    fontWeight: 800,
-                    mb: 2,
-                    lineHeight: 1.25,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                  }}
-                >
-                  {latestPosts[0].title}
-                </Typography>
+                {/* Content */}
+                <Box sx={{ flex: 1, p: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                    {latestPosts[0].category && (
+                      <Chip
+                        label={latestPosts[0].category.name}
+                        size="small"
+                        sx={{
+                          height: 22,
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          ...(latestPosts[0].category.color
+                            ? { bgcolor: latestPosts[0].category.color, color: 'white' }
+                            : { bgcolor: '#2d5a2720', color: '#2d5a27' }),
+                        }}
+                      />
+                    )}
+                    {latestPosts[0].publishedAt && (
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(latestPosts[0].publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      </Typography>
+                    )}
+                  </Box>
 
-                {latestPosts[0].excerpt && (
                   <Typography
-                    variant="body1"
-                    color="text.secondary"
+                    variant="h4"
+                    component="h2"
                     sx={{
-                      mb: 3,
-                      lineHeight: 1.7,
+                      fontWeight: 800,
+                      mb: 2,
+                      lineHeight: 1.25,
+                      color: 'text.primary',
                       display: '-webkit-box',
-                      WebkitLineClamp: 4,
+                      WebkitLineClamp: 3,
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
                     }}
                   >
-                    {latestPosts[0].excerpt}
+                    {latestPosts[0].title}
                   </Typography>
-                )}
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <Avatar sx={{ width: 28, height: 28, fontSize: '0.8rem', bgcolor: '#2d5a27' }}>
-                      {latestPosts[0].author.name?.charAt(0) ?? 'A'}
-                    </Avatar>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{latestPosts[0].author.name}</Typography>
-                  </Box>
-                  {latestPosts[0].readingTimeMinutes && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
-                      <AccessTime sx={{ fontSize: '0.9rem', color: 'text.secondary' }} />
-                      <Typography variant="caption" color="text.secondary">{latestPosts[0].readingTimeMinutes} min read</Typography>
-                    </Box>
+                  {latestPosts[0].excerpt && (
+                    <Typography
+                      variant="body1"
+                      color="text.secondary"
+                      sx={{
+                        mb: 3,
+                        lineHeight: 1.7,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 4,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {latestPosts[0].excerpt}
+                    </Typography>
                   )}
-                </Box>
 
-                <Button
-                  component={Link}
-                  href={`/blog/${latestPosts[0].slug}`}
-                  variant="contained"
-                  sx={{
-                    alignSelf: 'flex-start',
-                    bgcolor: '#2d5a27',
-                    fontWeight: 700,
-                    borderRadius: 2,
-                    px: 3,
-                    '&:hover': { bgcolor: '#1e3d1a' },
-                  }}
-                >
-                  {t('home.readMore', 'Read more →')}
-                </Button>
-              </Box>
-            </Card>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <Avatar sx={{ width: 28, height: 28, fontSize: '0.8rem', bgcolor: '#2d5a27' }}>
+                        {latestPosts[0].author.name?.charAt(0) ?? 'A'}
+                      </Avatar>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{latestPosts[0].author.name}</Typography>
+                    </Box>
+                    {latestPosts[0].readingTimeMinutes && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                        <AccessTime sx={{ fontSize: '0.9rem', color: 'text.secondary' }} />
+                        <Typography variant="caption" color="text.secondary">{latestPosts[0].readingTimeMinutes} {t('home.minRead')}</Typography>
+                      </Box>
+                    )}
+                  </Box>
+
+                  <Box
+                    sx={{
+                      alignSelf: 'flex-start',
+                      bgcolor: '#2d5a27',
+                      color: 'white',
+                      fontWeight: 700,
+                      borderRadius: 2,
+                      px: 3,
+                      py: 1,
+                      fontSize: '0.875rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                    }}
+                  >
+                    {t('home.readMore', 'Read more →')}
+                  </Box>
+                </Box>
+              </Card>
+            </Box>
 
             {/* 3 smaller cards */}
             {latestPosts.length > 1 && (

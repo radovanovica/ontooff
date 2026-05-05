@@ -11,6 +11,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import Navbar from '@/components/layout/Navbar';
+import { useTranslation } from '@/i18n/client';
 
 interface Category { id: string; name: string; slug: string; color: string | null; _count: { posts: number } }
 interface Post {
@@ -28,6 +29,7 @@ interface Post {
 }
 
 function BlogContent() {
+  const { t } = useTranslation('blog');
   const router = useRouter();
   const searchParams = useSearchParams();
   const categoryFilter = searchParams.get('category') ?? '';
@@ -55,7 +57,7 @@ function BlogContent() {
       setTotal(data.meta?.total ?? 0);
       setTotalPages(data.meta?.totalPages ?? 1);
     } catch {
-      setError('Failed to load posts');
+      setError(t('loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -85,10 +87,10 @@ function BlogContent() {
         {/* Hero */}
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography variant="h3" sx={{ fontWeight: 800, mb: 1.5 }}>
-            Blog & Stories
+            {t('pageTitle')}
           </Typography>
           <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 560, mx: 'auto' }}>
-            Guides, tips and stories from nature enthusiasts and outdoor explorers.
+            {t('pageSubtitle')}
           </Typography>
         </Box>
 
@@ -97,7 +99,7 @@ function BlogContent() {
           <TextField
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Search posts…"
+            placeholder={t('searchPlaceholder')}
             size="small"
             sx={{ minWidth: 260 }}
             slotProps={{
@@ -110,7 +112,7 @@ function BlogContent() {
         {categories.length > 0 && (
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', mb: 4 }}>
             <Chip
-              label="All"
+              label={t('allCategories')}
               onClick={() => setFilter('category', '')}
               variant={!categoryFilter ? 'filled' : 'outlined'}
               color="primary"
@@ -135,7 +137,7 @@ function BlogContent() {
 
         {tagFilter && (
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-            <Chip label={`Tag: ${tagFilter}`} onDelete={() => setFilter('tag', '')} color="default" />
+            <Chip label={t('tagPrefix', { tag: tagFilter })} onDelete={() => setFilter('tag', '')} color="default" />
           </Box>
         )}
 
@@ -147,7 +149,7 @@ function BlogContent() {
           </Box>
         ) : posts.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
-            <Typography color="text.secondary">No posts found.</Typography>
+            <Typography color="text.secondary">{t('noPostsFound')}</Typography>
           </Box>
         ) : (
           <>
@@ -246,7 +248,7 @@ function BlogContent() {
 
             {totalPages > 1 && (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 5, gap: 1 }}>
-                <Typography variant="caption" color="text.secondary">{total} posts</Typography>
+                <Typography variant="caption" color="text.secondary">{t('totalPostsCount', { count: total })}</Typography>
                 <Pagination
                   count={totalPages}
                   page={page}

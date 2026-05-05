@@ -46,10 +46,9 @@ import Navbar from '@/components/layout/Navbar';
 import { useTranslation } from '@/i18n/client';
 import { useSession } from 'next-auth/react';
 
-// Dynamically import the interactive map (no SSR)
-const SearchMap = dynamic(() => import('@/components/map/SearchMap'), {
-  ssr: false,
-  loading: () => (
+function MapLoadingFallback() {
+  const { t } = useTranslation('common');
+  return (
     <Box
       sx={{
         width: '100%',
@@ -61,9 +60,15 @@ const SearchMap = dynamic(() => import('@/components/map/SearchMap'), {
         borderRadius: 2,
       }}
     >
-      <Typography color="text.secondary">Loading map…</Typography>
+      <Typography color="text.secondary">{t('common.loadingMap')}</Typography>
     </Box>
-  ),
+  );
+}
+
+// Dynamically import the interactive map (no SSR)
+const SearchMap = dynamic(() => import('@/components/map/SearchMap'), {
+  ssr: false,
+  loading: () => <MapLoadingFallback />,
 });
 
 // ── Types ──────────────────────────────────────────────────────────────────

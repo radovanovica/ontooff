@@ -31,7 +31,7 @@ function VerifyEmailPageContent() {
   useEffect(() => {
     if (!token) {
       setStatus('error');
-      setMessage('No token provided');
+      setMessage(t('verifyEmail.noToken'));
       return;
     }
     fetch(`/api/auth/verify-email?token=${token}`)
@@ -41,12 +41,12 @@ function VerifyEmailPageContent() {
           setStatus('success');
         } else {
           setStatus('error');
-          setMessage(data.error ?? 'Verification failed');
+          setMessage(data.error ?? t('verifyEmail.verificationFailed'));
         }
       })
       .catch(() => {
         setStatus('error');
-        setMessage('An error occurred');
+        setMessage(t('verifyEmail.error'));
       });
   }, [token]);
 

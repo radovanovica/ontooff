@@ -79,7 +79,13 @@
     },
     "orgCta": "Nudite aktivnosti u prirodi?",
     "orgCtaLink": "Registrujte svoju organizaciju →",
-    "ctaOrgButton": "Registrujte organizaciju"
+    "ctaOrgButton": "Registrujte organizaciju",
+    "latestBlog": "Iz Bloga",
+    "latestBlogSub": "Savjeti, vodiči i priče naše zajednice.",
+    "viewAllPosts": "Pogledaj sve objave →",
+    "readMore": "Pročitaj više →",
+    "latestBadge": "Najnovije",
+    "minRead": "min čitanja"
   },
   "common": {
     "save": "Sačuvaj",
@@ -99,6 +105,7 @@
     "yes": "Da",
     "no": "Ne",
     "loading": "Učitavanje…",
+    "loadingMap": "Učitavanje mape…",
     "saving": "Čuvanje…",
     "deleting": "Brisanje…",
     "processing": "Obrada…",
@@ -252,5 +259,41 @@
     "timeslotRequired": "Molimo izaberite termin",
     "checkingAvailability": "Proveravam dostupnost mesta…",
     "activity": "Aktivnost"
+  },
+  "places": {
+    "backToSearch": "Nazad na pretragu",
+    "goBack": "Idi nazad",
+    "about": "O lokaciji",
+    "activities": "Aktivnosti",
+    "book": "Rezerviši",
+    "filterBookingHint": "Kliknite aktivnost za filtriranje widget-a za rezervaciju",
+    "bookASpot": "Rezervišite",
+    "noBookingAvailable": "Online rezervacija još nije dostupna za ovo mesto. Kontaktirajte ih direktno.",
+    "noLocationsFound": "Nema aktivnih lokacija. Dodajte lokaciju i mjesta u kontrolnoj tabli vlasnika.",
+    "reviews": "Recenzije",
+    "writeReview": "Napišite recenziju",
+    "hideReviewForm": "Sakrij formu",
+    "review_one": "recenzija",
+    "review_other": "recenzija"
+  },
+  "locations": {
+    "backToSearch": "Nazad na pretragu",
+    "about": "O lokaciji",
+    "howToFind": "Kako pronaći nas",
+    "photos": "Fotografije",
+    "viewAllPhotos": "Pogledaj svih {{count}} fotografija",
+    "locationOnMap": "Lokacija na mapi",
+    "contactAndInfo": "Kontakt i info",
+    "address": "Adresa",
+    "phone": "Telefon",
+    "email": "Email",
+    "website": "Veb sajt",
+    "categories": "Kategorije",
+    "communityLocationNotice": "Ovo je besplatna lokacija zajednice — rezervacija nije potrebna.",
+    "reviews": "Recenzije",
+    "writeReview": "Napišite recenziju",
+    "hideReviewForm": "Sakrij formu",
+    "review_one": "recenzija",
+    "review_other": "recenzija"
   }
 }

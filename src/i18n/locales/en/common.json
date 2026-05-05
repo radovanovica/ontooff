@@ -79,7 +79,13 @@
     },
     "orgCta": "Do you offer outdoor activities?",
     "orgCtaLink": "Register your organization →",
-    "ctaOrgButton": "Register Organization"
+    "ctaOrgButton": "Register Organization",
+    "latestBlog": "From the Blog",
+    "latestBlogSub": "Tips, guides and stories from our community.",
+    "viewAllPosts": "View all posts →",
+    "readMore": "Read more →",
+    "latestBadge": "Latest",
+    "minRead": "min read"
   },
   "common": {
     "save": "Save",
@@ -99,6 +105,7 @@
     "yes": "Yes",
     "no": "No",
     "loading": "Loading…",
+    "loadingMap": "Loading map…",
     "saving": "Saving…",
     "deleting": "Deleting…",
     "processing": "Processing…",
@@ -252,5 +259,41 @@
     "timeslotRequired": "Please select a timeslot",
     "checkingAvailability": "Checking spot availability…",
     "activity": "Activity"
+  },
+  "places": {
+    "backToSearch": "Back to Search",
+    "goBack": "Go Back",
+    "about": "About",
+    "activities": "Activities",
+    "book": "Book",
+    "filterBookingHint": "Click an activity to filter the booking widget",
+    "bookASpot": "Book a Spot",
+    "noBookingAvailable": "Online booking is not available for this place yet. Please contact them directly.",
+    "noLocationsFound": "No active locations found. Please add a location and spots in the owner dashboard.",
+    "reviews": "Reviews",
+    "writeReview": "Write a Review",
+    "hideReviewForm": "Hide form",
+    "review_one": "review",
+    "review_other": "reviews"
+  },
+  "locations": {
+    "backToSearch": "Back to Search",
+    "about": "About",
+    "howToFind": "How to Find It",
+    "photos": "Photos",
+    "viewAllPhotos": "View all {{count}} photos",
+    "locationOnMap": "Location on Map",
+    "contactAndInfo": "Contact & Info",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "website": "Website",
+    "categories": "Categories",
+    "communityLocationNotice": "This is a free community location — no booking required.",
+    "reviews": "Reviews",
+    "writeReview": "Write a Review",
+    "hideReviewForm": "Hide form",
+    "review_one": "review",
+    "review_other": "reviews"
   }
 }

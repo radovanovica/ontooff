@@ -10,7 +10,9 @@ import { AccessTime, Visibility, CalendarToday, Place as PlaceIcon } from '@mui/
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/layout/Navbar';
+import InstagramStoryShare from '@/components/blog/InstagramStoryShare';
 import type { Metadata } from 'next';
+import { getTranslation } from '@/i18n/server';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.ontooff.app';
 
@@ -78,6 +80,8 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
+  const { t } = await getTranslation('en', 'blog');
+
   // Fire-and-forget view count increment
   prisma.blogPost
     .update({ where: { slug }, data: { viewCount: { increment: 1 } } })
@@ -90,8 +94,8 @@ export default async function BlogPostPage({ params }: Props) {
         {/* Draft / archived preview banner */}
         {post.status !== 'PUBLISHED' && (
           <Alert severity="warning" sx={{ mb: 4, borderRadius: 2 }}>
-            <strong>Preview mode:</strong> This post is{' '}
-            <strong>{post.status}</strong> and not visible to the public.
+            <strong>{t('previewMode')}:</strong>{' '}
+            {t('previewModeNotice', { status: post.status === 'DRAFT' ? t('draft') : t('archived') })}
           </Alert>
         )}
         {/* Category + tags */}
@@ -150,15 +154,28 @@ export default async function BlogPostPage({ params }: Props) {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <AccessTime sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
               <Typography variant="body2" color="text.secondary">
-                {post.readingTimeMinutes} min read
+                {post.readingTimeMinutes} {t('minRead')}
               </Typography>
             </Box>
           )}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Visibility sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
             <Typography variant="body2" color="text.secondary">
-              {post.viewCount} views
+              {post.viewCount} {t('views')}
             </Typography>
+          </Box>
+          {/* Share buttons */}
+          <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+            <InstagramStoryShare
+              title={post.title}
+              excerpt={post.excerpt}
+              category={post.category?.name}
+              categoryColor={post.category?.color}
+              coverUrl={post.coverUrl}
+              slug={post.slug}
+              authorName={post.author.name}
+              readingTimeMinutes={post.readingTimeMinutes}
+            />
           </Box>
         </Box>
 

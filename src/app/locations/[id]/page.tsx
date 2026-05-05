@@ -40,6 +40,8 @@ import dynamic from 'next/dynamic';
 import Navbar from '@/components/layout/Navbar';
 import ReviewList from '@/components/reviews/ReviewList';
 import ReviewForm from '@/components/reviews/ReviewForm';
+import InstagramStoryShare from '@/components/blog/InstagramStoryShare';
+import { useTranslation } from '@/i18n/client';
 import type { ActivityTag } from '@/types';
 
 const LocationMap = dynamic(
@@ -70,6 +72,7 @@ interface FreeLocationDetail {
 }
 
 function LocationContent() {
+  const { t } = useTranslation('common');
   const params = useParams<{ id: string }>();
   const slug = params.id;
 
@@ -118,7 +121,7 @@ function LocationContent() {
       <Container maxWidth="md" sx={{ py: 8 }}>
         <Alert severity="error">{error ?? 'Location not found'}</Alert>
         <Button component={Link} href="/search" startIcon={<ArrowBack />} sx={{ mt: 2 }}>
-          Back to Search
+          {t('locations.backToSearch')}
         </Button>
       </Container>
     );
@@ -196,7 +199,7 @@ function LocationContent() {
                 emptyIcon={<Star fontSize="inherit" sx={{ color: 'rgba(255,255,255,0.3)' }} />}
               />
               <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
-                {reviewMeta.averageRating?.toFixed(1)} · {reviewMeta.totalRatings} {reviewMeta.totalRatings === 1 ? 'review' : 'reviews'}
+                {reviewMeta.averageRating?.toFixed(1)} · {t('locations.review', { count: reviewMeta.totalRatings })}
               </Typography>
             </Box>
           )}
@@ -204,16 +207,27 @@ function LocationContent() {
       </Box>
 
       <Container maxWidth="lg" sx={{ py: 5 }}>
-        <Button
-          component={Link}
-          href="/search"
-          startIcon={<ArrowBack />}
-          variant="outlined"
-          size="small"
-          sx={{ mb: 3 }}
-        >
-          Back to Search
-        </Button>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Button
+            component={Link}
+            href="/search"
+            startIcon={<ArrowBack />}
+            variant="outlined"
+            size="small"
+          >
+            {t('locations.backToSearch')}
+          </Button>
+          <InstagramStoryShare
+            title={location.name}
+            excerpt={location.description}
+            category={location.tags[0]?.tag.name}
+            categoryColor={location.tags[0]?.tag.color}
+            coverUrl={coverImage}
+            slug={location.slug}
+            pageUrl={`https://ontooff.com/locations/${location.slug}`}
+            subtitle={[location.city, location.country].filter(Boolean).join(', ') || undefined}
+          />
+        </Box>
 
         <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
           {/* Left column: info */}
@@ -221,7 +235,7 @@ function LocationContent() {
             {/* Description */}
             {location.description && (
               <Paper elevation={1} sx={{ p: 3, borderRadius: 3, mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>About</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>{t('locations.about')}</Typography>
                 <Typography variant="body1" sx={{ whiteSpace: 'pre-line', color: 'text.secondary' }}>
                   {location.description}
                 </Typography>
@@ -233,7 +247,7 @@ function LocationContent() {
               <Paper elevation={1} sx={{ p: 3, borderRadius: 3, mb: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                   <Info color="info" />
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>How to Find It</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('locations.howToFind')}</Typography>
                 </Box>
                 <Typography variant="body2" sx={{ whiteSpace: 'pre-line', color: 'text.secondary' }}>
                   {location.instructions}
@@ -245,7 +259,7 @@ function LocationContent() {
             {galleryImages.length > 0 && (
               <Paper elevation={1} sx={{ p: 3, borderRadius: 3, mb: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>Photos</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('locations.photos')}</Typography>
                   {galleryImages.length > 3 && (
                     <Button
                       size="small"
@@ -253,7 +267,7 @@ function LocationContent() {
                       onClick={() => { setLightboxIdx(0); setLightboxOpen(true); }}
                       sx={{ color: '#7b3f00' }}
                     >
-                      View all {galleryImages.length} photos
+                      {t('locations.viewAllPhotos', { count: galleryImages.length })}
                     </Button>
                   )}
                 </Box>
@@ -440,7 +454,7 @@ function LocationContent() {
             {/* Map */}
             {location.latitude != null && location.longitude != null && (
               <Paper elevation={1} sx={{ p: 3, borderRadius: 3, mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Location on Map</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{t('locations.locationOnMap')}</Typography>
                 <Box sx={{ borderRadius: 2, overflow: 'hidden' }}>
                   <LocationMap
                     pins={[{
@@ -462,14 +476,14 @@ function LocationContent() {
           {/* Right column: contact info */}
           <Box sx={{ width: { xs: '100%', md: 300 }, flexShrink: 0 }}>
             <Paper elevation={2} sx={{ p: 3, borderRadius: 3, mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Contact & Info</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{t('locations.contactAndInfo')}</Typography>
               <Divider sx={{ mb: 2 }} />
 
               {location.address && (
                 <Box sx={{ display: 'flex', gap: 1.5, mb: 2, alignItems: 'flex-start' }}>
                   <LocationOn sx={{ color: 'text.secondary', mt: 0.3, fontSize: 20 }} />
                   <Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.25 }}>Address</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.25 }}>{t('locations.address')}</Typography>
                     <Typography variant="body2">
                       {[location.address, location.city, location.country].filter(Boolean).join(', ')}
                     </Typography>
@@ -481,7 +495,7 @@ function LocationContent() {
                 <Box sx={{ display: 'flex', gap: 1.5, mb: 2, alignItems: 'center' }}>
                   <Phone sx={{ color: 'text.secondary', fontSize: 20 }} />
                   <Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.25 }}>Phone</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.25 }}>{t('locations.phone')}</Typography>
                     <Typography variant="body2" component="a" href={`tel:${location.phone}`} sx={{ color: 'inherit', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
                       {location.phone}
                     </Typography>
@@ -493,7 +507,7 @@ function LocationContent() {
                 <Box sx={{ display: 'flex', gap: 1.5, mb: 2, alignItems: 'center' }}>
                   <Email sx={{ color: 'text.secondary', fontSize: 20 }} />
                   <Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.25 }}>Email</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.25 }}>{t('locations.email')}</Typography>
                     <Typography variant="body2" component="a" href={`mailto:${location.email}`} sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
                       {location.email}
                     </Typography>
@@ -505,7 +519,7 @@ function LocationContent() {
                 <Box sx={{ display: 'flex', gap: 1.5, mb: 2, alignItems: 'center' }}>
                   <Language sx={{ color: 'text.secondary', fontSize: 20 }} />
                   <Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.25 }}>Website</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.25 }}>{t('locations.website')}</Typography>
                     <Typography variant="body2" component="a" href={location.website} target="_blank" rel="noopener noreferrer" sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
                       {location.website.replace(/^https?:\/\//, '')}
                     </Typography>
@@ -518,7 +532,7 @@ function LocationContent() {
                 <>
                   <Divider sx={{ mb: 2 }} />
                   <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 1 }}>
-                    Categories
+                    {t('locations.categories')}
                   </Typography>
                   <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75 }}>
                     {location.tags.map(({ tag }) => (
@@ -540,7 +554,7 @@ function LocationContent() {
               <Divider sx={{ mt: 2, mb: 2 }} />
               <Alert severity="info" icon={<Public />} sx={{ mt: 1 }}>
                 <Typography variant="caption">
-                  This is a <strong>free community location</strong> — no booking required.
+                  {t('locations.communityLocationNotice')}
                 </Typography>
               </Alert>
             </Paper>
@@ -550,14 +564,14 @@ function LocationContent() {
         {/* Reviews section */}
         <Box sx={{ mt: 5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>Reviews</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>{t('locations.reviews')}</Typography>
             <Button
               variant="outlined"
               size="small"
               startIcon={<RateReview />}
               onClick={() => setShowReviewForm((p) => !p)}
             >
-              {showReviewForm ? 'Hide form' : 'Write a Review'}
+              {showReviewForm ? t('locations.hideReviewForm') : t('locations.writeReview')}
             </Button>
           </Box>
           {showReviewForm && (

@@ -22,44 +22,60 @@ const FROM = process.env.EMAIL_FROM ?? 'ontooff <no-reply@localhost>';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? 'ontooff';
 
-function baseTemplate(content: string): string {
-  return `
-<!DOCTYPE html>
-<html lang="en">
+function baseTemplate(content: string, preheader = ''): string {
+  return `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>${APP_NAME}</title>
+  <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
 </head>
-<body style="margin:0;padding:0;background:#f5f0eb;font-family:'Segoe UI',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0eb;padding:40px 0;">
+<body style="margin:0;padding:0;background-color:#f2ede8;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${preheader}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>` : ''}
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f2ede8;">
     <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+      <td align="center" style="padding:40px 16px;">
+        <!--[if mso]><table role="presentation" width="600"><tr><td><![endif]-->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e0d8d0;">
+          
           <!-- Header -->
           <tr>
-            <td style="background:linear-gradient(135deg,#2d5a27 0%,#4a7c59 100%);padding:28px 40px;text-align:center;">
-              <img src="${APP_URL}/assets/images/logo.svg" alt="${APP_NAME}" width="48" height="48" style="display:block;margin:0 auto 10px;" />
-              <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:800;letter-spacing:1px;text-transform:lowercase;">🌿 ${APP_NAME}</h1>
-              <p style="color:rgba(255,255,255,0.75);margin:4px 0 0;font-size:13px;letter-spacing:0.5px;">book nature activities</p>
+            <td style="background-color:#2d5a27;padding:32px 48px;text-align:center;">
+              <img src="${APP_URL}/assets/images/logo.svg" alt="${APP_NAME}" width="44" height="44" style="display:block;margin:0 auto 14px;border:0;" />
+              <h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">${APP_NAME}</h1>
+              <p style="color:rgba(255,255,255,0.65);margin:6px 0 0;font-size:12px;letter-spacing:1px;text-transform:uppercase;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">Book Nature Activities</p>
             </td>
           </tr>
+
+          <!-- Divider line -->
+          <tr>
+            <td style="background-color:#4a7c59;height:3px;font-size:0;line-height:0;">&nbsp;</td>
+          </tr>
+
           <!-- Body -->
           <tr>
-            <td style="padding:40px;">
+            <td style="padding:48px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
               ${content}
             </td>
           </tr>
+
           <!-- Footer -->
           <tr>
-            <td style="background:#f5f0eb;padding:24px 40px;text-align:center;border-top:1px solid #e8e0d8;">
-              <p style="color:#8b7355;font-size:13px;margin:0;">
-                © ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.<br/>
-                <a href="${APP_URL}" style="color:#4a7c59;text-decoration:none;">${APP_URL}</a>
+            <td style="background-color:#f7f4f1;border-top:1px solid #e0d8d0;padding:28px 48px;text-align:center;">
+              <p style="color:#9e8e7e;font-size:12px;line-height:1.7;margin:0 0 8px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+                You received this email because you have an account with<br/>
+                <a href="${APP_URL}" style="color:#4a7c59;text-decoration:none;font-weight:600;">${APP_NAME}</a>
+              </p>
+              <p style="color:#b8a898;font-size:11px;margin:0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+                &copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.
               </p>
             </td>
           </tr>
+
         </table>
+        <!--[if mso]></td></tr></table><![endif]-->
       </td>
     </tr>
   </table>
@@ -67,8 +83,57 @@ function baseTemplate(content: string): string {
 </html>`;
 }
 
+/** Primary CTA button */
+function btn(label: string, url: string, bg = '#2d5a27'): string {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:28px auto 0;">
+    <tr>
+      <td style="border-radius:6px;background-color:${bg};">
+        <a href="${url}" target="_blank" style="display:inline-block;padding:14px 36px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:6px;letter-spacing:0.3px;">${label}</a>
+      </td>
+    </tr>
+  </table>`;
+}
+
+/** Secondary (outlined) button */
+function btnOutline(label: string, url: string, color = '#2d5a27'): string {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:12px auto 0;">
+    <tr>
+      <td style="border-radius:6px;border:2px solid ${color};">
+        <a href="${url}" target="_blank" style="display:inline-block;padding:12px 34px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;color:${color};text-decoration:none;border-radius:4px;letter-spacing:0.3px;">${label}</a>
+      </td>
+    </tr>
+  </table>`;
+}
+
+/** Inline detail row for info boxes */
+function detailRow(label: string, value: string): string {
+  return `<tr>
+    <td style="padding:6px 0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:#6b6056;white-space:nowrap;vertical-align:top;padding-right:16px;"><strong>${label}</strong></td>
+    <td style="padding:6px 0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:#3a3228;vertical-align:top;">${value}</td>
+  </tr>`;
+}
+
+/** Info card wrapper */
+function infoCard(rows: string, accent = '#2d5a27'): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e0d8d0;border-left:4px solid ${accent};border-radius:6px;margin:24px 0 0;">
+    <tr>
+      <td style="padding:20px 24px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+          ${rows}
+        </table>
+      </td>
+    </tr>
+  </table>`;
+}
+
+/** Section heading (replaces emoji-heavy h3) */
+function sectionHeading(text: string): string {
+  return `<p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;color:#9e8e7e;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 12px;">${text}</p>`;
+}
+
+// Keep legacy btnStyle for existing callers (will be phased out below)
 function btnStyle(bg = '#2d5a27'): string {
-  return `display:inline-block;padding:14px 32px;background:${bg};color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;margin:24px 0;`;
+  return `display:inline-block;padding:14px 32px;background:${bg};color:#ffffff;text-decoration:none;border-radius:6px;font-weight:600;font-size:15px;`;
 }
 
 // ─────────────────────────────────────────
@@ -78,19 +143,23 @@ function btnStyle(bg = '#2d5a27'): string {
 export async function sendVerificationEmail(email: string, token: string, name: string): Promise<void> {
   const url = `${APP_URL}/auth/verify-email?token=${token}`;
   const html = baseTemplate(`
-    <h2 style="color:#2d5a27;margin:0 0 16px;">Welcome, ${name}! 🌿</h2>
-    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      Thanks for creating an account with <strong>${APP_NAME}</strong>. 
-      Please verify your email address to get started.
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:#2d3a2e;margin:0 0 16px;">Verify your email address</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 20px;">
+      Hi <strong>${name}</strong>,
     </p>
-    <div style="text-align:center;">
-      <a href="${url}" style="${btnStyle()}">Verify Email Address</a>
-    </div>
-    <p style="color:#8b7355;font-size:13px;text-align:center;">
-      This link expires in 24 hours. If you did not create an account, you can ignore this email.
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 28px;">
+      Thank you for creating an account with <strong>${APP_NAME}</strong>. To complete your registration
+      and activate your account, please verify your email address by clicking the button below.
     </p>
-  `);
-  await transporter.sendMail({ from: FROM, to: email, subject: `Verify your email – ${APP_NAME}`, html });
+    ${btn('Verify Email Address', url)}
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:#9e8e7e;text-align:center;margin:28px 0 0;line-height:1.6;">
+      This link expires in <strong>24 hours</strong>.<br/>
+      If you did not create an account, no action is required &mdash; you can safely ignore this email.
+    </p>
+    <hr style="border:none;border-top:1px solid #e0d8d0;margin:32px 0 0;" />
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:#b8a898;margin:16px 0 0;">If the button doesn&rsquo;t work, copy and paste this URL into your browser:<br/><a href="${url}" style="color:#4a7c59;word-break:break-all;text-decoration:none;">${url}</a></p>
+  `, `Verify your ${APP_NAME} account &mdash; please confirm your email address.`);
+  await transporter.sendMail({ from: FROM, to: email, subject: `Please verify your email address – ${APP_NAME}`, html });
 }
 
 // ─────────────────────────────────────────
@@ -99,16 +168,22 @@ export async function sendVerificationEmail(email: string, token: string, name: 
 
 export async function sendWelcomeEmail(email: string, name: string): Promise<void> {
   const html = baseTemplate(`
-    <h2 style="color:#2d5a27;margin:0 0 16px;">Welcome to ${APP_NAME}! 🌲</h2>
-    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      Hi <strong>${name}</strong>,<br/><br/>
-      Your account is ready. You can now browse activities, find the perfect spot, and make reservations.
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:#2d3a2e;margin:0 0 16px;">Welcome to ${APP_NAME}</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 20px;">Hi <strong>${name}</strong>,</p>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 8px;">
+      Your account is active and ready to use. You can now:
     </p>
-    <div style="text-align:center;">
-      <a href="${APP_URL}" style="${btnStyle()}">Start Exploring</a>
-    </div>
-  `);
-  await transporter.sendMail({ from: FROM, to: email, subject: `Welcome to ${APP_NAME}! 🌿`, html });
+    <ul style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.8;margin:0 0 28px;padding-left:20px;">
+      <li>Browse outdoor activities and nature spots</li>
+      <li>Choose your preferred location on an interactive map</li>
+      <li>Complete a reservation in just a few steps</li>
+    </ul>
+    ${btn('Explore Activities', APP_URL)}
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:#9e8e7e;text-align:center;margin:28px 0 0;">
+      If you have any questions, simply reply to this email.
+    </p>
+  `, `Welcome! Your ${APP_NAME} account is ready.`);
+  await transporter.sendMail({ from: FROM, to: email, subject: `Welcome to ${APP_NAME} – your account is ready`, html });
 }
 
 // ─────────────────────────────────────────
@@ -140,69 +215,52 @@ export async function sendRegistrationConfirmation(
 ): Promise<void> {
   const editUrl = `${APP_URL}/registration/edit/${data.editToken}`;
 
-  const spotsHtml = data.spotNames.length
-    ? `<p style="color:#4a4a4a;font-size:14px;"><strong>📍 Spot(s):</strong> ${data.spotNames.join(', ')}</p>`
+  const breakdownRows = data.paymentBreakdown
+    ? data.paymentBreakdown.map((item) => detailRow(item.label, `${data.currency} ${Number(item.totalPrice).toFixed(2)}`)).join('')
     : '';
 
   const paymentHtml = data.requiresPayment
-    ? `
-    <div style="background:#f5f0eb;border-radius:8px;padding:20px;margin:20px 0;">
-      <h3 style="color:#2d5a27;margin:0 0 12px;font-size:16px;">💰 Payment Summary</h3>
-      ${
-        data.paymentBreakdown
-          ? data.paymentBreakdown
-              .map(
-                (item) =>
-                  `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;display:flex;justify-content:space-between;">
-                    <span>${item.label}</span>
-                    <strong>${data.currency} ${Number(item.totalPrice).toFixed(2)}</strong>
-                  </p>`
-              )
-              .join('')
-          : ''
-      }
-      <hr style="border:none;border-top:1px solid #d4c8b8;margin:12px 0;" />
-      <p style="color:#2d5a27;font-size:16px;font-weight:700;margin:0;display:flex;justify-content:space-between;">
-        <span>Total</span>
-        <span>${data.currency} ${Number(data.totalAmount ?? 0).toFixed(2)}</span>
-      </p>
-      <p style="color:#8b7355;font-size:13px;margin:8px 0 0;">Payment method: <strong>${data.paymentMethod}</strong></p>
-    </div>`
-    : '<p style="color:#4a7c59;font-size:14px;">✅ This activity is free of charge.</p>';
+    ? `<p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;color:#9e8e7e;text-transform:uppercase;letter-spacing:1.5px;margin:24px 0 12px;">Payment Summary</p>
+    ${infoCard(
+      breakdownRows +
+      `<tr><td colspan="2" style="padding:6px 0;border-top:1px solid #e0d8d0;font-size:0;">&nbsp;</td></tr>` +
+      detailRow('<strong>Total</strong>', `<strong>${data.currency} ${Number(data.totalAmount ?? 0).toFixed(2)}</strong>`) +
+      (data.paymentMethod ? detailRow('Payment Method', data.paymentMethod) : '')
+    )}`
+    : `<p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:#4a7c59;margin:24px 0 0;">This activity is free of charge.</p>`;
 
   const html = baseTemplate(`
-    <h2 style="color:#2d5a27;margin:0 0 8px;">Booking Confirmed! 🎉</h2>
-    <p style="color:#8b7355;font-size:14px;margin:0 0 24px;">Reservation #${data.registrationNumber}</p>
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:#2d3a2e;margin:0 0 6px;">Booking Confirmed</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;color:#9e8e7e;letter-spacing:0.5px;text-transform:uppercase;margin:0 0 28px;">Reservation #${data.registrationNumber}</p>
 
-    <div style="background:#f0f7f0;border-left:4px solid #2d5a27;border-radius:4px;padding:20px;margin:0 0 24px;">
-      <p style="color:#4a4a4a;font-size:14px;margin:0 0 8px;"><strong>🌿 Activity:</strong> ${data.activityName}</p>
-      <p style="color:#4a4a4a;font-size:14px;margin:0 0 8px;"><strong>📍 Location:</strong> ${data.locationName} – ${data.placeName}</p>
-      <p style="color:#4a4a4a;font-size:14px;margin:0 0 8px;"><strong>📅 Dates:</strong> ${data.startDate} → ${data.endDate} (${data.numberOfDays} day${data.numberOfDays > 1 ? 's' : ''})</p>
-      ${spotsHtml}
-      <p style="color:#4a4a4a;font-size:14px;margin:0;"><strong>👥 Guests:</strong> ${data.guestSummary}</p>
-    </div>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 24px;">Hi <strong>${data.firstName}</strong>, your reservation has been received and confirmed. Please keep this email for your records.</p>
+
+    ${infoCard(
+      detailRow('Activity', data.activityName) +
+      detailRow('Location', `${data.locationName} &mdash; ${data.placeName}`) +
+      detailRow('Dates', `${data.startDate} &ndash; ${data.endDate} (${data.numberOfDays} day${data.numberOfDays > 1 ? 's' : ''})`) +
+      (data.spotNames.length ? detailRow('Spot(s)', data.spotNames.join(', ')) : '') +
+      detailRow('Guests', data.guestSummary)
+    )}
 
     ${paymentHtml}
 
-    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      You can view or edit your reservation at any time using the link below.
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:28px 0 0;">You can view or manage your reservation at any time using the secure link below.</p>
+    ${btn('View My Reservation', editUrl)}
+    <hr style="border:none;border-top:1px solid #e0d8d0;margin:32px 0 0;" />
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:#b8a898;margin:16px 0 0;">
+      If the button doesn&rsquo;t work, copy and paste this link into your browser:<br/>
+      <a href="${editUrl}" style="color:#4a7c59;word-break:break-all;text-decoration:none;">${editUrl}</a>
     </p>
-    <div style="text-align:center;">
-      <a href="${editUrl}" style="${btnStyle()}">View / Edit Reservation</a>
-    </div>
-    <p style="color:#8b7355;font-size:13px;text-align:center;margin-top:8px;">
-      If this link doesn't work, copy and paste the following URL into your browser:<br/>
-      <span style="color:#4a7c59;word-break:break-all;">${editUrl}</span>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;color:#c0b0a0;margin:8px 0 0;">
+      This link is personal &mdash; please do not share it.
     </p>
-    <p style="color:#8b7355;font-size:11px;text-align:center;">
-      ⚠️ This edit link is personal — do not share it publicly.
-    </p>
-  `);
+  `, `Your ${data.activityName} reservation #${data.registrationNumber} is confirmed.`);
 
   await transporter.sendMail({
     from: FROM,
     to: email,
-    subject: `Booking Confirmed #${data.registrationNumber} – ${data.activityName}`,
+    subject: `Booking Confirmed – #${data.registrationNumber} ${data.activityName}`,
     html,
   });
 }
@@ -227,20 +285,27 @@ export async function sendRegistrationStatusUpdate(
   const info = statusMessages[status] ?? { emoji: 'ℹ️', message: `Your reservation status updated to: ${status}`, color: '#4a7c59' };
   const editUrl = `${APP_URL}/registration/edit/${editToken}`;
 
+  const statusLabel: Record<string, string> = {
+    CONFIRMED: 'Confirmed',
+    CANCELLED: 'Cancelled',
+    COMPLETED: 'Completed',
+  };
+
   const html = baseTemplate(`
-    <h2 style="color:${info.color};margin:0 0 16px;">${info.emoji} ${info.message}</h2>
-    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      Hi ${firstName}, your reservation <strong>#${registrationNumber}</strong> status has been updated.
-    </p>
-    <div style="text-align:center;margin-top:24px;">
-      <a href="${editUrl}" style="${btnStyle()}">View Reservation</a>
-    </div>
-  `);
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:${info.color};margin:0 0 28px;">${info.message}</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 24px;">Hi <strong>${firstName}</strong>,</p>
+    ${infoCard(
+      detailRow('Reservation', `#${registrationNumber}`) +
+      detailRow('Status', `<strong style="color:${info.color};">${statusLabel[status] ?? status}</strong>`)
+    , info.color)}
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:28px 0 0;">You can view the full details of your reservation using the link below.</p>
+    ${btn('View My Reservation', editUrl)}
+  `, `Reservation #${registrationNumber} status update from ${APP_NAME}.`);
 
   await transporter.sendMail({
     from: FROM,
     to: email,
-    subject: `Reservation Update #${registrationNumber} – ${APP_NAME}`,
+    subject: `Reservation #${registrationNumber} – Status Updated to ${statusLabel[status] ?? status}`,
     html,
   });
 }
@@ -252,23 +317,20 @@ export async function sendRegistrationStatusUpdate(
 export async function sendPasswordResetEmail(email: string, token: string, name = 'there'): Promise<void> {
   const url = `${APP_URL}/auth/reset-password?token=${token}`;
   const html = baseTemplate(`
-    <h2 style="color:#2d5a27;margin:0 0 16px;">Reset your password 🔑</h2>
-    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      Hi <strong>${name}</strong>,<br/><br/>
-      We received a request to reset the password for your <strong>${APP_NAME}</strong> account.
-      Click the button below to choose a new password.
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:#2d3a2e;margin:0 0 16px;">Password Reset Request</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 20px;">Hi <strong>${name}</strong>,</p>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 28px;">
+      We received a request to reset the password for the <strong>${APP_NAME}</strong> account associated with this email address.
+      Click the button below to set a new password.
     </p>
-    <div style="text-align:center;">
-      <a href="${url}" style="${btnStyle()}">Reset Password</a>
-    </div>
-    <p style="color:#8b7355;font-size:13px;text-align:center;margin-top:8px;">
-      If this link doesn't work, copy and paste the following URL into your browser:<br/>
-      <span style="color:#4a7c59;word-break:break-all;">${url}</span>
+    ${btn('Reset My Password', url)}
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:#9e8e7e;text-align:center;margin:28px 0 0;line-height:1.6;">
+      This link expires in <strong>1 hour</strong>.<br/>
+      If you did not request a password reset, please ignore this email &mdash; your password will remain unchanged.
     </p>
-    <p style="color:#8b7355;font-size:13px;text-align:center;">
-      This link expires in <strong>1 hour</strong>. If you did not request a password reset, you can safely ignore this email.
-    </p>
-  `);
+    <hr style="border:none;border-top:1px solid #e0d8d0;margin:32px 0 0;" />
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:#b8a898;margin:16px 0 0;">If the button doesn&rsquo;t work, copy and paste this URL into your browser:<br/><a href="${url}" style="color:#4a7c59;word-break:break-all;text-decoration:none;">${url}</a></p>
+  `, `Reset your ${APP_NAME} password – link valid for 1 hour.`);
   await transporter.sendMail({ from: FROM, to: email, subject: `Reset your ${APP_NAME} password`, html });
 }
 
@@ -303,59 +365,43 @@ export async function sendOwnerNewBookingNotification(
   const viewUrl  = `${APP_URL}/owner/bookings/${data.registrationId}`;
   const approveUrl = `${APP_URL}/api/registrations/${data.registrationId}/approve?token=${data.editToken}`;
 
-  const spotsHtml = data.spotNames.length
-    ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📍 Spot(s):</strong> ${data.spotNames.join(', ')}</p>`
-    : '';
-
-  const amountHtml = data.requiresPayment && data.totalAmount != null
-    ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>💰 Amount:</strong> ${data.currency} ${Number(data.totalAmount).toFixed(2)}</p>`
-    : '';
-
-  const phoneHtml = data.guestPhone
-    ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📞 Phone:</strong> ${data.guestPhone}</p>`
-    : '';
-
   const html = baseTemplate(`
-    <h2 style="color:#2d5a27;margin:0 0 8px;">New Booking Received 🎉</h2>
-    <p style="color:#8b7355;font-size:14px;margin:0 0 24px;">Reservation #${data.registrationNumber} – ${data.placeName}</p>
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:#2d3a2e;margin:0 0 6px;">New Booking Received</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;color:#9e8e7e;letter-spacing:0.5px;text-transform:uppercase;margin:0 0 28px;">Reservation #${data.registrationNumber} &mdash; ${data.placeName}</p>
 
-    <div style="background:#f0f7f0;border-left:4px solid #2d5a27;border-radius:4px;padding:20px;margin:0 0 20px;">
-      <p style="color:#4a4a4a;font-size:15px;font-weight:700;margin:0 0 12px;">📋 Booking Details</p>
-      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>🌿 Activity:</strong> ${data.activityName}</p>
-      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📍 Location:</strong> ${data.locationName}</p>
-      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📅 Dates:</strong> ${data.startDate} → ${data.endDate} (${data.numberOfDays} day${data.numberOfDays > 1 ? 's' : ''})</p>
-      ${spotsHtml}
-      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>👥 Guests:</strong> ${data.guestSummary}</p>
-      ${amountHtml}
-    </div>
-
-    <div style="background:#fff8f0;border-left:4px solid #e67e22;border-radius:4px;padding:20px;margin:0 0 24px;">
-      <p style="color:#4a4a4a;font-size:15px;font-weight:700;margin:0 0 12px;">👤 Guest Information</p>
-      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>Name:</strong> ${data.guestName}</p>
-      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>✉️ Email:</strong> <a href="mailto:${data.guestEmail}" style="color:#4a7c59;">${data.guestEmail}</a></p>
-      ${phoneHtml}
-    </div>
-
-    <p style="color:#4a4a4a;font-size:14px;margin:0 0 20px;">
-      This booking is currently <strong>pending your approval</strong>. Use the buttons below to confirm it or view the full details in your dashboard.
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 24px;">
+      A new booking has been submitted and is <strong>pending your approval</strong>. Review the details below and confirm or manage it from your dashboard.
     </p>
 
-    <div style="text-align:center;margin-bottom:12px;">
-      <a href="${approveUrl}" style="${btnStyle('#2d5a27')}">✅ Confirm Booking</a>
-    </div>
-    <div style="text-align:center;margin-bottom:24px;">
-      <a href="${viewUrl}" style="${btnStyle('#4a7c59')}">👁️ View in Dashboard</a>
-    </div>
+    ${sectionHeading('Booking Details')}
+    ${infoCard(
+      detailRow('Activity', data.activityName) +
+      detailRow('Location', data.locationName) +
+      detailRow('Dates', `${data.startDate} &ndash; ${data.endDate} (${data.numberOfDays} day${data.numberOfDays > 1 ? 's' : ''})`) +
+      (data.spotNames.length ? detailRow('Spot(s)', data.spotNames.join(', ')) : '') +
+      detailRow('Guests', data.guestSummary) +
+      (data.requiresPayment && data.totalAmount != null ? detailRow('Amount', `${data.currency} ${Number(data.totalAmount).toFixed(2)}`) : '')
+    )}
 
-    <p style="color:#8b7355;font-size:12px;text-align:center;">
-      Clicking "Confirm Booking" will immediately set the status to <strong>Confirmed</strong> and notify the guest.
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;color:#9e8e7e;text-transform:uppercase;letter-spacing:1.5px;margin:24px 0 12px;">Guest Information</p>
+    ${infoCard(
+      detailRow('Name', data.guestName) +
+      detailRow('Email', `<a href="mailto:${data.guestEmail}" style="color:#4a7c59;text-decoration:none;">${data.guestEmail}</a>`) +
+      (data.guestPhone ? detailRow('Phone', data.guestPhone) : '')
+    , '#e67e22')}
+
+    ${btn('Confirm Booking', approveUrl)}
+    ${btnOutline('View in Dashboard', viewUrl)}
+
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:#b8a898;text-align:center;margin:24px 0 0;line-height:1.6;">
+      Clicking &ldquo;Confirm Booking&rdquo; will immediately set the status to <strong>Confirmed</strong> and notify the guest.
     </p>
-  `);
+  `, `New booking #${data.registrationNumber} from ${data.guestName} – action required.`);
 
   await transporter.sendMail({
     from: FROM,
     to: ownerEmail,
-    subject: `New Booking #${data.registrationNumber} – ${data.guestName} – ${data.activityName}`,
+    subject: `New Booking #${data.registrationNumber} – ${data.guestName} (${data.activityName})`,
     html,
   });
 }
@@ -366,40 +412,42 @@ export async function sendOwnerNewBookingNotification(
 
 export async function sendOrgRegistrationEmail(email: string, orgName: string): Promise<void> {
   const html = baseTemplate(`
-    <h2 style="color:#2d5a27;margin:0 0 16px;">Organization Registration Received 🏢</h2>
-    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      Thank you for registering <strong>${orgName}</strong> on ${APP_NAME}.
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:#2d3a2e;margin:0 0 24px;">Application Received</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 20px;">
+      Thank you for submitting <strong>${orgName}</strong> for registration on <strong>${APP_NAME}</strong>.
     </p>
-    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      Your application is currently <strong>under review</strong>. Our team will verify your details
-      and you will receive an email once your organization has been approved.
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 20px;">
+      Your application is currently <strong>under review</strong>. Our team will verify your information and
+      you will receive a confirmation email once a decision has been made.
     </p>
-    <p style="color:#8b7355;font-size:13px;">
-      This process typically takes 1-2 business days.
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:#9e8e7e;line-height:1.7;margin:0;">
+      This process typically takes 1&ndash;2 business days. If you have not heard back within that time,
+      please contact us by replying to this email.
     </p>
-  `);
+  `, `Your ${APP_NAME} organization application for ${orgName} is under review.`);
   await transporter.sendMail({
     from: FROM,
     to: email,
-    subject: `Organization registration received – ${APP_NAME}`,
+    subject: `Organization application received – ${APP_NAME}`,
     html,
   });
 }
 
 export async function sendOrgApprovalEmail(email: string, orgName: string): Promise<void> {
   const html = baseTemplate(`
-    <h2 style="color:#2d5a27;margin:0 0 16px;">Your Organization is Approved! 🎉</h2>
-    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      Congratulations! <strong>${orgName}</strong> has been approved on ${APP_NAME}.
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:#2d5a27;margin:0 0 24px;">Organization Approved</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 20px;">
+      Congratulations! <strong>${orgName}</strong> has been approved on <strong>${APP_NAME}</strong>.
     </p>
-    <div style="text-align:center;">
-      <a href="${APP_URL}/auth/signin" style="${btnStyle()}">Sign In Now</a>
-    </div>
-  `);
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 28px;">
+      You can now sign in and start managing your places and activities.
+    </p>
+    ${btn('Sign In to Your Dashboard', `${APP_URL}/auth/signin`)}
+  `, `${orgName} has been approved on ${APP_NAME} – you can now sign in.`);
   await transporter.sendMail({
     from: FROM,
     to: email,
-    subject: `Organization approved – ${APP_NAME}`,
+    subject: `Your organization has been approved – ${APP_NAME}`,
     html,
   });
 }
@@ -415,31 +463,28 @@ export async function sendOrgApprovedWithCredentials(
   temporaryPassword: string
 ): Promise<void> {
   const html = baseTemplate(`
-    <h2 style="color:#2d5a27;margin:0 0 16px;">Your Organization is Approved! 🎉</h2>
-    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      Congratulations, <strong>${ownerName}</strong>! <strong>${orgName}</strong> has been approved on ${APP_NAME}.
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:#2d5a27;margin:0 0 24px;">Organization Approved</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 20px;">Hi <strong>${ownerName}</strong>,</p>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 24px;">
+      <strong>${orgName}</strong> has been approved on <strong>${APP_NAME}</strong>. An account has been created for you.
+      Use the credentials below to sign in for the first time.
     </p>
-    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      An account has been created for you. Use the credentials below to sign in:
+    ${infoCard(
+      detailRow('Email', email) +
+      detailRow('Temporary Password', `<code style="background:#eef5ee;padding:2px 8px;border-radius:4px;font-size:14px;font-family:monospace;color:#2d5a27;">${temporaryPassword}</code>`)
+    )}
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:#c0392b;line-height:1.7;margin:20px 0 28px;">
+      <strong>Important:</strong> Please change your password immediately after your first sign-in.
     </p>
-    <div style="background:#f0f7f0;border-radius:8px;padding:20px;margin:20px 0;">
-      <p style="color:#2d5a27;font-size:15px;margin:0 0 8px;"><strong>Email:</strong> ${email}</p>
-      <p style="color:#2d5a27;font-size:15px;margin:0;"><strong>Temporary Password:</strong> <code style="background:#e8f5e9;padding:2px 8px;border-radius:4px;font-size:15px;">${temporaryPassword}</code></p>
-    </div>
-    <p style="color:#c0392b;font-size:13px;">
-      ⚠️ Please change your password after your first sign-in.
+    ${btn('Sign In to Your Dashboard', `${APP_URL}/auth/signin`)}
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:#9e8e7e;text-align:center;margin:20px 0 0;">
+      From your dashboard you can manage places, activities, and bookings.
     </p>
-    <div style="text-align:center;">
-      <a href="${APP_URL}/auth/signin" style="${btnStyle()}">Sign In Now</a>
-    </div>
-    <p style="color:#8b7355;font-size:12px;text-align:center;">
-      You can manage your places and activities from your dashboard.
-    </p>
-  `);
+  `, `Your ${APP_NAME} account is ready – sign in with the credentials provided.`);
   await transporter.sendMail({
     from: FROM,
     to: email,
-    subject: `Organization approved – your login credentials – ${APP_NAME}`,
+    subject: `Organization approved – sign-in credentials enclosed – ${APP_NAME}`,
     html,
   });
 }
@@ -455,50 +500,54 @@ export async function sendAdminNewOrgNotification(adminEmail: string, org: {
 }): Promise<void> {
   const reviewUrl = `${APP_URL}/admin/organizations`;
   const html = baseTemplate(`
-    <h2 style="color:#2d5a27;margin:0 0 8px;">New Organization Registration 🏢</h2>
-    <p style="color:#8b7355;font-size:14px;margin:0 0 24px;">A new organization has submitted a registration and is pending your review.</p>
-
-    <div style="background:#f0f7f0;border-left:4px solid #2d5a27;border-radius:4px;padding:20px;margin:0 0 24px;">
-      <p style="color:#4a4a4a;font-size:15px;font-weight:700;margin:0 0 12px;">📋 Organization Details</p>
-      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>Name:</strong> ${org.name}</p>
-      <p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>✉️ Email:</strong> <a href="mailto:${org.email}" style="color:#4a7c59;">${org.email}</a></p>
-      ${org.phone ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📞 Phone:</strong> ${org.phone}</p>` : ''}
-      ${org.city || org.country ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📍 Location:</strong> ${[org.city, org.country].filter(Boolean).join(', ')}</p>` : ''}
-      ${org.website ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>🌐 Website:</strong> <a href="${org.website}" style="color:#4a7c59;">${org.website}</a></p>` : ''}
-      ${org.description ? `<p style="color:#4a4a4a;font-size:14px;margin:4px 0;"><strong>📝 Description:</strong> ${org.description}</p>` : ''}
-    </div>
-
-    <div style="text-align:center;">
-      <a href="${reviewUrl}" style="${btnStyle()}">Review in Admin Panel</a>
-    </div>
-    <p style="color:#8b7355;font-size:12px;text-align:center;margin-top:8px;">
-      Log in to approve or reject this organization registration.
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:#2d3a2e;margin:0 0 6px;">New Organization Application</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;color:#9e8e7e;letter-spacing:0.5px;text-transform:uppercase;margin:0 0 28px;">Pending Review</p>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 24px;">
+      A new organization has submitted a registration request and is awaiting your review.
     </p>
-  `);
+    ${sectionHeading('Organization Details')}
+    ${infoCard(
+      detailRow('Name', org.name) +
+      detailRow('Email', `<a href="mailto:${org.email}" style="color:#4a7c59;text-decoration:none;">${org.email}</a>`) +
+      (org.phone ? detailRow('Phone', org.phone) : '') +
+      ((org.city || org.country) ? detailRow('Location', [org.city, org.country].filter(Boolean).join(', ')) : '') +
+      (org.website ? detailRow('Website', `<a href="${org.website}" style="color:#4a7c59;text-decoration:none;">${org.website}</a>`) : '') +
+      (org.description ? detailRow('Description', org.description) : '')
+    )}
+    ${btn('Review in Admin Panel', reviewUrl)}
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:#b8a898;text-align:center;margin:20px 0 0;">
+      Sign in to approve or reject this registration.
+    </p>
+  `, `New organization application from ${org.name} – review required.`);
   await transporter.sendMail({
     from: FROM,
     to: adminEmail,
-    subject: `New Organization Registration: ${org.name} – ${APP_NAME}`,
+    subject: `New Organization Application: ${org.name} – action required`,
     html,
   });
 }
 
 export async function sendOrgRejectionEmail(email: string, orgName: string, reason?: string): Promise<void> {
+  const supportEmail = process.env.SUPPORT_EMAIL ?? process.env.SMTP_USER ?? '';
   const html = baseTemplate(`
-    <h2 style="color:#c0392b;margin:0 0 16px;">Organization Application Update</h2>
-    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      We're sorry to inform you that the registration for <strong>${orgName}</strong> was not approved at this time.
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:#2d3a2e;margin:0 0 24px;">Organization Application Update</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 20px;">
+      Thank you for your interest in <strong>${APP_NAME}</strong>.
     </p>
-    ${reason ? `<p style="color:#4a4a4a;line-height:1.6;font-size:15px;"><strong>Reason:</strong> ${reason}</p>` : ''}
-    <p style="color:#4a4a4a;line-height:1.6;font-size:15px;">
-      If you believe this is an error or would like to reapply, please contact us at 
-      <a href="mailto:${process.env.SMTP_USER}" style="color:#4a7c59;">${process.env.SMTP_USER}</a>.
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 20px;">
+      After reviewing your application, we are unable to approve <strong>${orgName}</strong> at this time.
     </p>
-  `);
+    ${reason ? infoCard(detailRow('Reason', reason), '#c0392b') : ''}
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:24px 0 0;">
+      If you believe this decision was made in error, or if you have additional information to provide,
+      please contact us at <a href="mailto:${supportEmail}" style="color:#4a7c59;text-decoration:none;">${supportEmail}</a>
+      and we will be happy to review your case.
+    </p>
+  `, `Update regarding your ${APP_NAME} organization application for ${orgName}.`);
   await transporter.sendMail({
     from: FROM,
     to: email,
-    subject: `Organization application update – ${APP_NAME}`,
+    subject: `Your organization application – ${APP_NAME}`,
     html,
   });
 }

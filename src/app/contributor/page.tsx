@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import PageHeader from '@/components/ui/PageHeader';
 import { format } from 'date-fns';
+import { useTranslation } from '@/i18n/client';
 
 interface Stats {
   total: number;
@@ -26,6 +27,7 @@ interface RecentPost {
 
 export default function ContributorDashboard() {
   const { data: session } = useSession();
+  const { t } = useTranslation('blog');
   const [stats, setStats] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<RecentPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,9 +57,9 @@ export default function ContributorDashboard() {
   return (
     <Box>
       <PageHeader
-        title={`Welcome back${session?.user?.name ? `, ${session.user.name}` : ''}`}
-        subtitle="Contributor dashboard — manage your blog posts"
-        breadcrumbs={[{ label: 'Contributor', href: '/contributor' }, { label: 'Dashboard' }]}
+        title={`${t('contributor.welcomeBack')}${session?.user?.name ? `, ${session.user.name}` : ''}`}
+        subtitle={t('contributor.subtitle')}
+        breadcrumbs={[{ label: t('contributor.breadcrumbContributor'), href: '/contributor' }, { label: t('contributor.breadcrumbDashboard') }]}
         action={
           <Button
             variant="contained"
@@ -65,7 +67,7 @@ export default function ContributorDashboard() {
             component={Link}
             href="/contributor/posts/new"
           >
-            New Post
+            {t('contributor.newPost')}
           </Button>
         }
       />
@@ -73,9 +75,9 @@ export default function ContributorDashboard() {
       {/* Stats */}
       <Grid container spacing={2} sx={{ mb: 4 }}>
         {[
-          { icon: <Article />, label: 'Total Posts', value: stats?.total ?? 0, color: 'primary.main' },
-          { icon: <CheckCircle />, label: 'Published', value: stats?.published ?? 0, color: 'success.main' },
-          { icon: <Drafts />, label: 'Drafts', value: stats?.draft ?? 0, color: 'warning.main' },
+          { icon: <Article />, label: t('contributor.totalPosts'), value: stats?.total ?? 0, color: 'primary.main' },
+          { icon: <CheckCircle />, label: t('contributor.published'), value: stats?.published ?? 0, color: 'success.main' },
+          { icon: <Drafts />, label: t('contributor.drafts'), value: stats?.draft ?? 0, color: 'warning.main' },
         ].map((stat) => (
           <Grid key={stat.label} size={{ xs: 12, sm: 4 }}>
             <Card variant="outlined" sx={{ borderRadius: 2 }}>
@@ -92,12 +94,12 @@ export default function ContributorDashboard() {
       </Grid>
 
       {/* Recent drafts */}
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Recent Drafts</Typography>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{t('contributor.recentDrafts')}</Typography>
       {recent.length === 0 ? (
         <Card variant="outlined" sx={{ borderRadius: 2, p: 3, textAlign: 'center' }}>
-          <Typography color="text.secondary" sx={{ mb: 2 }}>No drafts yet. Start writing!</Typography>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>{t('contributor.noDrafts')}</Typography>
           <Button variant="contained" startIcon={<Add />} component={Link} href="/contributor/posts/new">
-            Write your first post
+            {t('contributor.writeFirstPost')}
           </Button>
         </Card>
       ) : (
@@ -126,11 +128,11 @@ export default function ContributorDashboard() {
                       component={Link}
                       href={`/contributor/posts/${post.slug}/edit`}
                     >
-                      Edit
+                      {t('contributor.edit')}
                     </Button>
                     {post.status === 'PUBLISHED' && (
                       <Button size="small" component={Link} href={`/blog/${post.slug}`} target="_blank">
-                        View
+                        {t('contributor.view')}
                       </Button>
                     )}
                   </Box>
@@ -143,7 +145,7 @@ export default function ContributorDashboard() {
 
       <Box sx={{ mt: 3 }}>
         <Button component={Link} href="/contributor/posts" variant="outlined">
-          View all my posts →
+          {t('contributor.viewAllPosts')}
         </Button>
       </Box>
     </Box>

@@ -4,7 +4,12 @@
     "cancel": "Cancel",
     "actions": "Actions",
     "noData": "No data available",
-    "all": "All"
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "breadcrumbAdmin": "Admin",
+    "loadingMap": "Loading map…",
+    "loading": "Loading…"
   },
   "dashboard": {
     "title": "Admin Dashboard",
@@ -70,7 +75,10 @@
     },
     "confirmDeactivate": "Deactivate this user? They will not be able to sign in.",
     "confirmActivate": "Re-activate this user?",
-    "confirmRoleChange": "Change role to {{role}}?"
+    "confirmRoleChange": "Change role to {{role}}?",
+    "errors": {
+      "loadFailed": "Failed to load users"
+    }
   },
   "places": {
     "title": "All Places",
@@ -198,6 +206,10 @@
     "addNew": "Add Location",
     "searchPlaceholder": "Search locations…",
     "empty": "No free locations yet. Add one!",
+    "breadcrumbAdmin": "Admin",
+    "breadcrumbFreeLocations": "Free Locations",
+    "slugPreview": "Preview: /locations/{{slug}}",
+    "deleteConfirm": "Delete \"{{name}}\"?",
     "totalCount": "{{count}} total location",
     "totalCount_plural": "{{count}} total locations",
     "table": {

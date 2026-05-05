@@ -60,7 +60,9 @@
       "continueToMap": "Continue to Map Setup",
       "replaceImage": "Replace image",
       "uploadImage": "Upload image",
-      "removeImage": "Remove"
+      "removeImage": "Remove",
+      "skipMapSetup": "Skip — I'll do this later",
+      "saveMapAndGo": "Save Map & Go to Place"
     },
     "mapSetupSuccess": "Place created! Now set up a map background — this will be used as the base map for all location zones at your place. You can also skip and do this later.",
     "mapBackground": "Map Background",

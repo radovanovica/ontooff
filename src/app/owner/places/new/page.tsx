@@ -363,7 +363,7 @@ export default function NewPlacePage() {
                   startIcon={<SkipNext />}
                   onClick={() => router.push(`/owner/places/${createdPlaceId}`)}
                 >
-                  Skip — I&apos;ll do this later
+                  {t('places.actions.skipMapSetup')}
                 </Button>
                 <Button
                   type="submit"
@@ -372,7 +372,7 @@ export default function NewPlacePage() {
                   disabled={saving}
                   startIcon={saving ? <CircularProgress size={18} color="inherit" /> : <MapIcon />}
                 >
-                  Save Map &amp; Go to Place
+                  {t('places.actions.saveMapAndGo')}
                 </Button>
               </Box>
             </Box>

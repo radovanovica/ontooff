@@ -227,6 +227,18 @@
     "verifying": "Verifikacija…",
     "notFound": "Rezervacija nije pronađena. Proverite broj i email.",
     "notEligible": "Recenzije se mogu poslati samo za potvrđene ili završene rezervacije.",
-    "stars": "{{count}} zvezda"
+    "stars": "{{count}} zvezda",
+    "communitySignIn": "Prijavite se da ostavite recenziju",
+    "communitySignInSubtitle": "Podelite iskustvo sa zajednicom.",
+    "communitySignInButton": "Prijavite se",
+    "communityPostingAs": "Objavljuje kao",
+    "communityTitle": "Napišite recenziju",
+    "communitySubmitted": "Hvala na recenziji!",
+    "loadFailed": "Greška pri učitavanju recenzija",
+    "noReviews": "Nema recenzija. Budite prvi koji će podeliti iskustvo!",
+    "loadMore": "Učitaj još ({{count}} preostalo)",
+    "loadingMore": "Učitavanje…",
+    "countSuffix_one": "recenzija",
+    "countSuffix_other": "recenzija"
   }
 }

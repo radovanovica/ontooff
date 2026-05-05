@@ -4,7 +4,12 @@
     "cancel": "Otkaži",
     "actions": "Akcije",
     "noData": "Nema podataka",
-    "all": "Sve"
+    "all": "Sve",
+    "active": "Aktivan",
+    "inactive": "Neaktivan",
+    "breadcrumbAdmin": "Admin",
+    "loadingMap": "Učitavanje mape…",
+    "loading": "Učitavanje…"
   },
   "dashboard": {
     "title": "Admin kontrolna tabla",
@@ -70,7 +75,10 @@
     },
     "confirmDeactivate": "Deaktivirati ovog korisnika? Neće moći da se prijavi.",
     "confirmActivate": "Ponovo aktivirati ovog korisnika?",
-    "confirmRoleChange": "Promeniti ulogu na {{role}}?"
+    "confirmRoleChange": "Promeniti ulogu na {{role}}?",
+    "errors": {
+      "loadFailed": "Greška pri učitavanju korisnika"
+    }
   },
   "places": {
     "title": "Sva mesta",
@@ -198,6 +206,10 @@
     "addNew": "Dodaj lokaciju",
     "searchPlaceholder": "Pretraži lokacije…",
     "empty": "Nema besplatnih lokacija. Dodajte jednu!",
+    "breadcrumbAdmin": "Admin",
+    "breadcrumbFreeLocations": "Besplatne lokacije",
+    "slugPreview": "Pregled: /locations/{{slug}}",
+    "deleteConfirm": "Obrisati \"{{name}}\"?",
     "totalCount": "{{count}} ukupno lokacija",
     "totalCount_plural": "{{count}} ukupno lokacija",
     "table": {
