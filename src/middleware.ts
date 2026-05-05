@@ -56,6 +56,7 @@ export default withAuth(
           '/api/tags',
           '/api/search',
           '/api/blog',
+          '/api/blog/categories',
           '/api/places/by-slug/',
           '/api/places/',
           '/api/free-locations/',

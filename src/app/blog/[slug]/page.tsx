@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation';
+import { getServerSession } from 'next-auth';
 import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
 import { format } from 'date-fns';
 import {
-  Box, Container, Typography, Chip, Avatar, Divider, Paper,
+  Box, Container, Typography, Chip, Avatar, Divider, Paper, Alert,
 } from '@mui/material';
 import { AccessTime, Visibility, CalendarToday, Place as PlaceIcon } from '@mui/icons-material';
 import Link from 'next/link';
@@ -48,9 +50,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
+  const session = await getServerSession(authOptions);
+
+  const isPrivileged =
+    session?.user?.role === 'SUPER_ADMIN' || session?.user?.role === 'CONTRIBUTOR';
 
   const post = await prisma.blogPost.findUnique({
-    where: { slug, status: 'PUBLISHED' },
+    where: isPrivileged ? { slug } : { slug, status: 'PUBLISHED' },
     include: {
       author: { select: { id: true, name: true, image: true } },
       place: { select: { id: true, name: true, slug: true, city: true, country: true, coverUrl: true } },
@@ -63,6 +69,15 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
+  // Non-owners can't see another contributor's draft
+  if (
+    post.status !== 'PUBLISHED' &&
+    session?.user?.role === 'CONTRIBUTOR' &&
+    session?.user?.id !== post.authorId
+  ) {
+    notFound();
+  }
+
   // Fire-and-forget view count increment
   prisma.blogPost
     .update({ where: { slug }, data: { viewCount: { increment: 1 } } })
@@ -72,32 +87,38 @@ export default async function BlogPostPage({ params }: Props) {
     <>
       <Navbar />
       <Container maxWidth="md" sx={{ py: 6 }}>
+        {/* Draft / archived preview banner */}
+        {post.status !== 'PUBLISHED' && (
+          <Alert severity="warning" sx={{ mb: 4, borderRadius: 2 }}>
+            <strong>Preview mode:</strong> This post is{' '}
+            <strong>{post.status}</strong> and not visible to the public.
+          </Alert>
+        )}
         {/* Category + tags */}
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
           {post.category && (
-            <Chip
-              component={Link}
-              href={`/blog?category=${post.category.slug}`}
-              label={post.category.name}
-              size="small"
-              clickable
-              sx={
-                post.category.color
-                  ? { bgcolor: post.category.color, color: 'white' }
-                  : {}
-              }
-            />
+            <Link href={`/blog?category=${post.category.slug}`} style={{ textDecoration: 'none' }}>
+              <Chip
+                label={post.category.name}
+                size="small"
+                clickable
+                sx={
+                  post.category.color
+                    ? { bgcolor: post.category.color, color: 'white' }
+                    : {}
+                }
+              />
+            </Link>
           )}
           {post.tags.map(({ tag }) => (
-            <Chip
-              key={tag.id}
-              component={Link}
-              href={`/blog?tag=${tag.slug}`}
-              label={tag.name}
-              size="small"
-              variant="outlined"
-              clickable
-            />
+            <Link key={tag.id} href={`/blog?tag=${tag.slug}`} style={{ textDecoration: 'none' }}>
+              <Chip
+                label={tag.name}
+                size="small"
+                variant="outlined"
+                clickable
+              />
+            </Link>
           ))}
         </Box>
 
@@ -258,24 +279,21 @@ export default async function BlogPostPage({ params }: Props) {
                 </Typography>
               )}
             </Box>
-            <Box
-              component={Link}
+            <Link
               href={`/places/${post.place.slug}`}
-              sx={{
-                px: 2,
-                py: 0.75,
-                borderRadius: 1,
-                bgcolor: 'primary.main',
+              style={{
+                padding: '6px 16px',
+                borderRadius: 4,
+                backgroundColor: '#1976d2',
                 color: 'white',
                 textDecoration: 'none',
                 fontSize: '0.875rem',
                 fontWeight: 600,
-                '&:hover': { bgcolor: 'primary.dark' },
                 flexShrink: 0,
               }}
             >
               View Place
-            </Box>
+            </Link>
           </Paper>
         )}
 
@@ -302,18 +320,12 @@ export default async function BlogPostPage({ params }: Props) {
 
         {/* Back link */}
         <Box sx={{ mt: 4, textAlign: 'center' }}>
-          <Box
-            component={Link}
+          <Link
             href="/blog"
-            sx={{
-              color: 'primary.main',
-              textDecoration: 'none',
-              fontWeight: 600,
-              '&:hover': { textDecoration: 'underline' },
-            }}
+            style={{ color: '#1976d2', textDecoration: 'none', fontWeight: 600 }}
           >
             ← Back to Blog
-          </Box>
+          </Link>
         </Box>
       </Container>
     </>
