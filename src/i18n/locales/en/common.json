@@ -20,7 +20,12 @@
     "profile": "Profile",
     "settings": "Settings",
     "language": "Language",
-    "organizations": "Organizations"
+    "organizations": "Organizations",
+    "blog": "Blog",
+    "adminBlog": "Blog Posts",
+    "contributors": "Contributors",
+    "contributorDashboard": "My Dashboard",
+    "myPosts": "My Posts"
   },
   "home": {
     "heroTitle": "Your Nature Escape Starts Here",

@@ -20,7 +20,12 @@
     "profile": "Profil",
     "settings": "Podešavanja",
     "language": "Jezik",
-    "organizations": "Organizacije"
+    "organizations": "Organizacije",
+    "blog": "Blog",
+    "adminBlog": "Blog objave",
+    "contributors": "Saradnici",
+    "contributorDashboard": "Moja tabla",
+    "myPosts": "Moje objave"
   },
   "home": {
     "heroTitle": "Vaš Beg u Prirodu Počinje Ovde",

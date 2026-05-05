@@ -5,7 +5,14 @@
 export enum UserRole {
   SUPER_ADMIN = 'SUPER_ADMIN',
   PLACE_OWNER = 'PLACE_OWNER',
+  CONTRIBUTOR = 'CONTRIBUTOR',
   USER = 'USER',
+}
+
+export enum BlogStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  ARCHIVED = 'ARCHIVED',
 }
 
 export enum RegistrationStatus {

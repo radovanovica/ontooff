@@ -8,6 +8,6 @@ export const i18nConfig: InitOptions = {
   supportedLngs: locales,
   fallbackLng: defaultLocale,
   defaultNS: 'common',
-  ns: ['common', 'auth', 'registration', 'admin', 'owner', 'validation'],
+  ns: ['common', 'auth', 'registration', 'admin', 'owner', 'validation', 'blog'],
   interpolation: { escapeValue: false },
 };

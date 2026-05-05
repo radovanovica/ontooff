@@ -8,9 +8,12 @@ import {
   Typography,
   Card,
   CardContent,
+  CardActionArea,
+  Avatar,
   Chip,
   Stack,
   Paper,
+  Divider,
 } from '@mui/material';
 import {
   NaturePeople,
@@ -21,6 +24,8 @@ import {
   PinDrop,
   CheckCircleOutlined,
   Business,
+  Article,
+  AccessTime,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -30,6 +35,18 @@ import { useTranslation } from '@/i18n/client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ActivityTag } from '@/types';
+
+interface BlogPostSummary {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  coverUrl: string | null;
+  publishedAt: string | null;
+  readingTimeMinutes: number | null;
+  author: { name: string | null };
+  category: { name: string; color: string | null } | null;
+}
 
 const STATS = [
   { value: '50+', key: 'locations' },
@@ -58,6 +75,14 @@ export default function HomePage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [latestPosts, setLatestPosts] = useState<BlogPostSummary[]>([]);
+
+  useEffect(() => {
+    fetch('/api/blog?pageSize=3')
+      .then((r) => r.json())
+      .then((d) => setLatestPosts(d.data ?? []))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch('/api/tags')
@@ -476,6 +501,128 @@ export default function HomePage() {
           </Grid>
         </Container>
       </Box>
+
+      {/* ── LATEST BLOG POSTS ── */}
+      {latestPosts.length > 0 && (
+        <Container maxWidth="lg" sx={{ py: { xs: 8, md: 12 } }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 6 }}>
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <Article sx={{ color: '#2d5a27', fontSize: 28 }} />
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                  {t('home.latestBlog', 'From the Blog')}
+                </Typography>
+              </Box>
+              <Typography variant="body1" color="text.secondary">
+                {t('home.latestBlogSub', 'Tips, guides and stories from our community.')}
+              </Typography>
+            </Box>
+            <Button
+              component={Link}
+              href="/blog"
+              variant="outlined"
+              size="small"
+              sx={{ flexShrink: 0 }}
+            >
+              {t('home.viewAllPosts', 'View all posts →')}
+            </Button>
+          </Box>
+
+          <Grid container spacing={3}>
+            {latestPosts.map((post) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
+                <Card
+                  elevation={0}
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    transition: 'transform 0.15s, box-shadow 0.15s',
+                    '&:hover': { transform: 'translateY(-3px)', boxShadow: 4 },
+                  }}
+                >
+                  <CardActionArea component={Link} href={`/blog/${post.slug}`} sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+                    {post.coverUrl && (
+                      <Box sx={{ position: 'relative', height: 180, borderRadius: '12px 12px 0 0', overflow: 'hidden' }}>
+                        <Image
+                          src={post.coverUrl}
+                          alt={post.title}
+                          fill
+                          unoptimized
+                          sizes="(max-width:600px) 100vw, 33vw"
+                          style={{ objectFit: 'cover' }}
+                        />
+                      </Box>
+                    )}
+                    <CardContent sx={{ flexGrow: 1 }}>
+                      {post.category && (
+                        <Chip
+                          label={post.category.name}
+                          size="small"
+                          sx={{
+                            mb: 1,
+                            height: 20,
+                            fontSize: '0.7rem',
+                            ...(post.category.color ? { bgcolor: post.category.color, color: 'white' } : {}),
+                          }}
+                        />
+                      )}
+                      <Typography
+                        variant="subtitle1"
+                        sx={
+                          {
+                            fontWeight: 700,
+                            mb: 0.75,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }
+                        }
+                      >
+                        {post.title}
+                      </Typography>
+                      {post.excerpt && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            mb: 1.5,
+                          }}
+                        >
+                          {post.excerpt}
+                        </Typography>
+                      )}
+                      <Divider sx={{ mb: 1.25 }} />
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Avatar sx={{ width: 18, height: 18, fontSize: '0.6rem', bgcolor: '#2d5a27' }}>
+                            {post.author.name?.charAt(0) ?? 'A'}
+                          </Avatar>
+                          <Typography variant="caption" color="text.secondary">{post.author.name}</Typography>
+                        </Box>
+                        {post.readingTimeMinutes && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                            <AccessTime sx={{ fontSize: '0.75rem', color: 'text.secondary' }} />
+                            <Typography variant="caption" color="text.secondary">{post.readingTimeMinutes} min</Typography>
+                          </Box>
+                        )}
+                      </Box>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      )}
 
       {/* ── CTA ── */}
       <Box

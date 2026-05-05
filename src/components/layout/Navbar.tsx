@@ -31,6 +31,9 @@ import {
   AdminPanelSettings,
   ManageAccounts,
   Business,
+  Article,
+  Edit,
+  Group,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -69,6 +72,11 @@ export default function Navbar() {
       href: '/',
       icon: <NaturePeople />,
     },
+    {
+      label: t('nav.blog'),
+      href: '/blog',
+      icon: <Article />,
+    },
     ...(role === UserRole.SUPER_ADMIN
       ? [
           {
@@ -100,6 +108,34 @@ export default function Navbar() {
             href: '/admin/organizations',
             icon: <Business />,
             roles: [UserRole.SUPER_ADMIN],
+          },
+          {
+            label: t('nav.adminBlog', 'Blog Posts'),
+            href: '/admin/blog',
+            icon: <Article />,
+            roles: [UserRole.SUPER_ADMIN],
+          },
+          {
+            label: t('nav.contributors', 'Contributors'),
+            href: '/admin/contributors',
+            icon: <Group />,
+            roles: [UserRole.SUPER_ADMIN],
+          },
+        ]
+      : []),
+    ...(role === UserRole.CONTRIBUTOR
+      ? [
+          {
+            label: t('nav.contributorDashboard', 'My Dashboard'),
+            href: '/contributor',
+            icon: <Dashboard />,
+            roles: [UserRole.CONTRIBUTOR],
+          },
+          {
+            label: t('nav.myPosts', 'My Posts'),
+            href: '/contributor/posts',
+            icon: <Edit />,
+            roles: [UserRole.CONTRIBUTOR],
           },
         ]
       : []),
@@ -313,6 +349,12 @@ export default function Navbar() {
                   <MenuItem component={Link} href="/owner" onClick={handleUserMenuClose}>
                     <ListItemIcon><ManageAccounts fontSize="small" /></ListItemIcon>
                     {t('nav.ownerDashboard')}
+                  </MenuItem>
+                )}
+                {role === UserRole.CONTRIBUTOR && (
+                  <MenuItem component={Link} href="/contributor" onClick={handleUserMenuClose}>
+                    <ListItemIcon><Edit fontSize="small" /></ListItemIcon>
+                    {t('nav.contributorDashboard', 'My Dashboard')}
                   </MenuItem>
                 )}
                 <MenuItem component={Link} href="/profile" onClick={handleUserMenuClose}>

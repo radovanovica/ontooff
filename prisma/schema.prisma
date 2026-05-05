@@ -17,7 +17,14 @@ datasource db {
 enum UserRole {
   SUPER_ADMIN
   PLACE_OWNER
+  CONTRIBUTOR
   USER
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }
 
 enum RegistrationStatus {
@@ -101,11 +108,14 @@ model User {
 
   favoriteLocationIds String[]
 
-  accounts      Account[]
-  sessions      Session[]
-  places        Place[]
-  registrations Registration[]
-  reviews       Review[]
+  accounts           Account[]
+  sessions           Session[]
+  places             Place[]
+  registrations      Registration[]
+  reviews            Review[]
+  blogPosts          BlogPost[]            @relation("AuthoredPosts")
+  placeAccess        ContributorPlaceAccess[] @relation("ContributorAccess")
+  grantedAccess      ContributorPlaceAccess[] @relation("GrantedByAdmin")
 
   @@index([email])
   @@index([role])
@@ -190,6 +200,8 @@ model Place {
   embedTokens       EmbedToken[]
   pricingRules      PricingRule[]
   reviews           Review[]
+  blogPosts         BlogPost[]
+  contributorAccess ContributorPlaceAccess[]
 
   @@index([ownerId])
   @@index([organizationId])
@@ -651,4 +663,94 @@ model ActivityTypeTag {
 
   @@id([activityTypeId, tagId])
   @@map("activity_type_tags")
+}
+
+// ─────────────────────────────────────────
+// BLOG
+// ─────────────────────────────────────────
+
+model BlogCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  color       String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  posts BlogPost[]
+
+  @@map("blog_categories")
+}
+
+model BlogTag {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  posts BlogPostTag[]
+
+  @@map("blog_tags")
+}
+
+model BlogPost {
+  id                 String     @id @default(cuid())
+  title              String
+  slug               String     @unique
+  excerpt            String?    @db.Text
+  body               String     @db.Text
+  coverUrl           String?    @db.Text
+  status             BlogStatus @default(DRAFT)
+  authorId           String
+  placeId            String?
+  categoryId         String?
+  readingTimeMinutes Int?
+  viewCount          Int        @default(0)
+  publishedAt        DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  author   User          @relation("AuthoredPosts", fields: [authorId], references: [id], onDelete: Restrict)
+  place    Place?        @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  category BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags     BlogPostTag[]
+
+  @@index([status, publishedAt])
+  @@index([authorId])
+  @@index([placeId])
+  @@index([categoryId])
+  @@index([slug])
+  @@map("blog_posts")
+}
+
+model BlogPostTag {
+  postId String
+  tagId  String
+
+  post BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  BlogTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("blog_post_tags")
+}
+
+// ─────────────────────────────────────────
+// CONTRIBUTOR PLACE ACCESS
+// ─────────────────────────────────────────
+
+model ContributorPlaceAccess {
+  id            String   @id @default(cuid())
+  contributorId String
+  placeId       String
+  grantedById   String
+  grantedAt     DateTime @default(now())
+
+  contributor User  @relation("ContributorAccess", fields: [contributorId], references: [id], onDelete: Cascade)
+  place       Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  grantedBy   User  @relation("GrantedByAdmin", fields: [grantedById], references: [id], onDelete: Restrict)
+
+  @@unique([contributorId, placeId])
+  @@index([contributorId])
+  @@index([placeId])
+  @@map("contributor_place_access")
 }

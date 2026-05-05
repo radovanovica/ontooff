@@ -96,9 +96,10 @@ export default function AdminUsersPage() {
     fetchUsers();
   };
 
-  const roleColor: Record<UserRole, 'error' | 'warning' | 'default'> = {
+  const roleColor: Record<UserRole, 'error' | 'warning' | 'info' | 'default'> = {
     [UserRole.SUPER_ADMIN]: 'error',
     [UserRole.PLACE_OWNER]: 'warning',
+    [UserRole.CONTRIBUTOR]: 'info',
     [UserRole.USER]: 'default',
   };
 
