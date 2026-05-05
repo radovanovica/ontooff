@@ -4,16 +4,16 @@ import HomePage from './_HomePage';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.ontooff.app';
 
 export const metadata: Metadata = {
-  title: 'ontooff – Book Outdoor Nature Activities',
+  title: 'ontooff – Book Camping, Fishing & Outdoor Activities',
   description:
-    'Find and book camping spots, fishing lakes, kayaking trails and outdoor activities. Browse venues, pick your exact spot on an interactive map, and confirm your reservation in minutes.',
+    'Find and book camping spots, fishing lakes and kayaking trails. Browse venues, pick your exact spot on an interactive map, and confirm your booking in minutes.',
   alternates: {
     canonical: APP_URL,
   },
   openGraph: {
     type: 'website',
     url: APP_URL,
-    title: 'ontooff – Book Outdoor Nature Activities',
+    title: 'ontooff – Book Camping, Fishing & Outdoor Activities',
     description:
       'Find and book camping spots, fishing lakes and outdoor activities near you. Browse, pick your spot on a map, and book in minutes.',
     images: [
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ontooff – Book Outdoor Nature Activities',
+    title: 'ontooff – Book Camping, Fishing & Outdoor Activities',
     description: 'Find and book camping, fishing, kayaking and outdoor activities.',
     images: [`${APP_URL}/assets/images/og-image.jpg`],
   },
@@ -61,7 +61,26 @@ const jsonLd = {
         '@type': 'ImageObject',
         url: `${APP_URL}/assets/images/logo.svg`,
       },
-      sameAs: [],
+      sameAs: [
+        'https://x.com/ontooff',
+        'https://twitter.com/ontooff',
+      ],
+    },
+    {
+      '@type': 'LocalBusiness',
+      '@id': `${APP_URL}/#localbusiness`,
+      name: 'ontooff',
+      description: 'Online booking platform for outdoor nature activities – camping, fishing, kayaking and more.',
+      url: APP_URL,
+      logo: `${APP_URL}/assets/images/logo.svg`,
+      image: `${APP_URL}/assets/images/og-image.jpg`,
+      priceRange: '€',
+      openingHours: 'Mo-Su 00:00-23:59',
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'customer support',
+        url: APP_URL,
+      },
     },
   ],
 };

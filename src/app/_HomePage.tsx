@@ -78,7 +78,7 @@ export default function HomePage() {
   const [latestPosts, setLatestPosts] = useState<BlogPostSummary[]>([]);
 
   useEffect(() => {
-    fetch('/api/blog?pageSize=3')
+    fetch('/api/blog?pageSize=4')
       .then((r) => r.json())
       .then((d) => setLatestPosts(d.data ?? []))
       .catch(() => {});
@@ -504,124 +504,247 @@ export default function HomePage() {
 
       {/* ── LATEST BLOG POSTS ── */}
       {latestPosts.length > 0 && (
-        <Container maxWidth="lg" sx={{ py: { xs: 8, md: 12 } }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 6 }}>
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Article sx={{ color: '#2d5a27', fontSize: 28 }} />
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  {t('home.latestBlog', 'From the Blog')}
+        <Box sx={{ bgcolor: '#f8f9f6', py: { xs: 8, md: 12 } }}>
+          <Container maxWidth="lg">
+            {/* Section header */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 6 }}>
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Article sx={{ color: '#2d5a27', fontSize: 28 }} />
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    {t('home.latestBlog', 'From the Blog')}
+                  </Typography>
+                </Box>
+                <Typography variant="body1" color="text.secondary">
+                  {t('home.latestBlogSub', 'Tips, guides and stories from our community.')}
                 </Typography>
               </Box>
-              <Typography variant="body1" color="text.secondary">
-                {t('home.latestBlogSub', 'Tips, guides and stories from our community.')}
-              </Typography>
+              <Button component={Link} href="/blog" variant="outlined" size="small" sx={{ flexShrink: 0 }}>
+                {t('home.viewAllPosts', 'View all posts →')}
+              </Button>
             </Box>
-            <Button
-              component={Link}
-              href="/blog"
-              variant="outlined"
-              size="small"
-              sx={{ flexShrink: 0 }}
-            >
-              {t('home.viewAllPosts', 'View all posts →')}
-            </Button>
-          </Box>
 
-          <Grid container spacing={3}>
-            {latestPosts.map((post) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
-                <Card
-                  elevation={0}
+            {/* Featured latest post */}
+            <Card
+              elevation={0}
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'divider',
+                overflow: 'hidden',
+                mb: 4,
+                bgcolor: 'white',
+                transition: 'box-shadow 0.2s',
+                '&:hover': { boxShadow: 6 },
+              }}
+            >
+              {latestPosts[0].coverUrl && (
+                <Box
                   sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    borderRadius: 3,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    transition: 'transform 0.15s, box-shadow 0.15s',
-                    '&:hover': { transform: 'translateY(-3px)', boxShadow: 4 },
+                    position: 'relative',
+                    width: { xs: '100%', md: '55%' },
+                    height: { xs: 220, md: 400 },
+                    flexShrink: 0,
                   }}
                 >
-                  <CardActionArea component={Link} href={`/blog/${post.slug}`} sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-                    {post.coverUrl && (
-                      <Box sx={{ position: 'relative', height: 180, borderRadius: '12px 12px 0 0', overflow: 'hidden' }}>
-                        <Image
-                          src={post.coverUrl}
-                          alt={post.title}
-                          fill
-                          unoptimized
-                          sizes="(max-width:600px) 100vw, 33vw"
-                          style={{ objectFit: 'cover' }}
-                        />
-                      </Box>
-                    )}
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      {post.category && (
-                        <Chip
-                          label={post.category.name}
-                          size="small"
-                          sx={{
-                            mb: 1,
-                            height: 20,
-                            fontSize: '0.7rem',
-                            ...(post.category.color ? { bgcolor: post.category.color, color: 'white' } : {}),
-                          }}
-                        />
-                      )}
-                      <Typography
-                        variant="subtitle1"
-                        sx={
-                          {
-                            fontWeight: 700,
-                            mb: 0.75,
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                          }
-                        }
-                      >
-                        {post.title}
-                      </Typography>
-                      {post.excerpt && (
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                            mb: 1.5,
-                          }}
-                        >
-                          {post.excerpt}
-                        </Typography>
-                      )}
-                      <Divider sx={{ mb: 1.25 }} />
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Avatar sx={{ width: 18, height: 18, fontSize: '0.6rem', bgcolor: '#2d5a27' }}>
-                            {post.author.name?.charAt(0) ?? 'A'}
-                          </Avatar>
-                          <Typography variant="caption" color="text.secondary">{post.author.name}</Typography>
-                        </Box>
-                        {post.readingTimeMinutes && (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
-                            <AccessTime sx={{ fontSize: '0.75rem', color: 'text.secondary' }} />
-                            <Typography variant="caption" color="text.secondary">{post.readingTimeMinutes} min</Typography>
+                  <Image
+                    src={latestPosts[0].coverUrl}
+                    alt={latestPosts[0].title}
+                    fill
+                    unoptimized
+                    sizes="(max-width:900px) 100vw, 55vw"
+                    style={{ objectFit: 'cover' }}
+                  />
+                </Box>
+              )}
+              <Box sx={{ flex: 1, p: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                  {latestPosts[0].category && (
+                    <Chip
+                      label={latestPosts[0].category.name}
+                      size="small"
+                      sx={{
+                        height: 22,
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        ...(latestPosts[0].category.color
+                          ? { bgcolor: latestPosts[0].category.color, color: 'white' }
+                          : { bgcolor: '#2d5a2720', color: '#2d5a27' }),
+                      }}
+                    />
+                  )}
+                  {latestPosts[0].publishedAt && (
+                    <Typography variant="caption" color="text.secondary">
+                      {new Date(latestPosts[0].publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </Typography>
+                  )}
+                </Box>
+
+                <Typography
+                  variant="h4"
+                  component="h2"
+                  sx={{
+                    fontWeight: 800,
+                    mb: 2,
+                    lineHeight: 1.25,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {latestPosts[0].title}
+                </Typography>
+
+                {latestPosts[0].excerpt && (
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    sx={{
+                      mb: 3,
+                      lineHeight: 1.7,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 4,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {latestPosts[0].excerpt}
+                  </Typography>
+                )}
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Avatar sx={{ width: 28, height: 28, fontSize: '0.8rem', bgcolor: '#2d5a27' }}>
+                      {latestPosts[0].author.name?.charAt(0) ?? 'A'}
+                    </Avatar>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{latestPosts[0].author.name}</Typography>
+                  </Box>
+                  {latestPosts[0].readingTimeMinutes && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                      <AccessTime sx={{ fontSize: '0.9rem', color: 'text.secondary' }} />
+                      <Typography variant="caption" color="text.secondary">{latestPosts[0].readingTimeMinutes} min read</Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                <Button
+                  component={Link}
+                  href={`/blog/${latestPosts[0].slug}`}
+                  variant="contained"
+                  sx={{
+                    alignSelf: 'flex-start',
+                    bgcolor: '#2d5a27',
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    px: 3,
+                    '&:hover': { bgcolor: '#1e3d1a' },
+                  }}
+                >
+                  {t('home.readMore', 'Read more →')}
+                </Button>
+              </Box>
+            </Card>
+
+            {/* 3 smaller cards */}
+            {latestPosts.length > 1 && (
+              <Grid container spacing={3}>
+                {latestPosts.slice(1).map((post) => (
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
+                    <Card
+                      elevation={0}
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderRadius: 3,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        bgcolor: 'white',
+                        transition: 'transform 0.15s, box-shadow 0.15s',
+                        '&:hover': { transform: 'translateY(-3px)', boxShadow: 4 },
+                      }}
+                    >
+                      <CardActionArea component={Link} href={`/blog/${post.slug}`} sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+                        {post.coverUrl && (
+                          <Box sx={{ position: 'relative', height: 160, borderRadius: '12px 12px 0 0', overflow: 'hidden' }}>
+                            <Image
+                              src={post.coverUrl}
+                              alt={post.title}
+                              fill
+                              unoptimized
+                              sizes="(max-width:600px) 100vw, 33vw"
+                              style={{ objectFit: 'cover' }}
+                            />
                           </Box>
                         )}
-                      </Box>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
+                        <CardContent sx={{ flexGrow: 1 }}>
+                          {post.category && (
+                            <Chip
+                              label={post.category.name}
+                              size="small"
+                              sx={{
+                                mb: 1,
+                                height: 20,
+                                fontSize: '0.7rem',
+                                ...(post.category.color ? { bgcolor: post.category.color, color: 'white' } : {}),
+                              }}
+                            />
+                          )}
+                          <Typography
+                            variant="subtitle1"
+                            sx={{
+                              fontWeight: 700,
+                              mb: 0.75,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            {post.title}
+                          </Typography>
+                          {post.excerpt && (
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                                mb: 1.5,
+                              }}
+                            >
+                              {post.excerpt}
+                            </Typography>
+                          )}
+                          <Divider sx={{ mb: 1.25 }} />
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <Avatar sx={{ width: 18, height: 18, fontSize: '0.6rem', bgcolor: '#2d5a27' }}>
+                                {post.author.name?.charAt(0) ?? 'A'}
+                              </Avatar>
+                              <Typography variant="caption" color="text.secondary">{post.author.name}</Typography>
+                            </Box>
+                            {post.readingTimeMinutes && (
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                                <AccessTime sx={{ fontSize: '0.75rem', color: 'text.secondary' }} />
+                                <Typography variant="caption" color="text.secondary">{post.readingTimeMinutes} min</Typography>
+                              </Box>
+                            )}
+                          </Box>
+                        </CardContent>
+                      </CardActionArea>
+                    </Card>
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
-        </Container>
+            )}
+          </Container>
+        </Box>
       )}
 
       {/* ── CTA ── */}

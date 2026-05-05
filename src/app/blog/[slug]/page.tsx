@@ -10,22 +10,38 @@ import Image from 'next/image';
 import Navbar from '@/components/layout/Navbar';
 import type { Metadata } from 'next';
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.ontooff.app';
+
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await prisma.blogPost.findUnique({
     where: { slug, status: 'PUBLISHED' },
-    select: { title: true, excerpt: true, coverUrl: true },
+    select: { title: true, excerpt: true, coverUrl: true, publishedAt: true },
   });
-  if (!post) return { title: 'Post Not Found' };
+  if (!post) return { title: 'Post Not Found', robots: { index: false, follow: false } };
+  const description = post.excerpt ? post.excerpt.slice(0, 155) : undefined;
+  const pageUrl = `${APP_URL}/blog/${slug}`;
   return {
     title: post.title,
-    description: post.excerpt ?? undefined,
+    description,
+    alternates: { canonical: pageUrl },
     openGraph: {
+      type: 'article',
+      url: pageUrl,
       title: post.title,
-      description: post.excerpt ?? undefined,
-      images: post.coverUrl ? [post.coverUrl] : [],
+      description,
+      publishedTime: post.publishedAt ? post.publishedAt.toISOString() : undefined,
+      images: post.coverUrl
+        ? [{ url: post.coverUrl, width: 1200, height: 630, alt: post.title }]
+        : [{ url: `${APP_URL}/assets/images/og-image.jpg`, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description,
+      images: post.coverUrl ? [post.coverUrl] : [`${APP_URL}/assets/images/og-image.jpg`],
     },
   };
 }

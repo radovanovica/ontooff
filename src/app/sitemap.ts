@@ -21,6 +21,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: `${APP_URL}/blog`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
       url: `${APP_URL}/auth/signin`,
       lastModified: now,
       changeFrequency: 'monthly',
@@ -76,5 +82,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // DB unavailable at build time — skip
   }
 
-  return [...staticRoutes, ...placeRoutes, ...freeRoutes];
+  // Dynamic: published blog posts
+  let blogRoutes: MetadataRoute.Sitemap = [];
+  try {
+    const posts = await prisma.blogPost.findMany({
+      where: { status: 'PUBLISHED' },
+      select: { slug: true, updatedAt: true },
+      orderBy: { updatedAt: 'desc' },
+    });
+    blogRoutes = posts.map((p: { slug: string; updatedAt: Date }) => ({
+      url: `${APP_URL}/blog/${p.slug}`,
+      lastModified: p.updatedAt,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    }));
+  } catch {
+    // DB unavailable at build time — skip
+  }
+
+  return [...staticRoutes, ...placeRoutes, ...freeRoutes, ...blogRoutes];
 }

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Search Activities & Locations',
+  title: 'Search Camping, Fishing & Outdoor Activities',
   description:
-    'Search and filter outdoor camping spots, fishing lakes, kayaking trails and free community locations. Use the map to find activities near you.',
+    'Search and filter camping spots, fishing lakes, kayaking trails and free community locations. Use the interactive map to find activities near you.',
   robots: { index: true, follow: true },
   openGraph: {
     title: 'Search Outdoor Activities | ontooff',

@@ -4,6 +4,16 @@ import { UserRole } from '@/types';
 
 export default withAuth(
   function middleware(req) {
+    // Enforce HTTPS — Heroku passes the original protocol via X-Forwarded-Proto
+    if (
+      process.env.NODE_ENV === 'production' &&
+      req.headers.get('x-forwarded-proto') === 'http'
+    ) {
+      const httpsUrl = req.nextUrl.clone();
+      httpsUrl.protocol = 'https:';
+      return NextResponse.redirect(httpsUrl, { status: 301 });
+    }
+
     const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
 
@@ -39,11 +49,13 @@ export default withAuth(
           '/embed/',
           '/places/',
           '/locations/',
+          '/blog',
           '/registration/edit/',
           '/api/auth/',
           '/api/embed/',
           '/api/tags',
           '/api/search',
+          '/api/blog',
           '/api/places/by-slug/',
           '/api/places/',
           '/api/free-locations/',

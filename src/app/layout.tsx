@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Providers from './providers';
 import I18nLocaleSync from '@/components/providers/I18nLocaleSync';
+import Analytics from '@/components/Analytics';
 import './globals.css';
 import 'leaflet/dist/leaflet.css';
 
@@ -12,11 +13,11 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.ontooff.app';
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: 'ontooff – Book Outdoor Nature Activities',
+    default: 'ontooff – Book Camping, Fishing & Outdoor Activities',
     template: '%s | ontooff',
   },
   description:
-    'Discover and book camping spots, fishing lakes, kayaking trails and outdoor activities. Browse venues, pick your exact spot on an interactive map, and confirm your reservation in minutes.',
+    'Book camping spots, fishing lakes and outdoor activities. Browse venues, pick your exact spot on an interactive map, and confirm your reservation instantly.',
   keywords: [
     'camping booking',
     'fishing spot reservation',
@@ -47,7 +48,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: APP_URL,
     siteName: 'ontooff',
-    title: 'ontooff – Book Outdoor Nature Activities',
+    title: 'ontooff – Book Camping, Fishing & Outdoor Activities',
     description:
       'Find and book camping spots, fishing lakes and outdoor activities. Browse, pick your exact spot on a map, and confirm your reservation instantly.',
     images: [
@@ -62,7 +63,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     site: '@ontooff',
-    title: 'ontooff – Book Outdoor Nature Activities',
+    title: 'ontooff – Book Camping, Fishing & Outdoor Activities',
     description:
       'Find and book camping spots, fishing lakes and outdoor activities.',
     images: ['/assets/images/og-image.jpg'],
@@ -83,6 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className} suppressHydrationWarning>
         <Providers>{children}</Providers>
         <I18nLocaleSync />
+        <Analytics />
       </body>
     </html>
   );
