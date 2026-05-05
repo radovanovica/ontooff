@@ -90,157 +90,185 @@ export default function InstagramStoryShare({
     canvas.height = H;
     const ctx = canvas.getContext('2d')!;
 
-    // ── Background gradient ──────────────────────────────────────────────
+    const APP_NAME = (process.env.NEXT_PUBLIC_APP_NAME ?? 'ontooff').toLowerCase();
+
+    // ── STEP 1: Dark base background ──────────────────────────────────────
     const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#0b1e0e');
-    bg.addColorStop(0.55, '#1a3d17');
-    bg.addColorStop(1, '#0d2610');
+    bg.addColorStop(0, '#091a0c');
+    bg.addColorStop(0.45, '#12301a');
+    bg.addColorStop(1, '#060f08');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    // ── Cover image strip ────────────────────────────────────────────────
-    const IMG_H = 780;
+    // ── STEP 2: Full-bleed cover image ────────────────────────────────────
+    let hasImage = false;
     if (coverUrl) {
       try {
         const img = new window.Image();
         img.crossOrigin = 'anonymous';
         await new Promise<void>((res, rej) => {
           img.onload = () => res();
-          img.onerror = () => rej();
+          img.onerror = () => rej(new Error('load failed'));
           img.src = coverUrl;
         });
-        // Draw with rounded top corners only (clipped)
-        ctx.save();
-        roundRect(ctx, 48, 88, W - 96, IMG_H, 32);
-        ctx.clip();
-        // Cover-fit
-        const scale = Math.max((W - 96) / img.width, IMG_H / img.height);
+        // Scale to fill entire canvas (cover-fit)
+        const scale = Math.max(W / img.width, H / img.height);
         const dw = img.width * scale;
         const dh = img.height * scale;
-        ctx.drawImage(img, 48 + ((W - 96) - dw) / 2, 88 + (IMG_H - dh) / 2, dw, dh);
-        ctx.restore();
-
-        // Gradient overlay on image bottom so text is readable
-        const imgFade = ctx.createLinearGradient(0, 88, 0, 88 + IMG_H);
-        imgFade.addColorStop(0, 'rgba(0,0,0,0)');
-        imgFade.addColorStop(0.55, 'rgba(0,0,0,0)');
-        imgFade.addColorStop(1, 'rgba(10,30,10,0.82)');
-        ctx.fillStyle = imgFade;
-        ctx.fillRect(48, 88, W - 96, IMG_H);
+        ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+        hasImage = true;
       } catch {
-        // Image load failed — use decorative pattern instead
-        ctx.fillStyle = '#2d5a2730';
-        ctx.fillRect(48, 88, W - 96, IMG_H);
+        // fallback to plain background with decorative elements
       }
     }
 
-    // ── Content area ─────────────────────────────────────────────────────
-    const contentY = coverUrl ? 88 + IMG_H + 56 : 200;
-    let cy = contentY;
+    // ── STEP 3: Overlay gradients ─────────────────────────────────────────
+    if (hasImage) {
+      // Radial vignette — darkens edges so content stands out
+      const vignette = ctx.createRadialGradient(W / 2, H / 2, H * 0.22, W / 2, H / 2, H * 0.82);
+      vignette.addColorStop(0, 'rgba(0,0,0,0)');
+      vignette.addColorStop(1, 'rgba(0,0,0,0.52)');
+      ctx.fillStyle = vignette;
+      ctx.fillRect(0, 0, W, H);
+
+      // Strong bottom gradient so text content is fully readable
+      const bottomFade = ctx.createLinearGradient(0, H * 0.30, 0, H);
+      bottomFade.addColorStop(0,    'rgba(5,14,6,0)');
+      bottomFade.addColorStop(0.30, 'rgba(5,14,6,0.68)');
+      bottomFade.addColorStop(0.58, 'rgba(5,14,6,0.90)');
+      bottomFade.addColorStop(1,    'rgba(5,14,6,0.98)');
+      ctx.fillStyle = bottomFade;
+      ctx.fillRect(0, 0, W, H);
+
+      // Soft top fade so the brand badge has a readable dark backing
+      const topFade = ctx.createLinearGradient(0, 0, 0, 280);
+      topFade.addColorStop(0, 'rgba(0,0,0,0.60)');
+      topFade.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = topFade;
+      ctx.fillRect(0, 0, W, 280);
+    } else {
+      // Decorative glows on plain bg when no image
+      const glow = ctx.createRadialGradient(180, H * 0.38, 0, 180, H * 0.38, 680);
+      glow.addColorStop(0, 'rgba(126,200,110,0.13)');
+      glow.addColorStop(1, 'rgba(126,200,110,0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.fillStyle = 'rgba(126,200,110,0.055)';
+      ctx.beginPath();
+      ctx.arc(W + 120, -120, 620, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(126,200,110,0.035)';
+      ctx.beginPath();
+      ctx.arc(W + 120, -120, 940, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // ── STEP 4: Top brand badge ───────────────────────────────────────────
+    ctx.font = 'bold 50px system-ui, sans-serif';
+    const brandW = ctx.measureText(APP_NAME).width + 56;
+    ctx.fillStyle = 'rgba(126,200,110,0.18)';
+    roundRect(ctx, 72, 92, brandW, 72, 36);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(126,200,110,0.42)';
+    ctx.lineWidth = 2;
+    roundRect(ctx, 72, 92, brandW, 72, 36);
+    ctx.stroke();
+    ctx.fillStyle = '#7ec86e';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(APP_NAME, 72 + 28, 92 + 36);
+
+    // ── STEP 5: Content area ──────────────────────────────────────────────
+    // With image: anchor content to lower portion; without: start higher
+    let cy = hasImage ? Math.round(H * 0.53) : 300;
 
     // Category pill
     if (category) {
-      const pill = categoryColor ?? '#2d5a27';
-      ctx.fillStyle = pill;
-      const pillW = 0; // measured below
-      ctx.font = 'bold 36px system-ui, sans-serif';
-      const catW = ctx.measureText(category.toUpperCase()).width + 48;
-      roundRect(ctx, 80, cy, catW, 56, 28);
+      ctx.font = 'bold 34px system-ui, sans-serif';
+      const catW = ctx.measureText(category.toUpperCase()).width + 44;
+      ctx.fillStyle = categoryColor ?? '#2d5a27';
+      roundRect(ctx, 72, cy, catW, 54, 27);
       ctx.fill();
       ctx.fillStyle = '#ffffff';
       ctx.textBaseline = 'middle';
-      ctx.fillText(category.toUpperCase(), 80 + 24, cy + 28);
-      cy += 80;
+      ctx.fillText(category.toUpperCase(), 72 + 22, cy + 27);
+      cy += 78;
     }
 
-    // Title
-    ctx.font = `bold 76px system-ui, sans-serif`;
+    // Title — large, with shadow for legibility over photos
+    ctx.font = 'bold 80px system-ui, sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.textBaseline = 'top';
-    const titleLines = wrapText(ctx, title, W - 160);
+    ctx.shadowColor = 'rgba(0,0,0,0.55)';
+    ctx.shadowBlur = 20;
+    const titleLines = wrapText(ctx, title, W - 144);
     const maxTitleLines = 4;
     titleLines.slice(0, maxTitleLines).forEach((line, i) => {
-      if (i === maxTitleLines - 1 && titleLines.length > maxTitleLines) {
-        ctx.fillText(line + '…', 80, cy);
-      } else {
-        ctx.fillText(line, 80, cy);
-      }
-      cy += 90;
+      ctx.fillText(i === maxTitleLines - 1 && titleLines.length > maxTitleLines ? line + '…' : line, 72, cy);
+      cy += 98;
     });
-    cy += 16;
+    ctx.shadowBlur = 0;
+    cy += 14;
 
     // Excerpt
     if (excerpt) {
       ctx.font = '44px system-ui, sans-serif';
-      ctx.fillStyle = 'rgba(255,255,255,0.78)';
-      const excLines = wrapText(ctx, excerpt, W - 160);
+      ctx.fillStyle = 'rgba(255,255,255,0.76)';
+      const excLines = wrapText(ctx, excerpt, W - 144);
       const maxExc = 3;
       excLines.slice(0, maxExc).forEach((line, i) => {
-        if (i === maxExc - 1 && excLines.length > maxExc) {
-          ctx.fillText(line + '…', 80, cy);
-        } else {
-          ctx.fillText(line, 80, cy);
-        }
-        cy += 58;
+        ctx.fillText(i === maxExc - 1 && excLines.length > maxExc ? line + '…' : line, 72, cy);
+        cy += 60;
       });
-      cy += 24;
+      cy += 22;
     }
 
-    // Author + reading time row
-    ctx.font = '40px system-ui, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    // Meta row (author / location / reading time)
     let metaText = '';
     if (subtitle) {
       metaText = `📍 ${subtitle}`;
     } else {
-      metaText = authorName ? `✍ ${authorName}` : '';
-      if (readingTimeMinutes) metaText += `   ·   ⏱ ${readingTimeMinutes} min read`;
+      if (authorName) metaText = `✍ ${authorName}`;
+      if (readingTimeMinutes) metaText += `${metaText ? '   ·   ' : ''}⏱ ${readingTimeMinutes} min read`;
     }
-    if (metaText) ctx.fillText(metaText, 80, cy);
+    if (metaText) {
+      ctx.font = '40px system-ui, sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.52)';
+      ctx.textBaseline = 'top';
+      ctx.fillText(metaText, 72, cy);
+    }
 
-    // ── Bottom branding bar ───────────────────────────────────────────────
-    const barY = H - 220;
+    // ── STEP 6: Bottom branding bar ───────────────────────────────────────
+    const barY = H - 240;
 
-    // Divider
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(80, barY);
-    ctx.lineTo(W - 80, barY);
+    ctx.moveTo(72, barY);
+    ctx.lineTo(W - 72, barY);
     ctx.stroke();
 
-    // Logo text
-    ctx.font = 'bold 58px system-ui, sans-serif';
-    ctx.fillStyle = '#7ec86e';
+    // CTA label
+    ctx.font = '36px system-ui, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.42)';
     ctx.textBaseline = 'middle';
-    ctx.fillText('ontooff', 80, barY + 72);
+    ctx.fillText(t('instagramStory.canvasCta'), 72, barY + 50);
 
-    // CTA
-    ctx.font = '38px system-ui, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.50)';
-    ctx.fillText(t('instagramStory.canvasCta'), 80, barY + 140);
-
-    // URL pill
-    const urlPillY = barY + 160;
-    ctx.font = 'bold 34px system-ui, sans-serif';
+    // URL pill with border
+    const urlPillY = barY + 88;
+    ctx.font = 'bold 36px system-ui, sans-serif';
     const shortUrl = postUrl.replace(/^https?:\/\//, '');
     const urlW = ctx.measureText(shortUrl).width + 48;
-    ctx.fillStyle = 'rgba(126,200,110,0.18)';
-    roundRect(ctx, 80, urlPillY, urlW, 52, 26);
+    ctx.fillStyle = 'rgba(126,200,110,0.16)';
+    roundRect(ctx, 72, urlPillY, urlW, 58, 29);
     ctx.fill();
+    ctx.strokeStyle = 'rgba(126,200,110,0.38)';
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, 72, urlPillY, urlW, 58, 29);
+    ctx.stroke();
     ctx.fillStyle = '#7ec86e';
     ctx.textBaseline = 'middle';
-    ctx.fillText(shortUrl, 80 + 24, urlPillY + 26);
-
-    // Decorative circles (top-right corner)
-    ctx.fillStyle = 'rgba(126,200,110,0.07)';
-    ctx.beginPath();
-    ctx.arc(W - 80, 80, 240, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(126,200,110,0.05)';
-    ctx.beginPath();
-    ctx.arc(W - 80, 80, 380, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillText(shortUrl, 72 + 24, urlPillY + 29);
 
     setDataUrl(canvas.toDataURL('image/png'));
     setGenerating(false);
