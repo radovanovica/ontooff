@@ -261,6 +261,9 @@ export default function InstagramStoryShare({
 
   return (
     <>
+      {/* Hidden canvas — must live outside Dialog so it is always mounted */}
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
+
       <Tooltip title={t('instagramStory.shareTooltip')}>
         <Button
           onClick={handleOpen}
@@ -298,9 +301,6 @@ export default function InstagramStoryShare({
         </DialogTitle>
 
         <DialogContent sx={{ textAlign: 'center', pb: 3 }}>
-          {/* Hidden canvas for rendering */}
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
-
           {generating ? (
             <Box sx={{ py: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
               <CircularProgress sx={{ color: '#E1306C' }} />
