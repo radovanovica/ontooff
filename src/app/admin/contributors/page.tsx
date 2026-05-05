@@ -49,6 +49,14 @@ export default function AdminContributorsPage() {
   const [promoteSelected, setPromoteSelected] = useState<UserOption | null>(null);
   const [promoting, setPromoting] = useState(false);
 
+  // Create new contributor dialog
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createName, setCreateName] = useState('');
+  const [createEmail, setCreateEmail] = useState('');
+  const [createPassword, setCreatePassword] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
   const PAGE_SIZE = 20;
 
   const fetchContributors = useCallback(async (p = 1) => {
@@ -142,6 +150,33 @@ export default function AdminContributorsPage() {
     }
   };
 
+  const handleCreateContributor = async () => {
+    if (!createName.trim() || !createEmail.trim() || !createPassword) return;
+    setCreating(true);
+    setCreateError(null);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: createName.trim(), email: createEmail.trim(), password: createPassword, role: 'CONTRIBUTOR' }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCreateError(data.error ?? 'Failed to create user');
+        return;
+      }
+      setCreateOpen(false);
+      setCreateName('');
+      setCreateEmail('');
+      setCreatePassword('');
+      fetchContributors(1);
+    } catch {
+      setCreateError('Failed to create user');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <Box>
       <PageHeader
@@ -165,6 +200,13 @@ export default function AdminContributorsPage() {
           onClick={() => setPromoteOpen(true)}
         >
           Add Contributor
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<Add />}
+          onClick={() => { setCreateError(null); setCreateOpen(true); }}
+        >
+          Create New
         </Button>
       </Box>
 
@@ -295,6 +337,62 @@ export default function AdminContributorsPage() {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* Create New Contributor Dialog */}
+      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>
+          Create New Contributor
+          <IconButton onClick={() => setCreateOpen(false)} sx={{ position: 'absolute', right: 8, top: 8 }}>
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Create a new user account with the Contributor role.
+          </Typography>
+          {createError && <Alert severity="error" sx={{ mb: 2 }}>{createError}</Alert>}
+          <TextField
+            label="Full Name"
+            value={createName}
+            onChange={(e) => setCreateName(e.target.value)}
+            fullWidth
+            required
+            size="small"
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            label="Email"
+            type="email"
+            value={createEmail}
+            onChange={(e) => setCreateEmail(e.target.value)}
+            fullWidth
+            required
+            size="small"
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            label="Password"
+            type="password"
+            value={createPassword}
+            onChange={(e) => setCreatePassword(e.target.value)}
+            fullWidth
+            required
+            size="small"
+            helperText="Minimum 8 characters"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleCreateContributor}
+            disabled={creating || !createName.trim() || !createEmail.trim() || createPassword.length < 8}
+            startIcon={creating ? <CircularProgress size={16} color="inherit" /> : <PersonAdd />}
+          >
+            Create Contributor
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Add Contributor Dialog */}
       <Dialog open={promoteOpen} onClose={() => { setPromoteOpen(false); setPromoteSelected(null); setPromoteSearch(''); }} maxWidth="sm" fullWidth>
         <DialogTitle>

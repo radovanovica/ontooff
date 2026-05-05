@@ -6,7 +6,7 @@ import {
   Typography, Chip, CircularProgress, Alert, IconButton, Tooltip, Select, MenuItem,
   SelectChangeEvent, TextField, InputAdornment, Pagination, Avatar,
 } from '@mui/material';
-import { Search, OpenInNew, CheckCircle, Archive, Delete } from '@mui/icons-material';
+import { Search, OpenInNew, CheckCircle, Archive, Delete, Add } from '@mui/icons-material';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import PageHeader from '@/components/ui/PageHeader';
@@ -86,6 +86,11 @@ export default function AdminBlogPage() {
         subtitle="Review, publish and moderate blog posts"
         breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Blog' }]}
         badge={statusFilter === 'DRAFT' && total > 0 ? `${total} pending` : undefined}
+        action={
+          <Button variant="contained" startIcon={<Add />} component={Link} href="/contributor/posts/new">
+            New Post
+          </Button>
+        }
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>

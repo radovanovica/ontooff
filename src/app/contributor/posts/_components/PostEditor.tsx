@@ -5,7 +5,7 @@ import {
   Typography, Chip, Autocomplete, Select, MenuItem, FormControl, InputLabel,
   Stack, Divider,
 } from '@mui/material';
-import { Save, Public, Visibility, ArrowBack } from '@mui/icons-material';
+import { Save, Public, Visibility, ArrowBack, AddPhotoAlternate } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -101,6 +101,30 @@ export default function PostEditor({ mode, initialSlug, defaultValues }: Props) 
       setValue('coverUrl', url);
     } catch {
       setError('Cover image upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleBodyImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    setUploading(true);
+    try {
+      const url = await uploadFileToS3(file, 'blog-images');
+      const imgTag = `\n<img src="${url}" alt="" style="max-width:100%; border-radius:4px;">\n`;
+      const current = watchBody ?? '';
+      const el = document.querySelector('textarea[name="body"]') as HTMLTextAreaElement | null;
+      if (el) {
+        const start = el.selectionStart ?? current.length;
+        const end = el.selectionEnd ?? start;
+        setValue('body', current.slice(0, start) + imgTag + current.slice(end));
+      } else {
+        setValue('body', current + imgTag);
+      }
+    } catch {
+      setError('Image upload failed');
     } finally {
       setUploading(false);
     }
@@ -207,9 +231,23 @@ export default function PostEditor({ mode, initialSlug, defaultValues }: Props) 
                 <CardContent>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Content</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {wordCount} words · ~{Math.max(1, Math.round(wordCount / 200))} min read
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {!previewMode && (
+                        <Button
+                          component="label"
+                          variant="outlined"
+                          size="small"
+                          startIcon={uploading ? <CircularProgress size={14} color="inherit" /> : <AddPhotoAlternate />}
+                          disabled={uploading}
+                        >
+                          Insert Image
+                          <input type="file" hidden accept="image/*" onChange={handleBodyImageUpload} />
+                        </Button>
+                      )}
+                      <Typography variant="caption" color="text.secondary">
+                        {wordCount} words · ~{Math.max(1, Math.round(wordCount / 200))} min read
+                      </Typography>
+                    </Box>
                   </Box>
 
                   {previewMode ? (

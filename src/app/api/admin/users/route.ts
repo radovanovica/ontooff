@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { z } from 'zod';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 import { UserRole } from '@/types';
@@ -9,6 +10,13 @@ const updateSchema = z.object({
   role: z.nativeEnum(UserRole).optional(),
   isActive: z.boolean().optional(),
   name: z.string().optional(),
+});
+
+const createSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  role: z.nativeEnum(UserRole).default(UserRole.CONTRIBUTOR),
 });
 
 export async function GET(req: NextRequest) {
@@ -82,4 +90,35 @@ export async function PATCH(req: NextRequest) {
   });
 
   return NextResponse.json({ success: true, data: updated });
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== UserRole.SUPER_ADMIN) {
+    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+  }
+
+  const body = await req.json();
+  const result = createSchema.safeParse(body);
+  if (!result.success) {
+    return NextResponse.json(
+      { success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors },
+      { status: 422 },
+    );
+  }
+
+  const { name, email, password, role } = result.data;
+
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    return NextResponse.json({ success: false, error: 'Email already in use' }, { status: 409 });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 12);
+  const user = await prisma.user.create({
+    data: { name, email, password: hashedPassword, role, isActive: true, emailVerified: new Date() },
+    select: { id: true, name: true, email: true, role: true, isActive: true, createdAt: true },
+  });
+
+  return NextResponse.json({ success: true, data: user }, { status: 201 });
 }
