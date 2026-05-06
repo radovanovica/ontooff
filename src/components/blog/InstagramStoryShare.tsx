@@ -104,12 +104,13 @@ export default function InstagramStoryShare({
     let hasImage = false;
     if (coverUrl) {
       try {
+        // Load via same-origin proxy to avoid S3 CORS restrictions on canvas
+        const proxied = `/api/proxy-image?url=${encodeURIComponent(coverUrl)}`;
         const img = new window.Image();
-        img.crossOrigin = 'anonymous';
         await new Promise<void>((res, rej) => {
           img.onload = () => res();
           img.onerror = () => rej(new Error('load failed'));
-          img.src = coverUrl;
+          img.src = proxied;
         });
         // Scale to fill entire canvas (cover-fit)
         const scale = Math.max(W / img.width, H / img.height);
