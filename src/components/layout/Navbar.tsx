@@ -58,7 +58,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'), { noSsr: true });
   const { t } = useTranslation('common');
 
   const [drawerOpen, setDrawerOpen] = useState(false);

@@ -76,6 +76,7 @@ export async function GET(req: NextRequest) {
         title: true,
         slug: true,
         excerpt: true,
+        body: true,
         coverUrl: true,
         status: true,
         publishedAt: true,
@@ -91,9 +92,17 @@ export async function GET(req: NextRequest) {
     prisma.blogPost.count({ where }),
   ]);
 
+  // Strip HTML from body and return a plain-text preview (≤260 chars) instead of the full body
+  const data = posts.map(({ body, ...rest }) => ({
+    ...rest,
+    bodyPreview: body
+      ? body.replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 260)
+      : null,
+  }));
+
   return NextResponse.json({
     success: true,
-    data: posts,
+    data,
     meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
   });
 }

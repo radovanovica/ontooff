@@ -207,6 +207,8 @@ export interface RegistrationEmailData {
   requiresPayment: boolean;
   paymentBreakdown?: Array<{ label: string; totalPrice: number }>;
   editToken: string;
+  /** Actual registration status — affects subject and heading copy */
+  status?: string;
 }
 
 export async function sendRegistrationConfirmation(
@@ -229,11 +231,21 @@ export async function sendRegistrationConfirmation(
     )}`
     : `<p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:#4a7c59;margin:24px 0 0;">This activity is free of charge.</p>`;
 
+  const isConfirmed = data.status === 'CONFIRMED';
+  const heading = isConfirmed ? 'Booking Confirmed' : 'Booking Received';
+  const headingColor = isConfirmed ? '#2d5a27' : '#2d3a2e';
+  const subjectLine = isConfirmed
+    ? `Booking Confirmed – #${data.registrationNumber} ${data.activityName}`
+    : `Booking Received – #${data.registrationNumber} ${data.activityName}`;
+  const introCopy = isConfirmed
+    ? `Hi <strong>${data.firstName}</strong>, your reservation has been confirmed. Please keep this email for your records.`
+    : `Hi <strong>${data.firstName}</strong>, your reservation has been received and is <strong>pending confirmation</strong> from the organiser. You will receive another email once it has been reviewed.`;
+
   const html = baseTemplate(`
-    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:#2d3a2e;margin:0 0 6px;">Booking Confirmed</h2>
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:${headingColor};margin:0 0 6px;">${heading}</h2>
     <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;color:#9e8e7e;letter-spacing:0.5px;text-transform:uppercase;margin:0 0 28px;">Reservation #${data.registrationNumber}</p>
 
-    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 24px;">Hi <strong>${data.firstName}</strong>, your reservation has been received and confirmed. Please keep this email for your records.</p>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 24px;">${introCopy}</p>
 
     ${infoCard(
       detailRow('Activity', data.activityName) +
@@ -260,7 +272,7 @@ export async function sendRegistrationConfirmation(
   await transporter.sendMail({
     from: FROM,
     to: email,
-    subject: `Booking Confirmed – #${data.registrationNumber} ${data.activityName}`,
+    subject: subjectLine,
     html,
   });
 }

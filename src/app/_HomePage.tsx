@@ -41,6 +41,7 @@ interface BlogPostSummary {
   slug: string;
   title: string;
   excerpt: string | null;
+  bodyPreview: string | null;
   coverUrl: string | null;
   publishedAt: string | null;
   readingTimeMinutes: number | null;
@@ -632,20 +633,20 @@ export default function HomePage() {
                     {latestPosts[0].title}
                   </Typography>
 
-                  {latestPosts[0].excerpt && (
+                  {(latestPosts[0].excerpt || latestPosts[0].bodyPreview) && (
                     <Typography
                       variant="body1"
                       color="text.secondary"
                       sx={{
                         mb: 3,
-                        lineHeight: 1.7,
+                        lineHeight: 1.75,
                         display: '-webkit-box',
                         WebkitLineClamp: 4,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
                       }}
                     >
-                      {latestPosts[0].excerpt}
+                      {latestPosts[0].excerpt ?? latestPosts[0].bodyPreview}
                     </Typography>
                   )}
 
@@ -699,14 +700,15 @@ export default function HomePage() {
                         borderRadius: 3,
                         border: '1px solid',
                         borderColor: 'divider',
+                        overflow: 'hidden',
                         bgcolor: 'white',
-                        transition: 'transform 0.15s, box-shadow 0.15s',
-                        '&:hover': { transform: 'translateY(-3px)', boxShadow: 4 },
+                        transition: 'box-shadow 0.18s, transform 0.18s',
+                        '&:hover': { boxShadow: '0 4px 24px rgba(45,90,39,0.12)', transform: 'translateY(-3px)' },
                       }}
                     >
                       <CardActionArea component={Link} href={`/blog/${post.slug}`} sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-                        {post.coverUrl && (
-                          <Box sx={{ position: 'relative', height: 160, borderRadius: '12px 12px 0 0', overflow: 'hidden' }}>
+                        <Box sx={{ position: 'relative', height: 180, flexShrink: 0, overflow: 'hidden', bgcolor: '#e8f0e7' }}>
+                          {post.coverUrl ? (
                             <Image
                               src={post.coverUrl}
                               alt={post.title}
@@ -715,25 +717,39 @@ export default function HomePage() {
                               sizes="(max-width:600px) 100vw, 33vw"
                               style={{ objectFit: 'cover' }}
                             />
-                          </Box>
-                        )}
-                        <CardContent sx={{ flexGrow: 1 }}>
+                          ) : (
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                              <Article sx={{ fontSize: 56, color: '#2d5a2730' }} />
+                            </Box>
+                          )}
                           {post.category && (
-                            <Chip
-                              label={post.category.name}
-                              size="small"
-                              sx={{
-                                mb: 1,
-                                height: 20,
-                                fontSize: '0.7rem',
-                                ...(post.category.color ? { bgcolor: post.category.color, color: 'white' } : {}),
-                              }}
-                            />
+                            <Box sx={{ position: 'absolute', top: 12, left: 12 }}>
+                              <Chip
+                                label={post.category.name}
+                                size="small"
+                                sx={{
+                                  fontWeight: 700,
+                                  fontSize: '0.7rem',
+                                  height: 22,
+                                  ...(post.category.color
+                                    ? { bgcolor: post.category.color, color: 'white' }
+                                    : { bgcolor: 'rgba(45,90,39,0.88)', color: 'white' }),
+                                }}
+                              />
+                            </Box>
+                          )}
+                        </Box>
+                        <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
+                          {post.publishedAt && (
+                            <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, letterSpacing: '0.04em' }}>
+                              {new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </Typography>
                           )}
                           <Typography
-                            variant="subtitle1"
+                            variant="subtitle2"
                             sx={{
                               fontWeight: 700,
+                              lineHeight: 1.35,
                               mb: 0.75,
                               display: '-webkit-box',
                               WebkitLineClamp: 2,
@@ -743,32 +759,43 @@ export default function HomePage() {
                           >
                             {post.title}
                           </Typography>
-                          {post.excerpt && (
+                          {(post.excerpt || post.bodyPreview) && (
                             <Typography
                               variant="body2"
                               color="text.secondary"
                               sx={{
+                                lineHeight: 1.6,
+                                flexGrow: 1,
+                                mb: 1.5,
                                 display: '-webkit-box',
-                                WebkitLineClamp: 2,
+                                WebkitLineClamp: 3,
                                 WebkitBoxOrient: 'vertical',
                                 overflow: 'hidden',
-                                mb: 1.5,
                               }}
                             >
-                              {post.excerpt}
+                              {post.excerpt ?? post.bodyPreview}
                             </Typography>
                           )}
-                          <Divider sx={{ mb: 1.25 }} />
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <Avatar sx={{ width: 18, height: 18, fontSize: '0.6rem', bgcolor: '#2d5a27' }}>
-                                {post.author.name?.charAt(0) ?? 'A'}
-                              </Avatar>
-                              <Typography variant="caption" color="text.secondary">{post.author.name}</Typography>
-                            </Box>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                              pt: 1.25,
+                              mt: 'auto',
+                              borderTop: '1px solid',
+                              borderColor: 'divider',
+                            }}
+                          >
+                            <Avatar sx={{ width: 20, height: 20, fontSize: '0.6rem', bgcolor: '#2d5a27' }}>
+                              {post.author.name?.charAt(0) ?? 'A'}
+                            </Avatar>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, flexGrow: 1 }} noWrap>
+                              {post.author.name}
+                            </Typography>
                             {post.readingTimeMinutes && (
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
-                                <AccessTime sx={{ fontSize: '0.75rem', color: 'text.secondary' }} />
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
+                                <AccessTime sx={{ fontSize: '0.7rem', color: 'text.secondary' }} />
                                 <Typography variant="caption" color="text.secondary">{post.readingTimeMinutes} min</Typography>
                               </Box>
                             )}

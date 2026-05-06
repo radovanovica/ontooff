@@ -4,9 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 import { format } from 'date-fns';
 import {
-  Box, Container, Typography, Chip, Avatar, Divider, Paper, Alert,
+  Box, Container, Typography, Chip, Avatar, Alert,
 } from '@mui/material';
-import { AccessTime, Visibility, CalendarToday, Place as PlaceIcon } from '@mui/icons-material';
+import { AccessTime, Visibility, Place as PlaceIcon } from '@mui/icons-material';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/layout/Navbar';
@@ -90,82 +90,176 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <>
       <Navbar />
-      <Container maxWidth="md" sx={{ py: 6 }}>
-        {/* Draft / archived preview banner */}
+
+      {/* ── Hero: full-bleed cover with gradient overlay ── */}
+      {post.coverUrl ? (
+        <Box
+          sx={{
+            position: 'relative',
+            width: '100%',
+            height: { xs: 280, sm: 420, md: 520 },
+            overflow: 'hidden',
+          }}
+        >
+          <Image
+            src={post.coverUrl}
+            alt={post.title}
+            fill
+            priority
+            style={{ objectFit: 'cover' }}
+            sizes="100vw"
+          />
+          {/* Dark gradient so text is readable */}
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.62) 100%)',
+            }}
+          />
+          {/* Category pill — overlaid on hero */}
+          {post.category && (
+            <Box sx={{ position: 'absolute', top: 24, left: 24 }}>
+              <Link href={`/blog?category=${post.category.slug}`} style={{ textDecoration: 'none' }}>
+                <Chip
+                  label={post.category.name}
+                  size="small"
+                  clickable
+                  sx={{
+                    fontWeight: 700,
+                    letterSpacing: '0.04em',
+                    fontSize: '0.72rem',
+                    ...(post.category.color
+                      ? { bgcolor: post.category.color, color: 'white' }
+                      : { bgcolor: 'primary.main', color: 'white' }),
+                  }}
+                />
+              </Link>
+            </Box>
+          )}
+        </Box>
+      ) : (
+        /* No cover: thin accent bar */
+        <Box sx={{ height: 6, background: 'linear-gradient(90deg, #2d5a27, #4a7c59)' }} />
+      )}
+
+      {/* ── Article container ── */}
+      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+
+        {/* Draft / archived banner */}
         {post.status !== 'PUBLISHED' && (
-          <Alert severity="warning" sx={{ mb: 4, borderRadius: 2 }}>
+          <Alert
+            severity="warning"
+            sx={{ mb: 4, borderRadius: 2, border: 'none', bgcolor: '#fef9ec' }}
+          >
             <strong>{t('previewMode')}:</strong>{' '}
             {t('previewModeNotice', { status: post.status === 'DRAFT' ? t('draft') : t('archived') })}
           </Alert>
         )}
-        {/* Category + tags */}
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-          {post.category && (
+
+        {/* Category + tags (only when no hero cover — already shown above) */}
+        {!post.coverUrl && post.category && (
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
             <Link href={`/blog?category=${post.category.slug}`} style={{ textDecoration: 'none' }}>
               <Chip
                 label={post.category.name}
                 size="small"
                 clickable
-                sx={
-                  post.category.color
-                    ? { bgcolor: post.category.color, color: 'white' }
-                    : {}
-                }
+                sx={post.category.color ? { bgcolor: post.category.color, color: 'white' } : {}}
               />
             </Link>
-          )}
-          {post.tags.map(({ tag }) => (
-            <Link key={tag.id} href={`/blog?tag=${tag.slug}`} style={{ textDecoration: 'none' }}>
-              <Chip
-                label={tag.name}
-                size="small"
-                variant="outlined"
-                clickable
-              />
-            </Link>
-          ))}
-        </Box>
+          </Box>
+        )}
 
         {/* Title */}
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 2, lineHeight: 1.25 }}>
+        <Typography
+          variant="h3"
+          component="h1"
+          sx={{
+            fontWeight: 800,
+            lineHeight: 1.18,
+            letterSpacing: '-0.02em',
+            mb: 2.5,
+            mt: post.coverUrl ? 0 : 1,
+            fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.6rem' },
+          }}
+        >
           {post.title}
         </Typography>
 
         {/* Meta row */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-            <Avatar
-              src={post.author.image ?? undefined}
-              sx={{ width: 32, height: 32 }}
-            >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2.5,
+            flexWrap: 'wrap',
+            pb: 3,
+            mb: 3,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          {/* Author */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Avatar src={post.author.image ?? undefined} sx={{ width: 30, height: 30, fontSize: '0.8rem' }}>
               {post.author.name?.charAt(0) ?? 'A'}
             </Avatar>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
               {post.author.name}
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <CalendarToday sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
+
+          {/* Dot separator */}
+          <Box sx={{ width: 3, height: 3, borderRadius: '50%', bgcolor: 'text.disabled', flexShrink: 0 }} />
+
+          {/* Date */}
+          {post.publishedAt && (
             <Typography variant="body2" color="text.secondary">
-              {post.publishedAt ? format(new Date(post.publishedAt), 'dd MMMM yyyy') : ''}
+              {format(new Date(post.publishedAt), 'dd MMMM yyyy')}
+            </Typography>
+          )}
+
+          {/* Reading time */}
+          {post.readingTimeMinutes && (
+            <>
+              <Box sx={{ width: 3, height: 3, borderRadius: '50%', bgcolor: 'text.disabled', flexShrink: 0 }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <AccessTime sx={{ fontSize: '0.8rem', color: 'text.secondary' }} />
+                <Typography variant="body2" color="text.secondary">
+                  {post.readingTimeMinutes} {t('minRead')}
+                </Typography>
+              </Box>
+            </>
+          )}
+
+          {/* Views */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Visibility sx={{ fontSize: '0.8rem', color: 'text.secondary' }} />
+            <Typography variant="body2" color="text.secondary">
+              {post.viewCount}
             </Typography>
           </Box>
-          {post.readingTimeMinutes && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <AccessTime sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
-              <Typography variant="body2" color="text.secondary">
-                {post.readingTimeMinutes} {t('minRead')}
-              </Typography>
+
+          {/* Tags */}
+          {post.tags.length > 0 && (
+            <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+              {post.tags.map(({ tag }: { tag: { id: string; name: string; slug: string } }) => (
+                <Link key={tag.id} href={`/blog?tag=${tag.slug}`} style={{ textDecoration: 'none' }}>
+                  <Chip
+                    label={`#${tag.name}`}
+                    size="small"
+                    variant="outlined"
+                    clickable
+                    sx={{ fontSize: '0.72rem', height: 22, borderColor: 'divider', color: 'text.secondary' }}
+                  />
+                </Link>
+              ))}
             </Box>
           )}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Visibility sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
-            <Typography variant="body2" color="text.secondary">
-              {post.viewCount} {t('views')}
-            </Typography>
-          </Box>
-          {/* Share buttons */}
-          <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+
+          {/* Instagram share — pushed right */}
+          <Box sx={{ ml: 'auto' }}>
             <InstagramStoryShare
               title={post.title}
               excerpt={post.excerpt}
@@ -179,170 +273,171 @@ export default async function BlogPostPage({ params }: Props) {
           </Box>
         </Box>
 
-        {/* Cover image */}
-        {post.coverUrl && (
-          <Box
-            sx={{
-              position: 'relative',
-              width: '100%',
-              height: { xs: 240, sm: 360, md: 440 },
-              borderRadius: 2,
-              overflow: 'hidden',
-              mb: 4,
-            }}
-          >
-            <Image
-              src={post.coverUrl}
-              alt={post.title}
-              fill
-              priority
-              style={{ objectFit: 'cover' }}
-              sizes="(max-width: 900px) 100vw, 900px"
-            />
-          </Box>
-        )}
-
-        {/* Excerpt */}
+        {/* Excerpt / lead */}
         {post.excerpt && (
           <Typography
-            variant="h6"
-            color="text.secondary"
-            sx={{ fontWeight: 400, mb: 4, fontStyle: 'italic' }}
+            variant="body1"
+            sx={{
+              fontSize: { xs: '1.05rem', md: '1.15rem' },
+              lineHeight: 1.75,
+              color: 'text.secondary',
+              fontStyle: 'italic',
+              mb: 4,
+              pl: 2,
+              borderLeft: '3px solid',
+              borderColor: 'primary.light',
+            }}
           >
             {post.excerpt}
           </Typography>
         )}
 
-        <Divider sx={{ mb: 4 }} />
-
         {/* Body */}
         <Box
           sx={{
-            '& p': { mb: 2, lineHeight: 1.8 },
-            '& h1, & h2, & h3, & h4': { fontWeight: 700, mt: 4, mb: 1.5 },
-            '& h2': { fontSize: '1.5rem' },
-            '& h3': { fontSize: '1.25rem' },
-            '& ul, & ol': { pl: 3, mb: 2 },
-            '& li': { mb: 0.5 },
+            '& p': { mb: 2, lineHeight: 1.85, fontSize: '1.02rem', color: 'text.primary' },
+            '& h2': { fontWeight: 700, mt: 5, mb: 1.5, fontSize: '1.45rem', letterSpacing: '-0.01em' },
+            '& h3': { fontWeight: 700, mt: 4, mb: 1.25, fontSize: '1.2rem' },
+            '& h4': { fontWeight: 600, mt: 3, mb: 1, fontSize: '1.05rem' },
+            '& ul, & ol': { pl: 3, mb: 2.5 },
+            '& li': { mb: 0.75, lineHeight: 1.75, fontSize: '1.02rem' },
             '& blockquote': {
-              borderLeft: '4px solid',
+              borderLeft: '3px solid',
               borderColor: 'primary.main',
-              pl: 2,
-              my: 3,
+              pl: 2.5,
+              my: 3.5,
+              mx: 0,
               color: 'text.secondary',
               fontStyle: 'italic',
+              fontSize: '1.05rem',
+              lineHeight: 1.75,
             },
-            '& img': { maxWidth: '100%', height: 'auto', borderRadius: 1 },
-            '& a': { color: 'primary.main' },
-            '& pre, & code': {
+            '& img': { maxWidth: '100%', height: 'auto', borderRadius: 2, my: 1 },
+            '& a': { color: 'primary.main', textDecorationColor: 'primary.light' },
+            '& pre': {
+              bgcolor: '#f4f1ec',
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 2,
+              p: 2,
+              overflowX: 'auto',
+              fontSize: '0.88rem',
+              lineHeight: 1.65,
+              my: 2.5,
+            },
+            '& code': {
               fontFamily: 'monospace',
-              bgcolor: 'grey.100',
-              px: 0.5,
-              borderRadius: 0.5,
+              bgcolor: '#f4f1ec',
+              px: 0.75,
+              py: 0.15,
+              borderRadius: 0.75,
+              fontSize: '0.9em',
             },
+            '& hr': { border: 'none', borderTop: '1px solid', borderColor: 'divider', my: 4 },
           }}
           dangerouslySetInnerHTML={{ __html: post.body }}
         />
 
-        <Divider sx={{ my: 5 }} />
+        {/* ── Footer cards ── */}
+        <Box sx={{ mt: 6, display: 'flex', flexDirection: 'column', gap: 2 }}>
 
-        {/* Linked place card */}
-        {post.place && (
-          <Paper
-            variant="outlined"
-            sx={{
-              p: 2.5,
-              display: 'flex',
-              gap: 2,
-              alignItems: 'center',
-              mb: 4,
-              borderRadius: 2,
-              '&:hover': { boxShadow: 2 },
-            }}
-          >
-            {post.place.coverUrl && (
-              <Box
-                sx={{
-                  position: 'relative',
-                  width: 80,
-                  height: 60,
-                  borderRadius: 1,
-                  overflow: 'hidden',
-                  flexShrink: 0,
-                }}
-              >
-                <Image
-                  src={post.place.coverUrl}
-                  alt={post.place.name}
-                  fill
-                  style={{ objectFit: 'cover' }}
-                  sizes="80px"
-                />
-              </Box>
-            )}
-            <Box sx={{ flexGrow: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.25 }}>
-                <PlaceIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-                <Typography variant="caption" color="text.secondary">
-                  Featured Place
-                </Typography>
-              </Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                {post.place.name}
-              </Typography>
-              {(post.place.city || post.place.country) && (
-                <Typography variant="body2" color="text.secondary">
-                  {[post.place.city, post.place.country].filter(Boolean).join(', ')}
-                </Typography>
-              )}
-            </Box>
-            <Link
-              href={`/places/${post.place.slug}`}
-              style={{
-                padding: '6px 16px',
-                borderRadius: 4,
-                backgroundColor: '#1976d2',
-                color: 'white',
-                textDecoration: 'none',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                flexShrink: 0,
+          {/* Featured place */}
+          {post.place && (
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 2,
+                alignItems: 'center',
+                p: 2,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'divider',
+                bgcolor: 'background.paper',
+                transition: 'box-shadow 0.15s',
+                '&:hover': { boxShadow: '0 2px 16px rgba(45,90,39,0.10)' },
               }}
             >
-              View Place
-            </Link>
-          </Paper>
-        )}
+              {post.place.coverUrl && (
+                <Box sx={{ position: 'relative', width: 72, height: 54, borderRadius: 2, overflow: 'hidden', flexShrink: 0 }}>
+                  <Image src={post.place.coverUrl} alt={post.place.name} fill style={{ objectFit: 'cover' }} sizes="72px" />
+                </Box>
+              )}
+              <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.4, mb: 0.25 }}>
+                  <PlaceIcon sx={{ fontSize: '0.8rem' }} /> Featured Place
+                </Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
+                  {post.place.name}
+                </Typography>
+                {(post.place.city || post.place.country) && (
+                  <Typography variant="caption" color="text.secondary">
+                    {[post.place.city, post.place.country].filter(Boolean).join(', ')}
+                  </Typography>
+                )}
+              </Box>
+              <Link
+                href={`/places/${post.place.slug}`}
+                style={{
+                  padding: '6px 18px',
+                  borderRadius: 20,
+                  border: '1.5px solid #2d5a27',
+                  color: '#2d5a27',
+                  textDecoration: 'none',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                View Place
+              </Link>
+            </Box>
+          )}
 
-        {/* Author bio card */}
-        <Paper
-          variant="outlined"
-          sx={{ p: 2.5, display: 'flex', gap: 2, alignItems: 'flex-start', borderRadius: 2 }}
-        >
-          <Avatar
-            src={post.author.image ?? undefined}
-            sx={{ width: 52, height: 52 }}
+          {/* Author card */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              p: 2,
+              borderRadius: 3,
+              bgcolor: '#f3f7f2',
+              border: '1px solid',
+              borderColor: '#deeadb',
+            }}
           >
-            {post.author.name?.charAt(0) ?? 'A'}
-          </Avatar>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Written by
-            </Typography>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-              {post.author.name}
-            </Typography>
+            <Avatar
+              src={post.author.image ?? undefined}
+              sx={{ width: 46, height: 46, border: '2px solid', borderColor: 'primary.light' }}
+            >
+              {post.author.name?.charAt(0) ?? 'A'}
+            </Avatar>
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '0.65rem' }}>
+                Written by
+              </Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
+                {post.author.name}
+              </Typography>
+            </Box>
           </Box>
-        </Paper>
 
-        {/* Back link */}
-        <Box sx={{ mt: 4, textAlign: 'center' }}>
-          <Link
-            href="/blog"
-            style={{ color: '#1976d2', textDecoration: 'none', fontWeight: 600 }}
-          >
-            ← Back to Blog
-          </Link>
+          {/* Back link */}
+          <Box sx={{ pt: 1, textAlign: 'center' }}>
+            <Link
+              href="/blog"
+              style={{
+                color: '#4a7c59',
+                textDecoration: 'none',
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                letterSpacing: '0.02em',
+              }}
+            >
+              ← Back to Blog
+            </Link>
+          </Box>
         </Box>
       </Container>
     </>

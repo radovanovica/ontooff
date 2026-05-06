@@ -404,6 +404,7 @@ export async function POST(req: NextRequest) {
           })
         ),
         editToken: registration.editToken,
+        status: registration.status,
       }).catch(console.error);
     }
 
