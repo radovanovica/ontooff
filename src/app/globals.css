@@ -9,8 +9,8 @@ html {
 body {
   margin: 0;
   padding: 0;
-  background-color: #f7f3ee;
-  color: #2c2416;
+  background-color: #f9fafb;
+  color: #111827;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -21,14 +21,14 @@ body {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f0ebe4;
+  background: #f3f4f6;
 }
 ::-webkit-scrollbar-thumb {
-  background: #b0a090;
+  background: #d1d5db;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #8b7355;
+  background: #9ca3af;
 }
 
 /* Smooth transitions */

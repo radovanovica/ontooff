@@ -180,18 +180,18 @@ export default function Navbar() {
         sx={{
           px: 2,
           py: 2.5,
-          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-          color: 'white',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Image src="/assets/images/logo.svg" alt="ontooff" width={26} height={26} />
-          <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: 0.5, color: 'primary.main' }}>
             ontooff
           </Typography>
         </Box>
         {session?.user && (
-          <Typography variant="body2" sx={{ opacity: 0.85, mt: 0.5 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             {session.user.name ?? session.user.email}
           </Typography>
         )}

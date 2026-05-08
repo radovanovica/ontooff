@@ -10,7 +10,6 @@ import { Search, AccessTime, Article } from '@mui/icons-material';
 import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
-import Navbar from '@/components/layout/Navbar';
 import { useTranslation } from '@/i18n/client';
 
 interface Category { id: string; name: string; slug: string; color: string | null; _count: { posts: number } }
@@ -297,11 +296,8 @@ function BlogContent() {
 
 export default function BlogPage() {
   return (
-    <>
-      <Navbar />
-      <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}><CircularProgress /></Box>}>
-        <BlogContent />
-      </Suspense>
-    </>
+    <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}><CircularProgress /></Box>}>
+      <BlogContent />
+    </Suspense>
   );
 }

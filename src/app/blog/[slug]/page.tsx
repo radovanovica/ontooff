@@ -9,7 +9,6 @@ import {
 import { AccessTime, Visibility, Place as PlaceIcon } from '@mui/icons-material';
 import Link from 'next/link';
 import Image from 'next/image';
-import Navbar from '@/components/layout/Navbar';
 import InstagramStoryShare from '@/components/blog/InstagramStoryShare';
 import type { Metadata } from 'next';
 import { getTranslation } from '@/i18n/server';
@@ -89,8 +88,6 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <>
-      <Navbar />
-
       {/* ── Hero: full-bleed cover with gradient overlay ── */}
       {post.coverUrl ? (
         <Box

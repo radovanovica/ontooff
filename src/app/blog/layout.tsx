@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Navbar from '@/components/layout/Navbar';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.ontooff.app';
 
@@ -25,5 +26,10 @@ export const metadata: Metadata = {
 };
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <Navbar />
+      {children}
+    </>
+  );
 }

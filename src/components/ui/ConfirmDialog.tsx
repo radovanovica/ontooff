@@ -28,21 +28,14 @@ export default function ConfirmDialog({
   loading = false,
   severity = 'warning',
 }: ConfirmDialogProps) {
-  const colors = {
-    warning: { bg: '#fff8e1', icon: '#f4a259', btn: 'warning' as const },
-    error: { bg: '#fdecea', icon: '#c0392b', btn: 'error' as const },
-    info: { bg: '#e3f2fd', icon: '#2980b9', btn: 'primary' as const },
-  };
-
-  const c = colors[severity];
+  const iconColor = { warning: '#f59e0b', error: '#dc2626', info: '#3b82f6' }[severity];
+  const btnColor = { warning: 'warning' as const, error: 'error' as const, info: 'primary' as const }[severity];
 
   return (
-    <Dialog open={open} onClose={onCancel} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
+    <Dialog open={open} onClose={onCancel} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ pb: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box sx={{ bgcolor: c.bg, borderRadius: '50%', p: 1, display: 'flex' }}>
-            <WarningAmberRoundedIcon sx={{ color: c.icon, fontSize: 24 }} />
-          </Box>
+          <WarningAmberRoundedIcon sx={{ color: iconColor, fontSize: 22, flexShrink: 0 }} />
           <Typography variant="h6" sx={{ fontWeight: 600 }}>{title}</Typography>
         </Box>
       </DialogTitle>
@@ -57,7 +50,7 @@ export default function ConfirmDialog({
           onClick={onConfirm}
           disabled={loading}
           variant="contained"
-          color={c.btn}
+          color={btnColor}
           startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
         >
           {loading ? 'Processing…' : confirmLabel}
