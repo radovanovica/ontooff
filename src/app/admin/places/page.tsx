@@ -18,13 +18,19 @@ import {
   Pagination,
   TextField,
   InputAdornment,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
-import { OpenInNew, Add, Search } from '@mui/icons-material';
+import { OpenInNew, Add, Search, Star, WorkspacePremium, Circle } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n/client';
 import PageHeader from '@/components/ui/PageHeader';
+
+type PlaceStatus = 'REGULAR' | 'RECOMMENDED' | 'PREMIUM';
 
 interface PlaceRow {
   id: string;
@@ -32,9 +38,70 @@ interface PlaceRow {
   city: string | null;
   country: string | null;
   isActive: boolean;
+  status: PlaceStatus;
   createdAt: string;
   owner?: { name: string | null; email: string };
   _count?: { activityLocations: number; registrations: number };
+}
+
+const STATUS_OPTIONS: { value: PlaceStatus; label: string; color: string; chipColor: 'default' | 'success' | 'warning' }[] = [
+  { value: 'REGULAR', label: 'Regular', color: 'text.secondary', chipColor: 'default' },
+  { value: 'RECOMMENDED', label: 'Recommended', color: '#2d5a27', chipColor: 'success' },
+  { value: 'PREMIUM', label: 'Premium', color: '#b8860b', chipColor: 'warning' },
+];
+
+function StatusCell({ place, onUpdate }: { place: PlaceRow; onUpdate: (id: string, status: PlaceStatus) => void }) {
+  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const [saving, setSaving] = useState(false);
+  const current = STATUS_OPTIONS.find((s) => s.value === (place.status ?? 'REGULAR')) ?? STATUS_OPTIONS[0];
+
+  const handleChange = async (status: PlaceStatus) => {
+    setAnchor(null);
+    if (status === place.status) return;
+    setSaving(true);
+    try {
+      await fetch(`/api/places/${place.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      onUpdate(place.id, status);
+    } catch {
+      // silently fail — user can retry
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <>
+      <Chip
+        label={current.label}
+        size="small"
+        color={current.chipColor}
+        icon={
+          current.value === 'PREMIUM' ? <WorkspacePremium fontSize="small" /> :
+          current.value === 'RECOMMENDED' ? <Star fontSize="small" /> :
+          <Circle fontSize="small" />
+        }
+        onClick={(e) => setAnchor(e.currentTarget)}
+        disabled={saving}
+        sx={{ cursor: 'pointer', fontWeight: 600 }}
+      />
+      <Menu anchorEl={anchor} open={!!anchor} onClose={() => setAnchor(null)}>
+        {STATUS_OPTIONS.map((opt) => (
+          <MenuItem key={opt.value} selected={opt.value === place.status} onClick={() => handleChange(opt.value)}>
+            <ListItemIcon>
+              {opt.value === 'PREMIUM' ? <WorkspacePremium fontSize="small" sx={{ color: '#b8860b' }} /> :
+               opt.value === 'RECOMMENDED' ? <Star fontSize="small" sx={{ color: '#2d5a27' }} /> :
+               <Circle fontSize="small" sx={{ color: 'text.disabled' }} />}
+            </ListItemIcon>
+            <ListItemText>{opt.label}</ListItemText>
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  );
 }
 
 export default function AdminPlacesPage() {
@@ -64,6 +131,10 @@ export default function AdminPlacesPage() {
       setLoading(false);
     }
   }, [search, page]);
+
+  const handleStatusUpdate = (id: string, status: PlaceStatus) => {
+    setPlaces((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)));
+  };
 
   useEffect(() => {
     const timer = setTimeout(fetchPlaces, 300);
@@ -109,6 +180,7 @@ export default function AdminPlacesPage() {
               <TableCell sx={{ fontWeight: 700 }}>{t('places.columns.owner')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('places.columns.locations')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('places.columns.registrations')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Featured</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('places.columns.status')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('places.columns.created')}</TableCell>
               <TableCell />
@@ -117,13 +189,13 @@ export default function AdminPlacesPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
                   <CircularProgress size={32} />
                 </TableCell>
               </TableRow>
             ) : places.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
                   <Typography color="text.secondary">{t('common.noData')}</Typography>
                 </TableCell>
               </TableRow>
@@ -144,6 +216,9 @@ export default function AdminPlacesPage() {
                   </TableCell>
                   <TableCell align="center">{place._count?.activityLocations ?? 0}</TableCell>
                   <TableCell align="center">{place._count?.registrations ?? 0}</TableCell>
+                  <TableCell>
+                    <StatusCell place={place} onUpdate={handleStatusUpdate} />
+                  </TableCell>
                   <TableCell>
                     <Chip
                       label={place.isActive ? t('common.active') : t('common.inactive')}

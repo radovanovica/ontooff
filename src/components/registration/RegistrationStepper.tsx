@@ -19,7 +19,7 @@ import {
   CheckCircle,
   LocalActivity,
 } from '@mui/icons-material';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -234,6 +234,7 @@ export default function RegistrationStepper({
     handleSubmit: handleSubmit2,
     watch: watch2,
     setValue: setValue2,
+    getValues: getValues2,
   } = useForm<Step2Values>({
     resolver: zodResolver(step2Schema),
     defaultValues: {
@@ -243,7 +244,7 @@ export default function RegistrationStepper({
     },
   });
 
-  const guestCounts = watch2('guestCounts');
+  const guestCounts = useWatch({ control: control2, name: 'guestCounts' }) ?? { adults: 1 };
   const selectedRuleId = watch2('pricingRuleId');
   const selectedRule = pricingRules.find((rule) => rule.id === selectedRuleId) ?? pricingRules[0] ?? null;
   const isGuestCountRule =
@@ -283,7 +284,7 @@ useEffect(() => {
     const rule = pricingRules.find((pricingRule) => pricingRule.id === selectedRuleId) ?? null;
     if (!rule?.pricingTiers || rule.pricingTiers.length === 0) return;
 
-    const currentCounts = guestCounts ?? {};
+    const currentCounts = getValues2('guestCounts') ?? {};
     const normalized: Record<string, number> = {};
     for (const [index, tier] of rule.pricingTiers.entries()) {
       const key = getPricingTierGuestKey(tier, index);
@@ -319,7 +320,7 @@ useEffect(() => {
     } else {
       setValue2('paymentMethod', rule.paymentMethod);
     }
-  }, [selectedRuleId, pricingRules, guestCounts, setValue2]);
+  }, [selectedRuleId, pricingRules, getValues2, setValue2]);
 
   useEffect(() => {
     if (!selectedLocation || !startDate || !endDate) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendRegistrationStatusUpdate } from '@/lib/email';
+import { sendRegistrationConfirmation } from '@/lib/email';
+import { formatGuestSummary } from '@/lib/pricing';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
@@ -26,13 +27,16 @@ export async function GET(
 
   const registration = await prisma.registration.findUnique({
     where: { id },
-    select: {
-      id: true,
-      editToken: true,
-      status: true,
-      email: true,
-      firstName: true,
-      registrationNumber: true,
+    include: {
+      activityLocation: {
+        include: {
+          activityTypes: { include: { activityType: { select: { name: true } } } },
+          place: { select: { name: true } },
+        },
+      },
+      registrationSpots: { include: { spot: { select: { name: true, code: true } } } },
+      paymentBreakdown: { orderBy: { sortOrder: 'asc' } },
+      pricingRule: { select: { requiresPayment: true, currency: true } },
     },
   });
 
@@ -50,13 +54,32 @@ export async function GET(
     data: { status: 'CONFIRMED' },
   });
 
-  // Notify guest of confirmation
-  await sendRegistrationStatusUpdate(
+  // Notify guest of confirmation with the full booking details email
+  await sendRegistrationConfirmation(
     registration.email,
-    registration.firstName,
-    registration.registrationNumber,
-    'CONFIRMED',
-    registration.editToken
+    {
+      registrationNumber: registration.registrationNumber,
+      firstName: registration.firstName,
+      locationName: registration.activityLocation.name,
+      activityName: registration.activityLocation.activityTypes.map((a) => a.activityType.name).join(', '),
+      placeName: registration.activityLocation.place.name,
+      startDate: registration.startDate.toLocaleDateString('en-GB'),
+      endDate: registration.endDate.toLocaleDateString('en-GB'),
+      numberOfDays: registration.numberOfDays,
+      spotNames: registration.registrationSpots.map((rs) =>
+        rs.spot.code ? `${rs.spot.name} (${rs.spot.code})` : rs.spot.name
+      ),
+      guestSummary: formatGuestSummary(registration.guestCounts as Record<string, number>),
+      totalAmount: registration.totalAmount != null ? Number(registration.totalAmount) : undefined,
+      currency: registration.pricingRule?.currency ?? 'RSD',
+      requiresPayment: registration.pricingRule?.requiresPayment ?? false,
+      paymentBreakdown: registration.paymentBreakdown.map((item) => ({
+        label: item.label,
+        totalPrice: Number(item.totalPrice),
+      })),
+      editToken: registration.editToken,
+      status: 'CONFIRMED',
+    }
   ).catch(console.error);
 
   // Redirect owner to the booking detail page

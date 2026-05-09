@@ -12,8 +12,12 @@ import {
   CircularProgress,
   Divider,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
-import { CheckCircle, Edit } from '@mui/icons-material';
+import { CheckCircle, Edit, Cancel } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -64,6 +68,12 @@ export default function RegistrationEditPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
+  const isConfirmed = registration?.status === 'CONFIRMED';
+  const canCancel = isConfirmed && !!registration && new Date(registration.startDate) > new Date();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -106,6 +116,25 @@ export default function RegistrationEditPage() {
     }
   };
 
+  const handleCancel = async () => {
+    setCancelling(true);
+    setCancelError(null);
+    try {
+      const res = await fetch(`/api/registrations/${registration!.id}/cancel`, {
+        method: 'POST',
+        headers: { 'x-edit-token': token },
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.error ?? 'Failed to cancel');
+      setCancelConfirmOpen(false);
+      setRegistration((prev) => prev ? { ...prev, status: 'CANCELLED' } : null);
+    } catch (e) {
+      setCancelError(e instanceof Error ? e.message : 'Failed to cancel');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -123,7 +152,7 @@ export default function RegistrationEditPage() {
               <Box
                 sx={{
                   p: 3,
-                  background: 'linear-gradient(135deg, #2d5a27 0%, #4a7c43 100%)',
+                  bgcolor: 'primary.main',
                   color: 'white',
                 }}
               >
@@ -173,6 +202,11 @@ export default function RegistrationEditPage() {
                     {t('edit.saved')}
                   </Alert>
                 )}
+                {isConfirmed && (
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    {t('edit.confirmedReadOnly', 'Your booking is confirmed. Contact details are read-only.')}
+                  </Alert>
+                )}
                 {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
                 {/* Edit form */}
@@ -183,6 +217,7 @@ export default function RegistrationEditPage() {
                         {...register('firstName')}
                         label={t('fields.firstName')}
                         fullWidth
+                        disabled={!!isConfirmed}
                         error={!!errors.firstName}
                         helperText={errors.firstName?.message}
                       />
@@ -192,6 +227,7 @@ export default function RegistrationEditPage() {
                         {...register('lastName')}
                         label={t('fields.lastName')}
                         fullWidth
+                        disabled={!!isConfirmed}
                         error={!!errors.lastName}
                         helperText={errors.lastName?.message}
                       />
@@ -202,36 +238,51 @@ export default function RegistrationEditPage() {
                         label={t('fields.email')}
                         type="email"
                         fullWidth
+                        disabled={!!isConfirmed}
                         error={!!errors.email}
                         helperText={errors.email?.message}
                       />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField {...register('phone')} label={t('fields.phone')} fullWidth />
+                      <TextField {...register('phone')} label={t('fields.phone')} fullWidth disabled={!!isConfirmed} />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField {...register('address')} label={t('fields.address')} fullWidth />
+                      <TextField {...register('address')} label={t('fields.address')} fullWidth disabled={!!isConfirmed} />
                     </Grid>
                     <Grid size={{ xs: 12 }}>
                       <TextField
                         {...register('notes')}
                         label={t('fields.notes')}
                         fullWidth
+                        disabled={!!isConfirmed}
                         multiline
                         rows={3}
                       />
                     </Grid>
                     <Grid size={{ xs: 12 }}>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        fullWidth
-                        size="large"
-                        disabled={saving}
-                        startIcon={saving ? <CircularProgress size={18} color="inherit" /> : <Edit />}
-                      >
-                        {t('edit.save')}
-                      </Button>
+                      {!isConfirmed ? (
+                        <Button
+                          type="submit"
+                          variant="contained"
+                          fullWidth
+                          size="large"
+                          disabled={saving}
+                          startIcon={saving ? <CircularProgress size={18} color="inherit" /> : <Edit />}
+                        >
+                          {t('edit.save')}
+                        </Button>
+                      ) : canCancel ? (
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          fullWidth
+                          size="large"
+                          onClick={() => setCancelConfirmOpen(true)}
+                          startIcon={<Cancel />}
+                        >
+                          {t('edit.cancelReservation', 'Cancel Reservation')}
+                        </Button>
+                      ) : null}
                     </Grid>
                   </Grid>
                 </Box>
@@ -240,6 +291,33 @@ export default function RegistrationEditPage() {
           ) : null}
         </Container>
       </Box>
+
+      {/* Cancel confirmation dialog */}
+      <Dialog open={cancelConfirmOpen} onClose={() => !cancelling && setCancelConfirmOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>{t('edit.cancelConfirmTitle', 'Cancel Reservation')}</DialogTitle>
+        <DialogContent>
+          <Typography>
+            {t('edit.cancelConfirmBody', 'Are you sure you want to cancel this reservation? This action cannot be undone.')}
+          </Typography>
+          {cancelError && (
+            <Alert severity="error" sx={{ mt: 2 }}>{cancelError}</Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCancelConfirmOpen(false)} disabled={cancelling}>
+            {t('common.back', 'Back')}
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleCancel}
+            disabled={cancelling}
+            startIcon={cancelling ? <CircularProgress size={16} color="inherit" /> : <Cancel />}
+          >
+            {t('edit.confirmCancel', 'Yes, Cancel')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

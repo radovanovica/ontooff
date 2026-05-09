@@ -31,6 +31,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/layout/Navbar';
 import DateRangePicker from '@/components/ui/DateRangePicker';
+import FeaturedPlacesSection from '@/components/home/FeaturedPlacesSection';
 import { useTranslation } from '@/i18n/client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -303,6 +304,9 @@ export default function HomePage() {
           </Grid>
         </Container>
       </Box>
+
+      {/* ── FEATURED PLACES ── */}
+      <FeaturedPlacesSection />
 
       {/* ── HOW IT WORKS ── */}
       <Box sx={{ bgcolor: '#f8f9f6', py: { xs: 8, md: 12 } }}>

@@ -4,7 +4,8 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 import { UserRole, RegistrationStatus } from '@/types';
-import { sendRegistrationStatusUpdate } from '@/lib/email';
+import { sendRegistrationStatusUpdate, sendRegistrationConfirmation } from '@/lib/email';
+import { formatGuestSummary } from '@/lib/pricing';
 
 const updateSchema = z.object({
   status: z.nativeEnum(RegistrationStatus).optional(),
@@ -131,13 +132,56 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   // Send email on status change
   if (result.data.status && result.data.status !== reg.status) {
-    await sendRegistrationStatusUpdate(
-      reg.email,
-      reg.firstName,
-      reg.registrationNumber,
-      result.data.status,
-      reg.editToken
-    ).catch(console.error);
+    if (result.data.status === RegistrationStatus.CONFIRMED) {
+      // Fetch full booking details and send the rich "Booking Confirmed" email
+      prisma.registration.findUnique({
+        where: { id },
+        include: {
+          activityLocation: {
+            include: {
+              activityTypes: { include: { activityType: { select: { name: true } } } },
+              place: { select: { name: true } },
+            },
+          },
+          registrationSpots: { include: { spot: { select: { name: true, code: true } } } },
+          paymentBreakdown: { orderBy: { sortOrder: 'asc' } },
+          pricingRule: { select: { requiresPayment: true, currency: true } },
+        },
+      }).then((fullReg) => {
+        if (!fullReg) return;
+        return sendRegistrationConfirmation(fullReg.email, {
+          registrationNumber: fullReg.registrationNumber,
+          firstName: fullReg.firstName,
+          locationName: fullReg.activityLocation.name,
+          activityName: fullReg.activityLocation.activityTypes.map((a) => a.activityType.name).join(', '),
+          placeName: fullReg.activityLocation.place.name,
+          startDate: fullReg.startDate.toLocaleDateString('en-GB'),
+          endDate: fullReg.endDate.toLocaleDateString('en-GB'),
+          numberOfDays: fullReg.numberOfDays,
+          spotNames: fullReg.registrationSpots.map((rs) =>
+            rs.spot.code ? `${rs.spot.name} (${rs.spot.code})` : rs.spot.name
+          ),
+          guestSummary: formatGuestSummary(fullReg.guestCounts as Record<string, number>),
+          totalAmount: fullReg.totalAmount != null ? Number(fullReg.totalAmount) : undefined,
+          currency: fullReg.pricingRule?.currency ?? 'RSD',
+          requiresPayment: fullReg.pricingRule?.requiresPayment ?? false,
+          paymentBreakdown: fullReg.paymentBreakdown.map((item) => ({
+            label: item.label,
+            totalPrice: Number(item.totalPrice),
+          })),
+          editToken: fullReg.editToken,
+          status: 'CONFIRMED',
+        });
+      }).catch(console.error);
+    } else {
+      sendRegistrationStatusUpdate(
+        reg.email,
+        reg.firstName,
+        reg.registrationNumber,
+        result.data.status,
+        reg.editToken
+      ).catch(console.error);
+    }
   }
 
   return NextResponse.json({ success: true, data: updated });

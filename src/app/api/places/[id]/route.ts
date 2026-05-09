@@ -18,6 +18,7 @@ const updateSchema = z.object({
   website: z.string().url().optional().or(z.literal('')),
   timezone: z.string().optional(),
   isActive: z.boolean().optional(),
+  status: z.enum(['REGULAR', 'RECOMMENDED', 'PREMIUM']).optional(),
   logoUrl: z.string().optional(),
   coverUrl: z.string().optional(),
   latitude: z.number().optional(),
@@ -71,6 +72,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const data = result.data;
+  // Only super-admins can change the status field
+  if (data.status !== undefined && session.user.role !== UserRole.SUPER_ADMIN) {
+    delete data.status;
+  }
   if (data.name && !data.slug) {
     data.slug = slugify(data.name);
   }
