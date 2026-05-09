@@ -230,7 +230,11 @@ export default function Navbar() {
 
   return (
     <>
-      <AppBar position="sticky" elevation={1}>
+      <AppBar
+        position="sticky"
+        elevation={0}
+        sx={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}
+      >
         <Toolbar>
           {isMobile && (
             <IconButton

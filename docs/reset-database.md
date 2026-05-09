@@ -17,7 +17,7 @@ heroku run "npx ts-node --project tsconfig.seed.json prisma/seed.ts" --app ontoo
 
 | Role | Email | Password |
 |------|-------|----------|
-| Super Admin | `radovanovica1993@gmail.com` | `,14dmin123!` |
+| Super Admin | `ontooffapp@gmail.com` | `,14dmin123!` |
 
 ---
 

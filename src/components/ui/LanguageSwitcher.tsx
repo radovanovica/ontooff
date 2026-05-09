@@ -51,22 +51,23 @@ export default function LanguageSwitcher() {
           }}
         >
           <Box
+            component="span"
             sx={{
-              width: 22,
-              height: 16,
+              display: 'inline-flex',
               borderRadius: '3px',
               overflow: 'hidden',
               flexShrink: 0,
-              position: 'relative',
               boxShadow: '0 0 0 1px rgba(0,0,0,0.15)',
+              lineHeight: 0,
             }}
           >
             <Image
               src={current.flag}
               alt={current.label}
-              fill
+              width={22}
+              height={16}
               unoptimized
-              style={{ objectFit: 'cover' }}
+              style={{ objectFit: 'cover', display: 'block' }}
             />
           </Box>
           <Typography variant="caption" sx={{ fontWeight: 600, lineHeight: 1, letterSpacing: 0.3 }}>

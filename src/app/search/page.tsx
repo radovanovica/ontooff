@@ -39,6 +39,7 @@ import {
   MyLocation,
   Favorite,
   FavoriteBorder,
+  WorkspacePremium,
 } from '@mui/icons-material';
 import { ActivityTag } from '@/types';
 import DateRangePicker from '@/components/ui/DateRangePicker';
@@ -91,6 +92,7 @@ interface SearchPlace {
   logoUrl: string | null;
   averageRating: number | null;
   reviewCount: number;
+  status?: 'REGULAR' | 'RECOMMENDED' | 'PREMIUM';
   isFree?: boolean;
   tags?: { tag: ActivityTag }[];
   activityTypes: {
@@ -960,6 +962,44 @@ function PlaceCard({
         />
       )}
 
+      {!place.isFree && place.status === 'PREMIUM' && (
+        <Chip
+          icon={<WorkspacePremium sx={{ fontSize: '13px !important' }} />}
+          label={t('home.featured.badgePremium')}
+          size="small"
+          sx={{
+            position: 'absolute',
+            top: 8,
+            left: 8,
+            zIndex: 2,
+            bgcolor: 'rgba(120,88,0,0.90)',
+            color: 'white',
+            fontWeight: 700,
+            fontSize: 11,
+            '& .MuiChip-icon': { color: 'white' },
+          }}
+        />
+      )}
+
+      {!place.isFree && place.status === 'RECOMMENDED' && (
+        <Chip
+          icon={<Star sx={{ fontSize: '13px !important' }} />}
+          label={t('home.featured.badgeRecommended')}
+          size="small"
+          sx={{
+            position: 'absolute',
+            top: 8,
+            left: 8,
+            zIndex: 2,
+            bgcolor: 'rgba(45,90,39,0.90)',
+            color: 'white',
+            fontWeight: 700,
+            fontSize: 11,
+            '& .MuiChip-icon': { color: 'white' },
+          }}
+        />
+      )}
+
       {place.coverUrl ? (
         <CardMedia sx={{ height: 180, position: 'relative' }}>
           <Image
@@ -1154,6 +1194,22 @@ function PlaceCardCompact({
               label={t('common.free')}
               size="small"
               sx={{ bgcolor: '#7b3f00', color: 'white', fontSize: 10, height: 16, flexShrink: 0 }}
+            />
+          )}
+          {!place.isFree && place.status === 'PREMIUM' && (
+            <Chip
+              icon={<WorkspacePremium sx={{ fontSize: '10px !important' }} />}
+              label={t('home.featured.badgePremium')}
+              size="small"
+              sx={{ bgcolor: 'rgba(120,88,0,0.90)', color: 'white', fontSize: 10, height: 16, flexShrink: 0, '& .MuiChip-icon': { color: 'white' } }}
+            />
+          )}
+          {!place.isFree && place.status === 'RECOMMENDED' && (
+            <Chip
+              icon={<Star sx={{ fontSize: '10px !important' }} />}
+              label={t('home.featured.badgeRecommended')}
+              size="small"
+              sx={{ bgcolor: 'rgba(45,90,39,0.90)', color: 'white', fontSize: 10, height: 16, flexShrink: 0, '& .MuiChip-icon': { color: 'white' } }}
             />
           )}
           <Typography variant="body2" sx={{ fontWeight: 700, flex: 1, minWidth: 0 }} noWrap>

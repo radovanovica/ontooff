@@ -36,6 +36,7 @@ interface SearchPlaceRaw {
   website: string | null;
   logoUrl: string | null;
   coverUrl: string | null;
+  status: string;
   activityTypes: { id: string; name: string; icon: string | null; color: string | null; tags: { tag: { id: string; name: string; slug: string; icon: string | null; color: string | null } }[] }[];
   activityLocations: SearchLocation[];
   embedTokens: { token: string }[];
@@ -263,7 +264,7 @@ async function runSearch({
   );
 
   // Filter out places with no available locations when dates are given
-  const filtered = fromDate ? results.filter((p) => (p.availableLocations?.length ?? 0) > 0) : results;
+  const filtered = results.filter((p) => !fromDate || (p.availableLocations?.length ?? 0) > 0);
 
   // ── Free / community locations ──────────────────────────────────────────────
   const freeWhere: Record<string, unknown> = { isActive: true };
@@ -348,8 +349,16 @@ async function runSearch({
     }],
   };});
 
-  const combinedTotal = (fromDate ? filtered.length : results.length) + freeTotal;
-  const allItems = [...filtered, ...freeItems];
+  // Sort places by status: PREMIUM first, then RECOMMENDED, then REGULAR
+  const STATUS_ORDER: Record<string, number> = { PREMIUM: 0, RECOMMENDED: 1, REGULAR: 2 };
+  const sortedFiltered = [...(fromDate ? filtered : results)].sort((a, b) => {
+    const ao = STATUS_ORDER[(a as SearchPlaceRaw).status] ?? 2;
+    const bo = STATUS_ORDER[(b as SearchPlaceRaw).status] ?? 2;
+    return ao - bo;
+  });
+
+  const combinedTotal = sortedFiltered.length + freeTotal;
+  const allItems = [...sortedFiltered, ...freeItems];
   // Apply pagination: slice from the combined sorted array
   const offset = (page - 1) * pageSize;
   const pagedItems = allItems.slice(offset, offset + pageSize);
