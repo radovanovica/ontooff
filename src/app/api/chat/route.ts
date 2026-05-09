@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { prisma } from '@/lib/prisma';
+import { withCache } from '@/lib/redis';
+
+const CONTEXT_CACHE_KEY = 'chat:context:v1';
+const CONTEXT_TTL = 60 * 5; // 5 minutes — rebuilds only if cache misses
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? '';
 
@@ -22,81 +26,76 @@ function isRateLimited(ip: string): boolean {
 }
 
 async function buildContext(): Promise<string> {
-  // Fetch active places with their activity types and locations
-  const places = await prisma.place.findMany({
-    where: { isActive: true },
-    select: {
-      name: true,
-      slug: true,
-      description: true,
-      city: true,
-      country: true,
-      status: true,
-      activityTypes: {
-        where: { isActive: true },
-        select: {
-          name: true,
-          description: true,
-          tags: { include: { tag: { select: { name: true } } } },
+  return withCache(CONTEXT_CACHE_KEY, CONTEXT_TTL, async () => {
+    // Fetch active places with their activity types and locations
+    const places = await prisma.place.findMany({
+      where: { isActive: true },
+      select: {
+        name: true,
+        slug: true,
+        description: true,
+        city: true,
+        country: true,
+        status: true,
+        activityTypes: {
+          where: { isActive: true },
+          select: {
+            name: true,
+            tags: { include: { tag: { select: { name: true } } } },
+          },
+        },
+        activityLocations: {
+          where: { isActive: true },
+          select: { name: true, maxCapacity: true },
         },
       },
-      activityLocations: {
-        where: { isActive: true },
-        select: {
-          name: true,
-          description: true,
-          maxCapacity: true,
-          requiresSpot: true,
-        },
-      },
-      _count: { select: { reviews: true } },
-    },
-    take: 30,
-    orderBy: [{ status: 'desc' }, { createdAt: 'desc' }],
-  });
+      take: 25,
+      orderBy: [{ status: 'desc' }, { createdAt: 'desc' }],
+    });
 
-  // Fetch published blog posts for outdoor activity tips
-  const posts = await prisma.blogPost.findMany({
-    where: { status: 'PUBLISHED' },
-    select: { title: true, slug: true, excerpt: true, category: { select: { name: true } } },
-    take: 10,
-    orderBy: { publishedAt: 'desc' },
-  });
+    // Fetch published blog posts for outdoor activity tips
+    const posts = await prisma.blogPost.findMany({
+      where: { status: 'PUBLISHED' },
+      select: { title: true, slug: true, excerpt: true, category: { select: { name: true } } },
+      take: 8,
+      orderBy: { publishedAt: 'desc' },
+    });
 
-  // Fetch community free locations
-  const freeLocations = await prisma.freeLocation.findMany({
-    where: { isActive: true },
-    select: { name: true, slug: true, description: true, city: true, country: true, tags: { include: { tag: { select: { name: true } } } } },
-    take: 15,
-  });
+    // Fetch community free locations
+    const freeLocations = await prisma.freeLocation.findMany({
+      where: { isActive: true },
+      select: { name: true, slug: true, city: true, country: true, tags: { include: { tag: { select: { name: true } } } } },
+      take: 10,
+    });
 
-  const placesText = places.map((p) => {
-    const activities = p.activityTypes.map((a) => {
-      const tags = a.tags.map((t) => t.tag.name).join(', ');
-      return `  - ${a.name}${tags ? ` (tags: ${tags})` : ''}${a.description ? `: ${a.description}` : ''}`;
+    const placesText = places.map((p) => {
+      const activities = p.activityTypes.map((a) => {
+        const tags = a.tags.map((t) => t.tag.name).join(', ');
+        return `${a.name}${tags ? ` [${tags}]` : ''}`;
+      }).join(', ');
+      const zones = p.activityLocations.map((l) =>
+        `${l.name}${l.maxCapacity ? ` (cap:${l.maxCapacity})` : ''}`
+      ).join(', ');
+      return [
+        `• ${p.name} [${p.status}] — /places/${p.slug}`,
+        `  ${[p.city, p.country].filter(Boolean).join(', ')}`,
+        activities ? `  Activities: ${activities}` : null,
+        zones ? `  Zones: ${zones}` : null,
+        p.description ? `  ${p.description.slice(0, 120)}` : null,
+      ].filter(Boolean).join('\n');
+    }).join('\n\n');
+
+    const freeText = freeLocations.map((l) => {
+      const tags = l.tags.map((t) => t.tag.name).join(', ');
+      return `• ${l.name} — /locations/${l.slug} | ${[l.city, l.country].filter(Boolean).join(', ')}${tags ? ` | ${tags}` : ''}`;
     }).join('\n');
-    const locations = p.activityLocations.map((l) =>
-      `  - ${l.name}${l.maxCapacity ? ` (capacity: ${l.maxCapacity})` : ''}`
+
+    const postsText = posts.map((p) =>
+      `• "${p.title}"${p.category ? ` [${p.category.name}]` : ''} — /blog/${p.slug}`
     ).join('\n');
-    return [
-      `PLACE: ${p.name} [${p.status}] — /places/${p.slug}`,
-      `  Location: ${[p.city, p.country].filter(Boolean).join(', ') || 'unknown'}`,
-      p.description ? `  About: ${p.description.slice(0, 200)}` : null,
-      activities ? `  Activities:\n${activities}` : null,
-      locations ? `  Zones:\n${locations}` : null,
-    ].filter(Boolean).join('\n');
-  }).join('\n\n');
 
-  const postsText = posts.map((p) =>
-    `BLOG: "${p.title}"${p.category ? ` [${p.category.name}]` : ''} — /blog/${p.slug}${p.excerpt ? `\n  ${p.excerpt.slice(0, 150)}` : ''}`
-  ).join('\n\n');
-
-  const freeText = freeLocations.map((l) => {
-    const tags = l.tags.map((t) => t.tag.name).join(', ');
-    return `FREE LOCATION: ${l.name} — /locations/${l.slug}\n  ${[l.city, l.country].filter(Boolean).join(', ')}${tags ? ` | ${tags}` : ''}${l.description ? `\n  ${l.description.slice(0, 150)}` : ''}`;
-  }).join('\n\n');
-
-  return `=== PLACES (${places.length}) ===\n${placesText}\n\n=== FREE / COMMUNITY LOCATIONS (${freeLocations.length}) ===\n${freeText}\n\n=== BLOG POSTS (${posts.length}) ===\n${postsText}`;
+    return `PLACES:\n${placesText}\n\nFREE LOCATIONS:\n${freeText}\n\nBLOG:\n${postsText}`;
+  });
 }
 
 const SYSTEM_PROMPT = `You are an outdoor activity assistant for ontooff (www.ontooff.app) — a platform for booking camping, fishing, kayaking, and other nature-based outdoor activities.
@@ -158,7 +157,7 @@ export async function POST(req: NextRequest) {
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.0-flash-lite',
       systemInstruction: systemPrompt,
     });
 
