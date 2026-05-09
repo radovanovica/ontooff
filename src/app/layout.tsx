@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import Providers from './providers';
 import I18nLocaleSync from '@/components/providers/I18nLocaleSync';
 import Analytics from '@/components/Analytics';
+import CookieConsent from '@/components/ui/CookieConsent';
 import './globals.css';
 import 'leaflet/dist/leaflet.css';
 
@@ -85,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>{children}</Providers>
         <I18nLocaleSync />
         <Analytics />
+        <CookieConsent />
       </body>
     </html>
   );
