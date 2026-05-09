@@ -85,7 +85,13 @@
     "viewAllPosts": "Pogledaj sve objave →",
     "readMore": "Pročitaj više →",
     "latestBadge": "Najnovije",
-    "minRead": "min čitanja"
+    "minRead": "min čitanja",
+    "featured": {
+      "title": "Istaknute lokacije",
+      "subtitle": "Pažljivo odabrana premium i preporučena mjesta.",
+      "badgePremium": "Premium",
+      "badgeRecommended": "Preporučeno"
+    }
   },
   "common": {
     "save": "Sačuvaj",

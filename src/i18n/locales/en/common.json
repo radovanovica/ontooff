@@ -85,7 +85,13 @@
     "viewAllPosts": "View all posts →",
     "readMore": "Read more →",
     "latestBadge": "Latest",
-    "minRead": "min read"
+    "minRead": "min read",
+    "featured": {
+      "title": "Featured locations",
+      "subtitle": "Handpicked premium and recommended places.",
+      "badgePremium": "Premium",
+      "badgeRecommended": "Recommended"
+    }
   },
   "common": {
     "save": "Save",
