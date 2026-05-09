@@ -89,7 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <I18nLocaleSync />
         <Analytics />
         <CookieConsent />
-        {!!process.env.GEMINI_API_KEY && <ChatWidgetLoader />}
+        {!!process.env.GROQ_API_KEY && <ChatWidgetLoader />}
       </body>
     </html>
   );

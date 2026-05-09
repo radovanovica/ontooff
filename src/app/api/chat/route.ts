@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 import { prisma } from '@/lib/prisma';
 import { withCache } from '@/lib/redis';
 
 const CONTEXT_CACHE_KEY = 'chat:context:v1';
-const CONTEXT_TTL = 60 * 5; // 5 minutes — rebuilds only if cache misses
+const CONTEXT_TTL = 60 * 30; // 30 minutes — context rarely changes
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? '';
+const GROQ_API_KEY = process.env.GROQ_API_KEY ?? '';
 
 // Rate-limit: simple in-memory store (resets on dyno restart — fine for free tier)
 const requestCounts = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 20; // requests per minute per IP
+const RATE_LIMIT = 5; // requests per minute per IP (conservative to protect free quota)
 const RATE_WINDOW_MS = 60_000;
+
+// Response cache: avoid calling the API twice for the same opening question
+// Keys: normalized message text; values: { text, expiresAt }
+const responseCache = new Map<string, { text: string; expiresAt: number }>();
+const RESPONSE_CACHE_MS = 30 * 60 * 1000; // 30 minutes
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
@@ -124,8 +129,16 @@ interface MessagePart {
   parts: { text: string }[];
 }
 
+/** Convert our internal history format to OpenAI-compatible messages for Groq. */
+function toGroqHistory(history: MessagePart[]) {
+  return history.map((m) => ({
+    role: m.role === 'model' ? ('assistant' as const) : ('user' as const),
+    content: m.parts.map((p) => p.text).join(''),
+  }));
+}
+
 export async function POST(req: NextRequest) {
-  if (!GEMINI_API_KEY) {
+  if (!GROQ_API_KEY) {
     return NextResponse.json({ error: 'Chat is not configured.' }, { status: 503 });
   }
 
@@ -149,29 +162,56 @@ export async function POST(req: NextRequest) {
   // Validate history shape
   const history: MessagePart[] = (body.history ?? [])
     .filter((m) => m && (m.role === 'user' || m.role === 'model') && Array.isArray(m.parts))
-    .slice(-10); // keep last 10 turns to stay within context
+    .slice(-10); // keep last 10 turns
+
+  // Response cache: only for first-message questions (empty history)
+  const cacheKey = userMessage.toLowerCase().replace(/\s+/g, ' ').trim();
+  if (history.length === 0) {
+    const cached = responseCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) {
+      const encoder = new TextEncoder();
+      return new Response(encoder.encode(cached.text), {
+        headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store' },
+      });
+    }
+  }
 
   try {
     const context = await buildContext();
     const systemPrompt = SYSTEM_PROMPT.replace('{CONTEXT}', context);
 
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-lite',
-      systemInstruction: systemPrompt,
+    const groq = new Groq({ apiKey: GROQ_API_KEY });
+
+    const messages: Groq.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: systemPrompt },
+      ...toGroqHistory(history),
+      { role: 'user', content: userMessage },
+    ];
+
+    const stream = await groq.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages,
+      stream: true,
+      max_tokens: 600,
+      temperature: 0.7,
     });
 
-    const chat = model.startChat({ history });
-    const result = await chat.sendMessageStream(userMessage);
-
-    // Stream the response back as plain text chunks
     const encoder = new TextEncoder();
-    const stream = new ReadableStream({
+    let fullText = '';
+
+    const readableStream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of result.stream) {
-            const text = chunk.text();
-            if (text) controller.enqueue(encoder.encode(text));
+          for await (const chunk of stream) {
+            const text = chunk.choices[0]?.delta?.content ?? '';
+            if (text) {
+              fullText += text;
+              controller.enqueue(encoder.encode(text));
+            }
+          }
+          // Cache the first-message response for future identical questions
+          if (history.length === 0 && fullText) {
+            responseCache.set(cacheKey, { text: fullText, expiresAt: Date.now() + RESPONSE_CACHE_MS });
           }
         } finally {
           controller.close();
@@ -179,7 +219,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return new Response(stream, {
+    return new Response(readableStream, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
         'X-Content-Type-Options': 'nosniff',
@@ -187,7 +227,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err) {
-    console.error('[chat] Gemini error:', err);
+    console.error('[chat] Groq error:', err);
     return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 });
   }
 }
