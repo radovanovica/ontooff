@@ -1,14 +1,13 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import dynamic from 'next/dynamic';
 import Providers from './providers';
 import I18nLocaleSync from '@/components/providers/I18nLocaleSync';
 import Analytics from '@/components/Analytics';
 import CookieConsent from '@/components/ui/CookieConsent';
+import ChatWidgetLoader from '@/components/ui/ChatWidgetLoader';
 import './globals.css';
 import 'leaflet/dist/leaflet.css';
 
-const ChatWidget = dynamic(() => import('@/components/ui/ChatWidget'), { ssr: false });
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
@@ -90,7 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <I18nLocaleSync />
         <Analytics />
         <CookieConsent />
-        {!!process.env.GEMINI_API_KEY && <ChatWidget />}
+        {!!process.env.GEMINI_API_KEY && <ChatWidgetLoader />}
       </body>
     </html>
   );
