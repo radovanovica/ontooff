@@ -32,12 +32,7 @@ interface HistoryPart {
   parts: { text: string }[];
 }
 
-const SUGGESTIONS = [
-  'What outdoor activities do you offer?',
-  'How do I make a reservation?',
-  'Find me a camping place',
-  'Best fishing spots',
-];
+
 
 function MarkdownText({ text }: { text: string }) {
   // Minimal markdown: **bold**, *italic*, links [text](url), bullet lists
@@ -91,7 +86,9 @@ function renderInline(text: string): React.ReactNode {
 
 export default function ChatWidget() {
   const { t } = useTranslation('common');
+  const suggestions = t('chat.suggestions', { returnObjects: true }) as string[];
   const [open, setOpen] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -110,6 +107,25 @@ export default function ChatWidget() {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [open]);
+
+  // Show invite bubble after 3 s on first visit (not dismissed before, not already open)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (localStorage.getItem('chat_invite_dismissed')) return;
+    const timer = setTimeout(() => setShowInvite(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const dismissInvite = () => {
+    setShowInvite(false);
+    if (typeof window !== 'undefined') localStorage.setItem('chat_invite_dismissed', '1');
+  };
+
+  const openChat = (message?: string) => {
+    dismissInvite();
+    setOpen(true);
+    if (message) setTimeout(() => sendMessage(message), 150);
+  };
 
   const getHistory = useCallback((): HistoryPart[] => {
     const completed = messages.filter((m) => !m.streaming);
@@ -199,6 +215,7 @@ export default function ChatWidget() {
   const handleClose = () => {
     abortRef.current?.abort();
     setOpen(false);
+    dismissInvite();
   };
 
   const isEmpty = messages.length === 0;
@@ -303,7 +320,7 @@ export default function ChatWidget() {
                 </Box>
 
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, pl: 4.5 }}>
-                  {SUGGESTIONS.map((s) => (
+                  {suggestions.map((s) => (
                     <Chip
                       key={s}
                       label={s}
@@ -355,6 +372,7 @@ export default function ChatWidget() {
                 <Box
                   sx={{
                     maxWidth: '80%',
+                    minWidth: 0,
                     px: 1.5,
                     py: 1,
                     borderRadius:
@@ -367,6 +385,8 @@ export default function ChatWidget() {
                     borderColor: 'divider',
                     fontSize: '0.85rem',
                     lineHeight: 1.55,
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
                   }}
                 >
                   {msg.role === 'assistant' ? (
@@ -389,7 +409,7 @@ export default function ChatWidget() {
                       )}
                     </>
                   ) : (
-                    <Typography variant="body2" sx={{ fontSize: '0.85rem', lineHeight: 1.55, color: 'inherit' }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.85rem', lineHeight: 1.55, color: 'inherit', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                       {msg.text}
                     </Typography>
                   )}
@@ -457,10 +477,87 @@ export default function ChatWidget() {
         </Paper>
       )}
 
+      {/* Invite bubble — shown once on first visit */}
+      {showInvite && !open && (
+        <Paper
+          elevation={6}
+          sx={{
+            position: 'fixed',
+            bottom: { xs: 80, sm: 96 },
+            right: { xs: 12, sm: 24 },
+            width: { xs: 'calc(100vw - 24px)', sm: 300 },
+            maxWidth: 320,
+            zIndex: 1299,
+            borderRadius: 3,
+            overflow: 'hidden',
+            border: '1px solid',
+            borderColor: 'divider',
+            animation: 'slideUp 0.3s ease',
+            '@keyframes slideUp': {
+              from: { opacity: 0, transform: 'translateY(12px)' },
+              to: { opacity: 1, transform: 'translateY(0)' },
+            },
+          }}
+        >
+          {/* Invite header */}
+          <Box
+            sx={{
+              bgcolor: '#2d5a27',
+              color: 'white',
+              px: 2,
+              py: 1.25,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+            }}
+          >
+            <SmartToy sx={{ fontSize: 18 }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, flex: 1, fontSize: '0.85rem' }}>
+              {t('chat.title', 'Outdoor Assistant')}
+            </Typography>
+            <IconButton size="small" onClick={dismissInvite} sx={{ color: 'white', p: 0.25 }}>
+              <Close sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Box>
+
+          {/* Invite body */}
+          <Box
+            sx={{ px: 2, py: 1.5, bgcolor: 'background.paper', cursor: 'pointer' }}
+            onClick={() => openChat()}
+          >
+            <Typography variant="body2" sx={{ fontSize: '0.88rem', mb: 1.25, lineHeight: 1.5 }}>
+              {t('chat.inviteMessage', '👋 How can I help you?')}
+            </Typography>
+
+            {/* First 2 suggestions as chips */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              {suggestions.slice(0, 2).map((s) => (
+                <Chip
+                  key={s}
+                  label={s}
+                  size="small"
+                  onClick={(e) => { e.stopPropagation(); openChat(s); }}
+                  sx={{
+                    fontSize: '0.75rem',
+                    cursor: 'pointer',
+                    bgcolor: 'transparent',
+                    border: '1px solid',
+                    borderColor: '#2d5a27',
+                    color: '#2d5a27',
+                    justifyContent: 'flex-start',
+                    '&:hover': { bgcolor: '#f0f7ef' },
+                  }}
+                />
+              ))}
+            </Box>
+          </Box>
+        </Paper>
+      )}
+
       {/* FAB trigger */}
       <Tooltip title={open ? '' : t('chat.fabTooltip', 'Chat with our assistant')} placement="left">
         <Fab
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => (open ? handleClose() : openChat())}
           sx={{
             position: 'fixed',
             bottom: { xs: 16, sm: 24 },

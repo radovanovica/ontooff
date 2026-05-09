@@ -93,6 +93,20 @@
       "badgeRecommended": "Preporučeno"
     }
   },
+  "chat": {
+    "title": "Asistent za outdoor",
+    "subtitle": "Pronađi mesta · Saveti · Planiranje putovanja",
+    "welcome": "👋 Zdravo! Ja sam vaš asistent za outdoor aktivnosti. Mogu vam pomoći da pronađete mesta za kampovanje, ribolov, kajaking i još mnogo toga. Šta tražite?",
+    "inputPlaceholder": "Pitajte o outdoor aktivnostima…",
+    "fabTooltip": "Razgovarajte sa asistentom",
+    "inviteMessage": "👋 Kako mogu da vam pomognem?",
+    "suggestions": [
+      "Koje outdoor aktivnosti nudite?",
+      "Kako da napravim rezervaciju?",
+      "Pronađi mi mesto za kampovanje",
+      "Najbolja mesta za ribolov"
+    ]
+  },
   "common": {
     "save": "Sačuvaj",
     "cancel": "Otkaži",

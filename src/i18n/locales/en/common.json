@@ -93,6 +93,20 @@
       "badgeRecommended": "Recommended"
     }
   },
+  "chat": {
+    "title": "Outdoor Assistant",
+    "subtitle": "Find places · Get tips · Plan your trip",
+    "welcome": "👋 Hi! I'm your outdoor activity assistant. I can help you find camping spots, fishing lakes, kayaking locations and more. What are you looking for?",
+    "inputPlaceholder": "Ask about outdoor activities…",
+    "fabTooltip": "Chat with our assistant",
+    "inviteMessage": "👋 How can I help you?",
+    "suggestions": [
+      "What outdoor activities do you offer?",
+      "How do I make a reservation?",
+      "Find me a camping place",
+      "Best fishing spots"
+    ]
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
