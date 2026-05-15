@@ -259,7 +259,7 @@ export interface ActivityLocation {
   createdAt: Date;
   updatedAt: Date;
   place?: Place;
-  activityTypes?: Array<{ activityTypeId: string; activityType: ActivityType }>;
+  activityTypes?: Array<{ activityTypeId: string; requiresSpot: boolean; activityType: ActivityType }>;
   spots?: Spot[];
 }
 

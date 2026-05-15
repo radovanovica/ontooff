@@ -8,6 +8,7 @@ import { UserRole } from '@/types';
 const schema = z.object({
   placeId: z.string(),
   activityTypeIds: z.array(z.string()).min(1, 'At least one activity type is required'),
+  activityTypeRequiresSpot: z.record(z.boolean()).optional(),
   name: z.string().min(1),
   description: z.string().optional(),
   maxCapacity: z.number().int().positive().optional(),
@@ -64,13 +65,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
 
-  const { activityTypeIds, ...locationData } = result.data;
+  const { activityTypeIds, activityTypeRequiresSpot, ...locationData } = result.data;
   const location = await prisma.activityLocation.create({ data: locationData });
 
   await prisma.activityLocationActivity.createMany({
     data: activityTypeIds.map((atId) => ({
       activityLocationId: location.id,
       activityTypeId: atId,
+      requiresSpot: activityTypeRequiresSpot?.[atId] ?? true,
     })),
     skipDuplicates: true,
   });

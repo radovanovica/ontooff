@@ -75,6 +75,7 @@ interface LocationData {
   svgMapData: string | null;
   activityTypes: Array<{
     activityTypeId: string;
+    requiresSpot: boolean;
     activityType: { id: string; name: string; icon: string | null; color: string | null };
   }>;
   place: { id: string; name: string };
@@ -113,7 +114,6 @@ const locationSchema = z.object({
   description: z.string().optional(),
   instructions: z.string().optional(),
   maxCapacity: z.coerce.number().int().positive().optional().or(z.literal('')),
-  requiresSpot: z.boolean(),
   isActive: z.boolean(),
   sortOrder: z.coerce.number().default(0),
   latitude: z.coerce.number().optional().or(z.literal('')),
@@ -152,6 +152,9 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
   // Activity types state: all types equal priority
   const [activityTypeIds, setActivityTypeIds] = useState<string[]>(
     location.activityTypes.map((a) => a.activityTypeId)
+  );
+  const [activityTypeRequiresSpot, setActivityTypeRequiresSpot] = useState<Record<string, boolean>>(
+    Object.fromEntries(location.activityTypes.map((a) => [a.activityTypeId, a.requiresSpot ?? true]))
   );
 
   // Virtual map zone state
@@ -230,7 +233,6 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
       description: location.description ?? '',
       instructions: location.instructions ?? '',
       maxCapacity: location.maxCapacity ?? undefined,
-      requiresSpot: location.requiresSpot,
       isActive: location.isActive,
       sortOrder: location.sortOrder,
       latitude: location.latitude ?? '',
@@ -252,6 +254,7 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
           latitude: data.latitude === '' ? null : data.latitude === undefined ? null : Number(data.latitude),
           longitude: data.longitude === '' ? null : data.longitude === undefined ? null : Number(data.longitude),
           activityTypeIds,
+          activityTypeRequiresSpot,
         }),
       });
       if (!res.ok) throw new Error(t('locations.errors.saveFailed'));
@@ -321,11 +324,14 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
                   <Chip
                     key={at.id}
                     label={`${at.icon ?? ''} ${at.name}`.trim()}
-                    onClick={() =>
+                    onClick={() => {
                       setActivityTypeIds((prev) =>
                         selected ? prev.filter((id) => id !== at.id) : [...prev, at.id]
-                      )
-                    }
+                      );
+                      if (!selected) {
+                        setActivityTypeRequiresSpot((prev) => ({ ...prev, [at.id]: true }));
+                      }
+                    }}
                     color={selected ? 'primary' : 'default'}
                     variant={selected ? 'filled' : 'outlined'}
                     clickable
@@ -333,6 +339,34 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
                 );
               })}
             </Box>
+            {/* Per-activity requiresSpot toggles */}
+            {activityTypeIds.length > 0 && (
+              <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                {activityTypeIds.map((atId) => {
+                  const at = allActivityTypes.find((a) => a.id === atId);
+                  if (!at) return null;
+                  return (
+                    <FormControlLabel
+                      key={atId}
+                      control={
+                        <Switch
+                          size="small"
+                          checked={activityTypeRequiresSpot[atId] ?? true}
+                          onChange={(e) =>
+                            setActivityTypeRequiresSpot((prev) => ({ ...prev, [atId]: e.target.checked }))
+                          }
+                        />
+                      }
+                      label={
+                        <Typography variant="body2">
+                          {`${at.icon ?? ''} ${at.name}`.trim()} — {t('locations.form.requiresSpot')}
+                        </Typography>
+                      }
+                    />
+                  );
+                })}
+              </Box>
+            )}
           </Grid>
         )}
         <Grid size={{ xs: 12, sm: 4 }}>
@@ -408,18 +442,6 @@ function SettingsTab({ location, locationId, placeId, onUpdated, allActivityType
               />
             </DialogContent>
           </Dialog>
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <Controller
-            name="requiresSpot"
-            control={control}
-            render={({ field }) => (
-              <FormControlLabel
-                control={<Switch checked={field.value} onChange={e => field.onChange(e.target.checked)} />}
-                label={t('locations.form.requiresSpot')}
-              />
-            )}
-          />
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller

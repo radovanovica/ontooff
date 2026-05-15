@@ -17,7 +17,7 @@ import { ArrowBack, Check, MyLocation } from '@mui/icons-material';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from '@/i18n/client';
@@ -30,7 +30,6 @@ const schema = z.object({
   description: z.string().optional(),
   instructions: z.string().optional(),
   maxCapacity: z.coerce.number().int().positive().optional().or(z.literal('')),
-  requiresSpot: z.boolean().default(true),
   sortOrder: z.coerce.number().default(0),
 });
 
@@ -86,15 +85,16 @@ export default function NewLocationPage() {
 
   // Activity types multi-select state
   const [selectedActivityTypeIds, setSelectedActivityTypeIds] = useState<string[]>([]);
+  const [activityTypeRequiresSpot, setActivityTypeRequiresSpot] = useState<Record<string, boolean>>({});
 
   // Zone position picked on map
   const [pickedZone, setPickedZone] = useState<{ cx: number; cy: number } | null>(null);
   const [pickingMode, setPickingMode] = useState(true); // start in picking mode so user can click immediately
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm<FormInputValues, unknown, FormOutputValues>({
+  const { register, handleSubmit, formState: { errors } } = useForm<FormInputValues, unknown, FormOutputValues>({
     resolver: zodResolver(schema),
-    defaultValues: { requiresSpot: true, sortOrder: 0 },
+    defaultValues: { sortOrder: 0 },
   });
 
   // ── Load place + activity types ────────────────────────────────────────
@@ -161,11 +161,11 @@ export default function NewLocationPage() {
         body: JSON.stringify({
           placeId,
           activityTypeIds: selectedActivityTypeIds,
+          activityTypeRequiresSpot,
           name: data.name,
           description: data.description || undefined,
           instructions: data.instructions || undefined,
           maxCapacity: data.maxCapacity === '' ? undefined : Number(data.maxCapacity) || undefined,
-          requiresSpot: data.requiresSpot,
           sortOrder: Number(data.sortOrder) || 0,
           svgMapData,
           // Inherit place map settings for spot sub-map defaults
@@ -254,11 +254,14 @@ export default function NewLocationPage() {
                           <Chip
                             key={at.id}
                             label={`${at.icon ?? ''} ${at.name}`.trim()}
-                            onClick={() =>
+                            onClick={() => {
                               setSelectedActivityTypeIds((prev) =>
                                 selected ? prev.filter((id) => id !== at.id) : [...prev, at.id]
-                              )
-                            }
+                              );
+                              if (!selected) {
+                                setActivityTypeRequiresSpot((prev) => ({ ...prev, [at.id]: true }));
+                              }
+                            }}
                             color={selected ? 'primary' : 'default'}
                             variant={selected ? 'filled' : 'outlined'}
                             clickable
@@ -271,6 +274,34 @@ export default function NewLocationPage() {
                     <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
                       {t('locations.errors.activityTypeRequired')}
                     </Typography>
+                  )}
+                  {/* Per-activity requiresSpot toggles */}
+                  {selectedActivityTypeIds.length > 0 && (
+                    <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      {selectedActivityTypeIds.map((atId) => {
+                        const at = activityTypes.find((a) => a.id === atId);
+                        if (!at) return null;
+                        return (
+                          <FormControlLabel
+                            key={atId}
+                            control={
+                              <Switch
+                                size="small"
+                                checked={activityTypeRequiresSpot[atId] ?? true}
+                                onChange={(e) =>
+                                  setActivityTypeRequiresSpot((prev) => ({ ...prev, [atId]: e.target.checked }))
+                                }
+                              />
+                            }
+                            label={
+                              <Typography variant="body2">
+                                {`${at.icon ?? ''} ${at.name}`.trim()} — {t('locations.form.requiresSpot')}
+                              </Typography>
+                            }
+                          />
+                        );
+                      })}
+                    </Box>
                   )}
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
@@ -307,18 +338,6 @@ export default function NewLocationPage() {
                     rows={3}
                     placeholder={t('locations.form.instructionsPlaceholder')}
                     helperText={t('locations.form.instructionsHint')}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12 }}>
-                  <Controller
-                    name="requiresSpot"
-                    control={control}
-                    render={({ field }) => (
-                      <FormControlLabel
-                        control={<Switch checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />}
-                        label={t('locations.form.requiresSpot')}
-                      />
-                    )}
                   />
                 </Grid>
               </Grid>

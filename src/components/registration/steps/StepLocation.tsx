@@ -121,6 +121,7 @@ interface StepLocationProps {
   onSelectTimeslot: (spotId: string, timeslotId: string) => void;
   // Submit action (called by the Continue button)
   onFormSubmit: React.FormEventHandler<HTMLFormElement>;
+  effectiveRequiresSpot?: boolean;
 }
 
 export default function StepLocation({
@@ -150,6 +151,7 @@ export default function StepLocation({
   onSpotToggle,
   onSelectTimeslot,
   onFormSubmit,
+  effectiveRequiresSpot = true,
 }: StepLocationProps) {
   const { t } = useTranslation('registration');
   const { t: tc } = useTranslation('common');
@@ -418,7 +420,7 @@ export default function StepLocation({
         </Collapse>
 
         {/* ── Section 3: Spots (unlocked after valid date range, if required) ── */}
-        <Collapse in={spotsUnlocked && !!selectedLocation?.requiresSpot} timeout={320}>
+        <Collapse in={spotsUnlocked && effectiveRequiresSpot} timeout={320}>
           <SectionBlock
             number={3}
             title={t('steps.spotSelection')}

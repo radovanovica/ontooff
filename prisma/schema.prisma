@@ -243,6 +243,7 @@ model ActivityType {
 model ActivityLocationActivity {
   activityLocationId String
   activityTypeId     String
+  requiresSpot       Boolean @default(true)
 
   activityLocation ActivityLocation @relation(fields: [activityLocationId], references: [id], onDelete: Cascade)
   activityType     ActivityType     @relation(fields: [activityTypeId], references: [id], onDelete: Cascade)

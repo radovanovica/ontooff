@@ -383,9 +383,19 @@ useEffect(() => {
     return calculatePricingLocal(normalizedRule, guestCounts ?? {}, numberOfDays);
   }, [selectedRule, selectedRuleId, guestCounts, numberOfDays]);
 
+  // Derive requiresSpot from the selected activity type's join table entry
+  const effectiveRequiresSpot = useMemo(() => {
+    if (!selectedLocation) return true;
+    if (!selectedActivityTypeId) return selectedLocation.requiresSpot ?? true;
+    const joinEntry = selectedLocation.activityTypes?.find(
+      (a) => a.activityTypeId === selectedActivityTypeId
+    );
+    return joinEntry?.requiresSpot ?? true;
+  }, [selectedLocation, selectedActivityTypeId]);
+
   const onStep1Submit = (values: Step1Values) => {
     if (!selectedLocation) return;
-    if (selectedLocation.requiresSpot && (!values.spotIds || values.spotIds.length === 0)) {
+    if (effectiveRequiresSpot && (!values.spotIds || values.spotIds.length === 0)) {
       setError1('spotIds', { message: t('validation.spotRequired') });
       return;
     }
@@ -896,6 +906,7 @@ useEffect(() => {
           spotError={errors1.spotIds?.message}
           onSpotToggle={handleSpotToggle}
           onSelectTimeslot={selectTimeslot}
+          effectiveRequiresSpot={effectiveRequiresSpot}
           onFormSubmit={handleSubmit1(onStep1Submit)}
         />
       )}

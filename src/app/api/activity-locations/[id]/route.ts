@@ -23,6 +23,7 @@ const updateSchema = z.object({
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
   activityTypeIds: z.array(z.string()).optional(),
+  activityTypeRequiresSpot: z.record(z.boolean()).optional(),
 });
 
 async function getLocationWithAccess(id: string, userId: string, role: UserRole) {
@@ -89,7 +90,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, { status: 422 });
   }
 
-  const { activityTypeIds, ...locationData } = result.data;
+  const { activityTypeIds, activityTypeRequiresSpot, ...locationData } = result.data;
   const updated = await prisma.activityLocation.update({ where: { id }, data: locationData });
 
   // Sync all activity types in join table
@@ -100,8 +101,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         data: activityTypeIds.map((atId) => ({
           activityLocationId: id,
           activityTypeId: atId,
+          requiresSpot: activityTypeRequiresSpot?.[atId] ?? true,
         })),
         skipDuplicates: true,
+      });
+    }
+  } else if (activityTypeRequiresSpot) {
+    // Update requiresSpot for existing join entries without changing the set
+    for (const [atId, rs] of Object.entries(activityTypeRequiresSpot)) {
+      await prisma.activityLocationActivity.updateMany({
+        where: { activityLocationId: id, activityTypeId: atId },
+        data: { requiresSpot: rs },
       });
     }
   }
