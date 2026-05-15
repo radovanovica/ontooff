@@ -1,0 +1,15 @@
+{
+  "required": "{{field}} je obavezno",
+  "minLength": "{{field}} mora imati najmanje {{min}} znakova",
+  "maxLength": "{{field}} ne smije premašiti {{max}} znakova",
+  "email": "Unesite valjanu email adresu",
+  "url": "Unesite valjani URL",
+  "number": "Mora biti broj",
+  "positiveNumber": "Mora biti pozitivan broj",
+  "passwordMismatch": "Lozinke se ne poklapaju",
+  "passwordStrength": "Lozinka mora imati najmanje 8 znakova, jedno veliko slovo i jedan broj",
+  "dateRange": "Datum odlaska mora biti nakon datuma dolaska",
+  "minDate": "Datum ne može biti u prošlosti",
+  "atLeastOne": "Odaberite najmanje jedan {{item}}",
+  "maxPeople": "Maksimalno {{count}} osoba za ovu lokaciju"
+}

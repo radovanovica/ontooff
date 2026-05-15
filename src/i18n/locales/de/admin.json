@@ -1,0 +1,272 @@
+{
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "actions": "Aktionen",
+    "noData": "Keine Daten verfügbar",
+    "all": "Alle",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "breadcrumbAdmin": "Admin",
+    "loadingMap": "Karte lädt…",
+    "loading": "Lädt…"
+  },
+  "dashboard": {
+    "title": "Admin-Dashboard",
+    "subtitle": "Plattformübersicht",
+    "stats": {
+      "totalUsers": "Gesamtbenutzer",
+      "totalPlaces": "Aktive Orte",
+      "totalRegistrations": "Gesamtbuchungen",
+      "pendingRegistrations": "Ausstehend",
+      "confirmedRegistrations": "Bestätigt",
+      "totalRevenue": "Gesamtumsatz",
+      "totalOrgs": "Organisationen",
+      "pendingOrgs": "Ausstehende Orgs",
+      "freeLocations": "Community-Standorte"
+    },
+    "pendingOrgsButton": "{{count}} Org wartet auf Genehmigung",
+    "pendingOrgsButton_plural": "{{count}} Orgs warten auf Genehmigung",
+    "recentBookings": "Aktuelle Buchungen",
+    "quickLinks": "Schnelllinks"
+  },
+  "users": {
+    "title": "Benutzerverwaltung",
+    "subtitle": "Alle Plattformbenutzer verwalten",
+    "table": {
+      "name": "Name",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "status": "Status",
+      "bookings": "Buchungen",
+      "places": "Orte",
+      "joined": "Beigetreten",
+      "actions": "Aktionen"
+    },
+    "columns": {
+      "name": "Name",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "status": "Status",
+      "joined": "Beigetreten",
+      "registrations": "Buchungen",
+      "actions": "Aktionen"
+    },
+    "searchPlaceholder": "Nach Name oder E-Mail suchen…",
+    "roleFilter": "Rolle",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "activate": "Aktivieren",
+    "deactivate": "Deaktivieren",
+    "roles": {
+      "SUPER_ADMIN": "Super Admin",
+      "PLACE_OWNER": "Orteigentümer",
+      "USER": "Benutzer"
+    },
+    "actions": {
+      "activate": "Aktivieren",
+      "deactivate": "Deaktivieren",
+      "changeRole": "Rolle ändern",
+      "viewBookings": "Buchungen anzeigen"
+    },
+    "filters": {
+      "allRoles": "Alle Rollen",
+      "searchPlaceholder": "Nach Name oder E-Mail suchen…"
+    },
+    "confirmDeactivate": "Diesen Benutzer deaktivieren? Er kann sich nicht mehr anmelden.",
+    "confirmActivate": "Diesen Benutzer reaktivieren?",
+    "confirmRoleChange": "Rolle in {{role}} ändern?",
+    "errors": {
+      "loadFailed": "Benutzer konnten nicht geladen werden"
+    }
+  },
+  "places": {
+    "title": "Alle Orte",
+    "subtitle": "Alle registrierten Orte verwalten",
+    "table": {
+      "name": "Ortsname",
+      "owner": "Eigentümer",
+      "city": "Stadt",
+      "locations": "Standorte",
+      "status": "Status",
+      "created": "Erstellt"
+    },
+    "columns": {
+      "name": "Ortsname",
+      "location": "Ort",
+      "owner": "Eigentümer",
+      "locations": "Standorte",
+      "registrations": "Buchungen",
+      "status": "Status",
+      "created": "Erstellt"
+    },
+    "confirmDelete": "Diesen Ort löschen? Alle zugehörigen Daten werden dauerhaft entfernt.",
+    "searchPlaceholder": "Orte suchen…",
+    "manage": "Verwalten",
+    "totalCount": "{{count}} Ort insgesamt",
+    "totalCount_plural": "{{count}} Orte insgesamt",
+    "errors": {
+      "loadFailed": "Orte konnten nicht geladen werden"
+    }
+  },
+  "organizations": {
+    "title": "Organisationen",
+    "subtitle": "Organisationsregistrierungen verwalten",
+    "searchPlaceholder": "Nach Name oder E-Mail suchen…",
+    "status": "Status",
+    "statuses": {
+      "PENDING": "Ausstehend",
+      "APPROVED": "Genehmigt",
+      "REJECTED": "Abgelehnt",
+      "SUSPENDED": "Gesperrt"
+    },
+    "columns": {
+      "name": "Name",
+      "email": "E-Mail",
+      "location": "Ort",
+      "places": "Orte",
+      "status": "Status",
+      "registered": "Registriert"
+    },
+    "actions": {
+      "approve": "Genehmigen",
+      "reject": "Ablehnen",
+      "suspend": "Sperren",
+      "website": "Website",
+      "delete": "Dauerhaft löschen"
+    },
+    "confirmApprove": "Organisation genehmigen",
+    "confirmReject": "Organisation ablehnen",
+    "confirmSuspend": "Organisation sperren",
+    "rejectionReason": "Grund (optional)",
+    "approveConfirmText": "\"{{name}}\" genehmigen? Ein PLACE_OWNER-Konto wird erstellt und Anmeldedaten werden an {{email}} gesendet.",
+    "rejectConfirmText": "\"{{name}}\" ablehnen? Eine Benachrichtigungs-E-Mail wird an {{email}} gesendet.",
+    "suspendConfirmText": "\"{{name}}\" sperren? Ihre Orte bleiben bestehen, aber sie können keine neuen erstellen.",
+    "deleteTitle": "Organisation dauerhaft löschen",
+    "deleteConfirmText": "{{name}} dauerhaft löschen?",
+    "deleteWarning": "Dies entfernt den Organisationseintrag aus der Datenbank und gibt die E-Mail-Adresse {{email}} für eine erneute Registrierung frei. Alle verknüpften Orte bleiben erhalten, werden jedoch von dieser Organisation getrennt.",
+    "deletingLabel": "Wird gelöscht…",
+    "deletePermanently": "Dauerhaft löschen",
+    "errors": {
+      "loadFailed": "Organisationen konnten nicht geladen werden",
+      "actionFailed": "Aktion fehlgeschlagen",
+      "deleteFailed": "Löschen fehlgeschlagen"
+    },
+    "totalCount": "{{count}} Organisation insgesamt",
+    "totalCount_plural": "{{count}} Organisationen insgesamt"
+  },
+  "registrations": {
+    "title": "Alle Buchungen",
+    "subtitle": "Alle Buchungen anzeigen und verwalten",
+    "searchPlaceholder": "Nach Name, E-Mail oder Ref suchen…",
+    "table": {
+      "number": "Ref #",
+      "guest": "Gast",
+      "activity": "Aktivität",
+      "place": "Ort",
+      "dates": "Daten",
+      "guests": "Gäste",
+      "total": "Gesamt",
+      "payment": "Zahlung",
+      "status": "Status",
+      "created": "Gebucht"
+    },
+    "columns": {
+      "number": "Ref #",
+      "guest": "Gast",
+      "location": "Standort",
+      "dates": "Daten",
+      "status": "Status",
+      "payment": "Zahlung",
+      "amount": "Betrag"
+    },
+    "filters": {
+      "allStatuses": "Alle Status",
+      "searchPlaceholder": "Nach Name, E-Mail oder Ref suchen…"
+    },
+    "actions": {
+      "confirm": "Bestätigen",
+      "cancel": "Stornieren",
+      "markPaid": "Als bezahlt markieren",
+      "viewDetails": "Details anzeigen",
+      "sendEmail": "E-Mail erneut senden"
+    },
+    "confirmCancel": "Diese Buchung stornieren? Der Gast erhält eine E-Mail-Benachrichtigung.",
+    "confirmConfirm": "Diese Buchung bestätigen? Der Gast wird benachrichtigt.",
+    "confirmMarkPaid": "Diese Buchung als vollständig bezahlt markieren?",
+    "errors": {
+      "loadFailed": "Buchungen konnten nicht geladen werden"
+    },
+    "totalCount": "{{count}} Buchung insgesamt",
+    "totalCount_plural": "{{count}} Buchungen insgesamt"
+  },
+  "freeLocations": {
+    "title": "Kostenlose / Community-Standorte",
+    "subtitle": "Öffentliche Standorte ohne Anbindung an ein Unternehmen oder Buchungssystem",
+    "addNew": "Standort hinzufügen",
+    "searchPlaceholder": "Standorte suchen…",
+    "empty": "Noch keine kostenlosen Standorte. Fügen Sie einen hinzu!",
+    "breadcrumbAdmin": "Admin",
+    "breadcrumbFreeLocations": "Kostenlose Standorte",
+    "slugPreview": "Vorschau: /locations/{{slug}}",
+    "deleteConfirm": "\"{{name}}\" löschen?",
+    "totalCount": "{{count}} Standort insgesamt",
+    "totalCount_plural": "{{count}} Standorte insgesamt",
+    "table": {
+      "name": "Name",
+      "location": "Ort",
+      "tags": "Tags",
+      "status": "Status",
+      "created": "Erstellt"
+    },
+    "actions": {
+      "viewPublic": "Öffentliche Seite anzeigen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen"
+    },
+    "dialog": {
+      "addTitle": "Kostenlosen Standort hinzufügen",
+      "editTitle": "Bearbeiten: {{name}}",
+      "pinMapTitle": "Standort auf Karte markieren"
+    },
+    "form": {
+      "images": "Bilder",
+      "coverImage": "Titelbild",
+      "galleryPhotos": "Galerie-Fotos ({{count}}/{{max}}) — Titelbild ★ setzen oder entfernen",
+      "galleryHint": "Bis zu {{max}} Fotos hinzufügen. Das erste Nicht-Titelbild wird auf Karten angezeigt.",
+      "locationDetails": "Standortdetails",
+      "gpsCoordinates": "GPS-Koordinaten",
+      "contact": "Kontakt",
+      "additionalInfo": "Zusätzliche Informationen",
+      "tagsSection": "Kategorien / Tags",
+      "tagsHint": "Zutreffende Aktivitätskategorien auswählen:",
+      "name": "Name",
+      "slug": "Slug (URL)",
+      "slugHint": "In URL verwendet: /places/{{slug}}",
+      "description": "Beschreibung",
+      "address": "Adresse",
+      "city": "Stadt",
+      "country": "Land",
+      "latitude": "Breitengrad",
+      "longitude": "Längengrad",
+      "phone": "Telefon",
+      "email": "E-Mail",
+      "website": "Website",
+      "howToFind": "Wie man uns findet / Anweisungen",
+      "directionsHint": "Wegbeschreibung, Parkhinweise, Zugangsangaben",
+      "saveChanges": "Änderungen speichern",
+      "createLocation": "Standort erstellen",
+      "activeSwitch": "Aktiv (in Suche sichtbar)",
+      "pinOnMap": "Auf Karte markieren",
+      "uploadCover": "Titelbild hochladen",
+      "replace": "Ersetzen",
+      "add": "Hinzufügen"
+    },
+    "errors": {
+      "loadFailed": "Laden fehlgeschlagen",
+      "saveFailed": "Speichern fehlgeschlagen",
+      "coverUploadFailed": "Titelbild-Upload fehlgeschlagen",
+      "galleryUploadFailed": "Galerie-Upload fehlgeschlagen"
+    }
+  }
+}

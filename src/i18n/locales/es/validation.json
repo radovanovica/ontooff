@@ -1,0 +1,15 @@
+{
+  "required": "{{field}} es obligatorio",
+  "minLength": "{{field}} debe tener al menos {{min}} caracteres",
+  "maxLength": "{{field}} no puede superar {{max}} caracteres",
+  "email": "Por favor, introduce una dirección de email válida",
+  "url": "Por favor, introduce una URL válida",
+  "number": "Debe ser un número",
+  "positiveNumber": "Debe ser un número positivo",
+  "passwordMismatch": "Las contraseñas no coinciden",
+  "passwordStrength": "La contraseña debe tener al menos 8 caracteres, una letra mayúscula y un número",
+  "dateRange": "La fecha de salida debe ser posterior a la fecha de entrada",
+  "minDate": "La fecha no puede ser en el pasado",
+  "atLeastOne": "Por favor, selecciona al menos un(a) {{item}}",
+  "maxPeople": "Máximo {{count}} personas permitidas para este lugar"
+}

@@ -202,8 +202,13 @@
     "contact": "Kontakt"
   },
   "languageSwitcher": {
-    "en": "English",
-    "sr": "Srpski"
+    "en": "Engleski",
+    "sr": "Srpski",
+    "hr": "Hrvatski",
+    "bs": "Bosanski",
+    "cnr": "Crnogorski",
+    "de": "Njemački",
+    "es": "Španski"
   },
   "search": {
     "title": "Pronađite aktivnosti i lokacije",

@@ -203,7 +203,12 @@
   },
   "languageSwitcher": {
     "en": "English",
-    "sr": "Srpski"
+    "sr": "Serbian",
+    "hr": "Croatian",
+    "bs": "Bosnian",
+    "cnr": "Montenegrin",
+    "de": "German",
+    "es": "Spanish"
   },
   "search": {
     "title": "Find Activities & Locations",

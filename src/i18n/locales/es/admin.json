@@ -1,0 +1,272 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "actions": "Acciones",
+    "noData": "No hay datos disponibles",
+    "all": "Todos",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "breadcrumbAdmin": "Administración",
+    "loadingMap": "Cargando mapa…",
+    "loading": "Cargando…"
+  },
+  "dashboard": {
+    "title": "Panel de administración",
+    "subtitle": "Resumen de la plataforma",
+    "stats": {
+      "totalUsers": "Total de usuarios",
+      "totalPlaces": "Lugares activos",
+      "totalRegistrations": "Total de reservas",
+      "pendingRegistrations": "Pendientes",
+      "confirmedRegistrations": "Confirmadas",
+      "totalRevenue": "Ingresos totales",
+      "totalOrgs": "Organizaciones",
+      "pendingOrgs": "Orgs pendientes",
+      "freeLocations": "Ubicaciones de la comunidad"
+    },
+    "pendingOrgsButton": "{{count}} org pendiente de aprobación",
+    "pendingOrgsButton_plural": "{{count}} orgs pendientes de aprobación",
+    "recentBookings": "Reservas recientes",
+    "quickLinks": "Accesos rápidos"
+  },
+  "users": {
+    "title": "Gestión de usuarios",
+    "subtitle": "Gestionar todos los usuarios de la plataforma",
+    "table": {
+      "name": "Nombre",
+      "email": "Email",
+      "role": "Rol",
+      "status": "Estado",
+      "bookings": "Reservas",
+      "places": "Lugares",
+      "joined": "Se unió",
+      "actions": "Acciones"
+    },
+    "columns": {
+      "name": "Nombre",
+      "email": "Email",
+      "role": "Rol",
+      "status": "Estado",
+      "joined": "Se unió",
+      "registrations": "Reservas",
+      "actions": "Acciones"
+    },
+    "searchPlaceholder": "Buscar por nombre o email…",
+    "roleFilter": "Rol",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "roles": {
+      "SUPER_ADMIN": "Super Admin",
+      "PLACE_OWNER": "Propietario de lugar",
+      "USER": "Usuario"
+    },
+    "actions": {
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "changeRole": "Cambiar rol",
+      "viewBookings": "Ver reservas"
+    },
+    "filters": {
+      "allRoles": "Todos los roles",
+      "searchPlaceholder": "Buscar por nombre o email…"
+    },
+    "confirmDeactivate": "¿Desactivar este usuario? No podrá iniciar sesión.",
+    "confirmActivate": "¿Reactivar este usuario?",
+    "confirmRoleChange": "¿Cambiar rol a {{role}}?",
+    "errors": {
+      "loadFailed": "Error al cargar usuarios"
+    }
+  },
+  "places": {
+    "title": "Todos los lugares",
+    "subtitle": "Gestionar todos los lugares registrados",
+    "table": {
+      "name": "Nombre del lugar",
+      "owner": "Propietario",
+      "city": "Ciudad",
+      "locations": "Ubicaciones",
+      "status": "Estado",
+      "created": "Creado"
+    },
+    "columns": {
+      "name": "Nombre del lugar",
+      "location": "Ubicación",
+      "owner": "Propietario",
+      "locations": "Ubicaciones",
+      "registrations": "Reservas",
+      "status": "Estado",
+      "created": "Creado"
+    },
+    "confirmDelete": "¿Eliminar este lugar? Todos los datos asociados serán eliminados permanentemente.",
+    "searchPlaceholder": "Buscar lugares…",
+    "manage": "Gestionar",
+    "totalCount": "{{count}} lugar en total",
+    "totalCount_plural": "{{count}} lugares en total",
+    "errors": {
+      "loadFailed": "Error al cargar lugares"
+    }
+  },
+  "organizations": {
+    "title": "Organizaciones",
+    "subtitle": "Gestionar registros de organizaciones",
+    "searchPlaceholder": "Buscar por nombre o email…",
+    "status": "Estado",
+    "statuses": {
+      "PENDING": "Pendiente",
+      "APPROVED": "Aprobado",
+      "REJECTED": "Rechazado",
+      "SUSPENDED": "Suspendido"
+    },
+    "columns": {
+      "name": "Nombre",
+      "email": "Email",
+      "location": "Ubicación",
+      "places": "Lugares",
+      "status": "Estado",
+      "registered": "Registrado"
+    },
+    "actions": {
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "suspend": "Suspender",
+      "website": "Sitio web",
+      "delete": "Eliminar permanentemente"
+    },
+    "confirmApprove": "Aprobar organización",
+    "confirmReject": "Rechazar organización",
+    "confirmSuspend": "Suspender organización",
+    "rejectionReason": "Razón (opcional)",
+    "approveConfirmText": "¿Aprobar \"{{name}}\"? Se creará una cuenta PLACE_OWNER y se enviarán credenciales a {{email}}.",
+    "rejectConfirmText": "¿Rechazar \"{{name}}\"? Se enviará un email de notificación a {{email}}.",
+    "suspendConfirmText": "¿Suspender \"{{name}}\"? Sus lugares permanecen pero no podrán crear nuevos.",
+    "deleteTitle": "Eliminar organización permanentemente",
+    "deleteConfirmText": "¿Eliminar permanentemente {{name}}?",
+    "deleteWarning": "Esto elimina el registro de la organización de la base de datos, liberando la dirección de email {{email}} para re-registro. Todos los lugares vinculados se conservarán pero desvinculados de esta organización.",
+    "deletingLabel": "Eliminando…",
+    "deletePermanently": "Eliminar permanentemente",
+    "errors": {
+      "loadFailed": "Error al cargar organizaciones",
+      "actionFailed": "La acción falló",
+      "deleteFailed": "La eliminación falló"
+    },
+    "totalCount": "{{count}} organización en total",
+    "totalCount_plural": "{{count}} organizaciones en total"
+  },
+  "registrations": {
+    "title": "Todas las reservas",
+    "subtitle": "Ver y gestionar todas las reservas",
+    "searchPlaceholder": "Buscar por nombre, email o ref…",
+    "table": {
+      "number": "Ref #",
+      "guest": "Huésped",
+      "activity": "Actividad",
+      "place": "Lugar",
+      "dates": "Fechas",
+      "guests": "Huéspedes",
+      "total": "Total",
+      "payment": "Pago",
+      "status": "Estado",
+      "created": "Reservado"
+    },
+    "columns": {
+      "number": "Ref #",
+      "guest": "Huésped",
+      "location": "Ubicación",
+      "dates": "Fechas",
+      "status": "Estado",
+      "payment": "Pago",
+      "amount": "Monto"
+    },
+    "filters": {
+      "allStatuses": "Todos los estados",
+      "searchPlaceholder": "Buscar por nombre, email o ref…"
+    },
+    "actions": {
+      "confirm": "Confirmar",
+      "cancel": "Cancelar",
+      "markPaid": "Marcar como pagado",
+      "viewDetails": "Ver detalles",
+      "sendEmail": "Reenviar email"
+    },
+    "confirmCancel": "¿Cancelar esta reserva? El huésped recibirá una notificación por email.",
+    "confirmConfirm": "¿Confirmar esta reserva? El huésped será notificado.",
+    "confirmMarkPaid": "¿Marcar esta reserva como completamente pagada?",
+    "errors": {
+      "loadFailed": "Error al cargar reservas"
+    },
+    "totalCount": "{{count}} reserva en total",
+    "totalCount_plural": "{{count}} reservas en total"
+  },
+  "freeLocations": {
+    "title": "Ubicaciones gratuitas / de la comunidad",
+    "subtitle": "Ubicaciones públicas no vinculadas a ningún negocio o sistema de reservas",
+    "addNew": "Añadir ubicación",
+    "searchPlaceholder": "Buscar ubicaciones…",
+    "empty": "Aún no hay ubicaciones gratuitas. ¡Añade una!",
+    "breadcrumbAdmin": "Administración",
+    "breadcrumbFreeLocations": "Ubicaciones gratuitas",
+    "slugPreview": "Vista previa: /locations/{{slug}}",
+    "deleteConfirm": "¿Eliminar \"{{name}}\"?",
+    "totalCount": "{{count}} ubicación en total",
+    "totalCount_plural": "{{count}} ubicaciones en total",
+    "table": {
+      "name": "Nombre",
+      "location": "Ubicación",
+      "tags": "Etiquetas",
+      "status": "Estado",
+      "created": "Creado"
+    },
+    "actions": {
+      "viewPublic": "Ver página pública",
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
+    "dialog": {
+      "addTitle": "Añadir ubicación gratuita",
+      "editTitle": "Editar: {{name}}",
+      "pinMapTitle": "Marcar ubicación en el mapa"
+    },
+    "form": {
+      "images": "Imágenes",
+      "coverImage": "Imagen de portada",
+      "galleryPhotos": "Fotos de la galería ({{count}}/{{max}}) — hover para establecer portada ★ o eliminar",
+      "galleryHint": "Añade hasta {{max}} fotos. La primera que no sea portada se muestra en las tarjetas.",
+      "locationDetails": "Detalles de la ubicación",
+      "gpsCoordinates": "Coordenadas GPS",
+      "contact": "Contacto",
+      "additionalInfo": "Información adicional",
+      "tagsSection": "Categorías / Etiquetas",
+      "tagsHint": "Selecciona las categorías de actividades aplicables:",
+      "name": "Nombre",
+      "slug": "Slug (URL)",
+      "slugHint": "Usado en la URL: /places/{{slug}}",
+      "description": "Descripción",
+      "address": "Dirección",
+      "city": "Ciudad",
+      "country": "País",
+      "latitude": "Latitud",
+      "longitude": "Longitud",
+      "phone": "Teléfono",
+      "email": "Email",
+      "website": "Sitio web",
+      "howToFind": "Cómo encontrarlo / Instrucciones",
+      "directionsHint": "Indicaciones, información de aparcamiento, notas de acceso",
+      "saveChanges": "Guardar cambios",
+      "createLocation": "Crear ubicación",
+      "activeSwitch": "Activo (visible en la búsqueda)",
+      "pinOnMap": "Marcar en el mapa",
+      "uploadCover": "Subir portada",
+      "replace": "Reemplazar",
+      "add": "Añadir"
+    },
+    "errors": {
+      "loadFailed": "Error al cargar",
+      "saveFailed": "Error al guardar",
+      "coverUploadFailed": "Error al subir imagen de portada",
+      "galleryUploadFailed": "Error al subir galería"
+    }
+  }
+}
