@@ -1,21 +1,20 @@
 'use client';
 
-import { IconButton, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
+import { IconButton, Menu, MenuItem, Tooltip, Typography, Box } from '@mui/material';
 import { KeyboardArrowDown } from '@mui/icons-material';
+import Image from 'next/image';
 import { useState } from 'react';
 import { useLocale, changeLanguage } from '@/i18n/client';
 import type { Locale } from '@/i18n/config';
 
-// Emoji flag + label for every supported locale.
-// To add a new language: add an entry here and create the locale files.
-const LANGUAGES: { code: Locale; label: string; emoji: string }[] = [
-  { code: 'en',  label: 'English',    emoji: '\uD83C\uDDEC\uD83C\uDDE7' },
-  { code: 'sr',  label: 'Srpski',     emoji: '\uD83C\uDDF7\uD83C\uDDF8' },
-  { code: 'hr',  label: 'Hrvatski',   emoji: '\uD83C\uDDED\uD83C\uDDF7' },
-  { code: 'bs',  label: 'Bosanski',   emoji: '\uD83C\uDDE7\uD83C\uDDE6' },
-  { code: 'cnr', label: 'Crnogorski', emoji: '\uD83C\uDDF2\uD83C\uDDEA' },
-  { code: 'de',  label: 'Deutsch',    emoji: '\uD83C\uDDE9\uD83C\uDDEA' },
-  { code: 'es',  label: 'Espa\u00F1ol',   emoji: '\uD83C\uDDEA\uD83C\uDDF8' },
+const LANGUAGES: { code: Locale; label: string; flag: string }[] = [
+  { code: 'en',  label: 'English',    flag: '/assets/images/en.jpg'  },
+  { code: 'sr',  label: 'Srpski',     flag: '/assets/images/srb.png' },
+  { code: 'hr',  label: 'Hrvatski',   flag: '/assets/images/cro.png' },
+  { code: 'bs',  label: 'Bosanski',   flag: '/assets/images/bih.png' },
+  { code: 'cnr', label: 'Crnogorski', flag: '/assets/images/mne.png' },
+  { code: 'de',  label: 'Deutsch',    flag: '/assets/images/de.png'  },
+  { code: 'es',  label: 'Español',    flag: '/assets/images/es.png'  },
 ];
 
 export default function LanguageSwitcher() {
@@ -56,12 +55,26 @@ export default function LanguageSwitcher() {
             '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' },
           }}
         >
-          <Typography sx={{ fontSize: '1.15rem', lineHeight: 1, mt: '1px' }}>
-            {current.emoji}
-          </Typography>
-          <Typography variant="caption" sx={{ fontWeight: 600, lineHeight: 1, letterSpacing: 0.3 }}>
-            {current.code.toUpperCase()}
-          </Typography>
+          <Box
+            sx={{
+              width: 24,
+              height: 17,
+              borderRadius: '3px',
+              overflow: 'hidden',
+              flexShrink: 0,
+              lineHeight: 0,
+              boxShadow: '0 0 0 1px rgba(0,0,0,0.2)',
+            }}
+          >
+            <Image
+              src={current.flag}
+              alt={current.label}
+              width={24}
+              height={17}
+              unoptimized
+              style={{ objectFit: 'cover', display: 'block' }}
+            />
+          </Box>
           <KeyboardArrowDown sx={{ fontSize: 14, opacity: 0.7 }} />
         </IconButton>
       </Tooltip>
@@ -87,9 +100,25 @@ export default function LanguageSwitcher() {
               '&.Mui-selected': { bgcolor: 'action.selected', fontWeight: 700 },
             }}
           >
-            <Typography sx={{ fontSize: '1.15rem', lineHeight: 1, width: 24, textAlign: 'center' }}>
-              {lang.emoji}
-            </Typography>
+            <Box
+              sx={{
+                width: 26,
+                height: 18,
+                borderRadius: '3px',
+                overflow: 'hidden',
+                flexShrink: 0,
+                position: 'relative',
+                boxShadow: '0 0 0 1px rgba(0,0,0,0.12)',
+              }}
+            >
+              <Image
+                src={lang.flag}
+                alt={lang.label}
+                fill
+                unoptimized
+                style={{ objectFit: 'cover' }}
+              />
+            </Box>
             <Typography variant="body2" sx={{ fontWeight: lang.code === locale ? 700 : 400 }}>
               {lang.label}
             </Typography>
