@@ -8,7 +8,7 @@ import { UserRole } from '@/types';
 const schema = z.object({
   placeId: z.string(),
   activityTypeIds: z.array(z.string()).min(1, 'At least one activity type is required'),
-  activityTypeRequiresSpot: z.record(z.boolean()).optional(),
+  activityTypeRequiresSpot: z.record(z.string(), z.boolean()).optional(),
   name: z.string().min(1),
   description: z.string().optional(),
   maxCapacity: z.number().int().positive().optional(),

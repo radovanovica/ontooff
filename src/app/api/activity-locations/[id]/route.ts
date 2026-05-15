@@ -23,7 +23,7 @@ const updateSchema = z.object({
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
   activityTypeIds: z.array(z.string()).optional(),
-  activityTypeRequiresSpot: z.record(z.boolean()).optional(),
+  activityTypeRequiresSpot: z.record(z.string(), z.boolean()).optional(),
 });
 
 async function getLocationWithAccess(id: string, userId: string, role: UserRole) {
