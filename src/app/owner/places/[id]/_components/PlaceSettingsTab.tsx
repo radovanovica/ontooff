@@ -226,7 +226,7 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
       <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
         <Box sx={{ px: 3, py: 1.5, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Business sx={{ fontSize: 20, color: 'text.secondary' }} />
-          <Typography variant="subtitle1" fontWeight={700}>{t('places.sectionInfo', 'Place Information')}</Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t('places.sectionInfo', 'Place Information')}</Typography>
         </Box>
         <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ p: 3 }}>
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -274,7 +274,7 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
       <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
         <Box sx={{ px: 3, py: 1.5, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <ImageIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-          <Typography variant="subtitle1" fontWeight={700}>{t('places.sectionImages', 'Images')}</Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t('places.sectionImages', 'Images')}</Typography>
         </Box>
         <Box sx={{ p: 3 }}>
 
