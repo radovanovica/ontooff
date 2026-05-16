@@ -356,7 +356,7 @@ function PlaceContent() {
                 <RegistrationStepper
                   location={locs[0] as Loc}
                   locations={locs}
-                  initialActivityTypeId={selectedActivityTypeId}
+                  initialActivityTypeId={selectedActivityTypeId ?? undefined}
                 />
               );
             })()}
