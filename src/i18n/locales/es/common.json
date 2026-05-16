@@ -320,5 +320,25 @@
     "hideReviewForm": "Ocultar formulario",
     "review_one": "reseña",
     "review_other": "reseñas"
+  },
+  "cookies": {
+    "title": "Usamos cookies",
+    "description": "Las cookies esenciales mantienen el sitio funcionando. Las opcionales nos ayudan a mejorarlo.",
+    "customize": "Personalizar",
+    "hidePreferences": "Ocultar preferencias",
+    "essentialOnly": "Solo esenciales",
+    "acceptAll": "Aceptar todas",
+    "savePreferences": "Guardar preferencias",
+    "essential": "Esenciales",
+    "essentialDesc": "Sesiones de inicio de sesión, tokens de seguridad, preferencias de idioma. Siempre activas.",
+    "analytics": "Analítica",
+    "analyticsDesc": "Nos ayuda a entender cómo se usa el sitio (Google Analytics). No se venden datos personales.",
+    "marketing": "Marketing",
+    "marketingDesc": "Anuncios personalizados y remarketing. Actualmente no se usan pero están reservados para uso futuro."
+  },
+  "datePicker": {
+    "checkIn": "Entrada",
+    "checkOut": "Salida",
+    "selectDates": "Seleccionar fechas"
   }
 }

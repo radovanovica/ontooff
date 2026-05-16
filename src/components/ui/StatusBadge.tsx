@@ -1,6 +1,7 @@
 'use client';
 import { Chip } from '@mui/material';
 import { statusColors } from '@/lib/theme';
+import { useTranslation } from '@/i18n/client';
 
 interface StatusBadgeProps {
   status: string;
@@ -8,29 +9,10 @@ interface StatusBadgeProps {
   size?: 'small' | 'medium';
 }
 
-const statusLabels: Record<string, string> = {
-  PENDING: 'Pending',
-  CONFIRMED: 'Confirmed',
-  CANCELLED: 'Cancelled',
-  COMPLETED: 'Completed',
-  NO_SHOW: 'No Show',
-  AVAILABLE: 'Available',
-  OCCUPIED: 'Occupied',
-  MAINTENANCE: 'Maintenance',
-  DISABLED: 'Disabled',
-  UNPAID: 'Unpaid',
-  PARTIALLY_PAID: 'Partial',
-  PAID: 'Paid',
-  REFUNDED: 'Refunded',
-  WAIVED: 'Waived',
-  SUPER_ADMIN: 'Super Admin',
-  PLACE_OWNER: 'Place Owner',
-  USER: 'User',
-};
-
 export default function StatusBadge({ status, label, size = 'small' }: StatusBadgeProps) {
+  const { t } = useTranslation('common');
   const color = statusColors[status] ?? 'default';
-  const displayLabel = label ?? statusLabels[status] ?? status;
+  const displayLabel = label ?? t(`status.${status}`, { defaultValue: status });
 
   return (
     <Chip

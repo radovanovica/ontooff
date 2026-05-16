@@ -33,6 +33,7 @@
     "title": "Moja mjesta",
     "addNew": "Dodaj novo mjesto",
     "editPlace": "Uredi mjesto",
+    "search": "Pretraži mjesta…",
     "form": {
       "name": "Naziv mjesta",
       "slug": "URL slug",
@@ -95,7 +96,13 @@
       "mapFileTooLarge": "Slika karte mora biti ispod 10 MB"
     },
     "locationsCount": "{{count}} lokacija",
-    "locationsCount_plural": "{{count}} lokacija"
+    "locationsCount_plural": "{{count}} lokacija",
+    "sectionInfo": "Informacije o mjestu",
+    "sectionImages": "Slike",
+    "saveInformation": "Spremi informacije",
+    "saveLogo": "Spremi logo",
+    "saveCover": "Spremi naslovnu fotografiju",
+    "saveMap": "Spremi sliku karte"
   },
   "activityTypes": {
     "title": "Vrste aktivnosti",
@@ -209,7 +216,10 @@
       "loadFailed": "Učitavanje lokacija nije uspjelo",
       "createFailed": "Kreiranje lokacije nije uspjelo",
       "activityTypeRequired": "Potrebna je najmanje jedna vrsta aktivnosti"
-    }
+    },
+    "nameRequired": "Naziv je obavezan",
+    "mapZoneHint": "Prikazane su postojeće zone lokacija. Kliknite \"Označi na karti\" pa kliknite gdje se nalazi ova nova lokacija.",
+    "noMapHint": "Prvo postavite pozadinsku sliku karte kako biste omogućili postavljanje zona."
   },
   "spots": {
     "title": "Mjesta",
@@ -453,6 +463,7 @@
     "noTitle": "(bez naslova)",
     "averageRating": "Prosj. ocjena",
     "totalReviews": "Ukupno recenzija",
+    "loadFailed": "Učitavanje recenzija nije uspjelo",
     "pendingCount": "{{count}} na čekanju"
   },
   "timeslots": {
@@ -476,6 +487,7 @@
   "org": {
     "notLinked": "Vaš nalog nije povezan s organizacijom. Molimo kontaktirajte podršku.",
     "pending": "Vaša organizacija \"{{name}}\" čeka odobrenje administratora. Moći ćete kreirati mjesta nakon odobrenja.",
-    "statusBad": "Vaša organizacija \"{{name}}\" je {{status}}. Molimo kontaktirajte podršku."
+    "statusBad": "Vaša organizacija \"{{name}}\" je {{status}}. Molimo kontaktirajte podršku.",
+    "approved": "Organizacija: {{name}} — Odobrena ✓"
   }
 }

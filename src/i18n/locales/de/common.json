@@ -320,5 +320,25 @@
     "hideReviewForm": "Formular ausblenden",
     "review_one": "Bewertung",
     "review_other": "Bewertungen"
+  },
+  "cookies": {
+    "title": "Wir verwenden Cookies",
+    "description": "Notwendige Cookies halten die Website am Laufen. Optionale helfen uns, sie zu verbessern.",
+    "customize": "Einstellungen",
+    "hidePreferences": "Einstellungen ausblenden",
+    "essentialOnly": "Nur notwendige",
+    "acceptAll": "Alle akzeptieren",
+    "savePreferences": "Einstellungen speichern",
+    "essential": "Notwendig",
+    "essentialDesc": "Anmeldesitzungen, Sicherheitstoken, Spracheinstellungen. Immer aktiv.",
+    "analytics": "Analytik",
+    "analyticsDesc": "Hilft uns zu verstehen, wie die Website genutzt wird (Google Analytics). Keine persönlichen Daten werden verkauft.",
+    "marketing": "Marketing",
+    "marketingDesc": "Personalisierte Werbung und Remarketing. Derzeit nicht genutzt, aber für zukünftige Nutzung reserviert."
+  },
+  "datePicker": {
+    "checkIn": "Anreise",
+    "checkOut": "Abreise",
+    "selectDates": "Daten auswählen"
   }
 }

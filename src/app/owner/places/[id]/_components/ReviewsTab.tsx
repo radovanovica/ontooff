@@ -69,7 +69,7 @@ export default function ReviewsTab({ placeId }: ReviewsTabProps) {
     fetch(`/api/reviews/${placeId}?${params}`)
       .then((r) => r.json())
       .then((d) => {
-        if (!d.success) throw new Error(d.error ?? 'Failed to load reviews');
+        if (!d.success) throw new Error(d.error ?? t('reviews.loadFailed'));
         setReviews(d.data.items);
         setTotal(d.data.total);
         setTotalPages(d.data.totalPages);

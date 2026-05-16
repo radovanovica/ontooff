@@ -25,17 +25,19 @@ import PageHeader from '@/components/ui/PageHeader';
 
 // ─── Schema ────────────────────────────────────────────────────────────────────
 
-const schema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  description: z.string().optional(),
-  instructions: z.string().optional(),
-  maxCapacity: z.coerce.number().int().positive().optional().or(z.literal('')),
-  sortOrder: z.coerce.number().default(0),
-});
+function makeSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string().min(1, t('locations.nameRequired')),
+    description: z.string().optional(),
+    instructions: z.string().optional(),
+    maxCapacity: z.coerce.number().int().positive().optional().or(z.literal('')),
+    sortOrder: z.coerce.number().default(0),
+  });
+}
 
-type FormValues = z.infer<typeof schema>;
-type FormInputValues = z.input<typeof schema>;
-type FormOutputValues = z.output<typeof schema>;
+type FormValues = z.infer<ReturnType<typeof makeSchema>>;
+type FormInputValues = z.input<ReturnType<typeof makeSchema>>;
+type FormOutputValues = z.output<ReturnType<typeof makeSchema>>;
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -76,6 +78,7 @@ export default function NewLocationPage() {
   const params = useParams<{ id: string }>();
   const placeId = params.id;
   const router = useRouter();
+  const schema = makeSchema(t);
 
   const [activityTypes, setActivityTypes] = useState<ActivityType[]>([]);
   const [place, setPlace] = useState<PlaceData | null>(null);
@@ -491,8 +494,8 @@ export default function NewLocationPage() {
 
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
               {hasMap
-                ? 'Existing location zones are shown. Click "Pick on map" then click where this new location sits.'
-                : 'Set a place map background first to enable zone placement.'}
+                ? t('locations.mapZoneHint')
+                : t('locations.noMapHint')}
             </Typography>
           </Paper>
         </Grid>

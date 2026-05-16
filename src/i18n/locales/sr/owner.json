@@ -33,6 +33,7 @@
     "title": "Moja mesta",
     "addNew": "Dodaj novo mesto",
     "editPlace": "Izmeni mesto",
+    "search": "Pretraži mesta…",
     "form": {
       "name": "Naziv mesta",
       "slug": "URL slug",
@@ -95,7 +96,13 @@
       "mapFileTooLarge": "Slika mape mora biti manja od 10 MB"
     },
     "locationsCount": "{{count}} lokacija",
-    "locationsCount_plural": "{{count}} lokacija"
+    "locationsCount_plural": "{{count}} lokacija",
+    "sectionInfo": "Informacije o mestu",
+    "sectionImages": "Slike",
+    "saveInformation": "Sačuvaj informacije",
+    "saveLogo": "Sačuvaj logo",
+    "saveCover": "Sačuvaj naslovnu sliku",
+    "saveMap": "Sačuvaj sliku mape"
   },
   "activityTypes": {
     "title": "Tipovi aktivnosti",
@@ -208,7 +215,10 @@
       "loadFailed": "Učitavanje lokacija nije uspelo",
       "createFailed": "Kreiranje lokacije nije uspelo",
       "activityTypeRequired": "Potrebna je najmanje jedna vrsta aktivnosti"
-    }
+    },
+    "nameRequired": "Naziv je obavezan",
+    "mapZoneHint": "Prikazane su postojeće zone lokacija. Kliknite \"Označi na mapi\" pa kliknite gde se nalazi ova nova lokacija.",
+    "noMapHint": "Prvo postavite pozadinsku sliku mape kako biste omogućili postavljanje zona."
   },
   "spots": {
     "title": "Mesta",
@@ -451,6 +461,7 @@
     "noTitle": "(bez naslova)",
     "averageRating": "Prosečna ocena",
     "totalReviews": "Ukupno recenzija",
+    "loadFailed": "Neuspešno učitavanje recenzija",
     "pendingCount": "{{count}} na čekanju"
   },
   "timeslots": {
@@ -472,6 +483,7 @@
   "org": {
     "notLinked": "Vaš nalog nije povezan sa organizacijom. Kontaktirajte podršku.",
     "pending": "Vaša organizacija \"{{name}}\" čeka odobrenje admina. Moći ćete da kreirate mesta kada bude odobreno.",
-    "statusBad": "Vaša organizacija \"{{name}}\" ima status {{status}}. Kontaktirajte podršku."
+    "statusBad": "Vaša organizacija \"{{name}}\" ima status {{status}}. Kontaktirajte podršku.",
+    "approved": "Organizacija: {{name}} — Odobrena ✓"
   }
 }

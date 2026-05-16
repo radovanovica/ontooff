@@ -33,6 +33,7 @@
     "title": "My Places",
     "addNew": "Add New Place",
     "editPlace": "Edit Place",
+    "search": "Search places…",
     "form": {
       "name": "Place name",
       "slug": "URL slug",
@@ -95,7 +96,13 @@
       "mapFileTooLarge": "Map image must be under 10 MB"
     },
     "locationsCount": "{{count}} location",
-    "locationsCount_plural": "{{count}} locations"
+    "locationsCount_plural": "{{count}} locations",
+    "sectionInfo": "Place Information",
+    "sectionImages": "Images",
+    "saveInformation": "Save Information",
+    "saveLogo": "Save Logo",
+    "saveCover": "Save Cover Photo",
+    "saveMap": "Save Map Image"
   },
   "activityTypes": {
     "title": "Activity Types",
@@ -209,7 +216,10 @@
       "loadFailed": "Failed to load locations",
       "createFailed": "Failed to create location",
       "activityTypeRequired": "At least one activity type is required"
-    }
+    },
+    "mapZoneHint": "Existing location zones are shown. Click \"Pick on map\" then click where this new location sits.",
+    "noMapHint": "Set a place map background first to enable zone placement.",
+    "nameRequired": "Name is required"
   },
   "spots": {
     "title": "Spots",
@@ -453,6 +463,7 @@
     "noTitle": "(no title)",
     "averageRating": "Avg. rating",
     "totalReviews": "Total reviews",
+    "loadFailed": "Failed to load reviews",
     "pendingCount": "{{count}} pending"
   },
   "timeslots": {
@@ -474,6 +485,7 @@
   "org": {
     "notLinked": "Your account is not linked to an organization. Please contact support.",
     "pending": "Your organization \"{{name}}\" is pending admin approval. You will be able to create places once approved.",
-    "statusBad": "Your organization \"{{name}}\" is {{status}}. Please contact support."
+    "statusBad": "Your organization \"{{name}}\" is {{status}}. Please contact support.",
+    "approved": "Organization: {{name}} — Approved ✓"
   }
 }

@@ -33,6 +33,7 @@
     "title": "Meine Orte",
     "addNew": "Neuen Ort hinzufügen",
     "editPlace": "Ort bearbeiten",
+    "search": "Orte suchen…",
     "form": {
       "name": "Name des Ortes",
       "slug": "URL-Slug",
@@ -95,7 +96,13 @@
       "mapFileTooLarge": "Das Kartenbild muss kleiner als 10 MB sein"
     },
     "locationsCount": "{{count}} Standort",
-    "locationsCount_plural": "{{count}} Standorte"
+    "locationsCount_plural": "{{count}} Standorte",
+    "sectionInfo": "Ortsinformationen",
+    "sectionImages": "Bilder",
+    "saveInformation": "Informationen speichern",
+    "saveLogo": "Logo speichern",
+    "saveCover": "Titelbild speichern",
+    "saveMap": "Kartenbild speichern"
   },
   "activityTypes": {
     "title": "Aktivitätstypen",
@@ -209,7 +216,10 @@
       "loadFailed": "Standorte konnten nicht geladen werden",
       "createFailed": "Standort konnte nicht erstellt werden",
       "activityTypeRequired": "Mindestens ein Aktivitätstyp ist erforderlich"
-    }
+    },
+    "nameRequired": "Name ist erforderlich",
+    "mapZoneHint": "Vorhandene Standortzonen werden angezeigt. Klicken Sie auf \"Auf Karte markieren\" und dann auf den Ort der neuen Lokation.",
+    "noMapHint": "Bitte legen Sie zuerst ein Karten-Hintergrundbild fest, um die Zonenplatzierung zu aktivieren."
   },
   "spots": {
     "title": "Plätze",
@@ -453,6 +463,7 @@
     "noTitle": "(kein Titel)",
     "averageRating": "Ø Bewertung",
     "totalReviews": "Bewertungen insgesamt",
+    "loadFailed": "Bewertungen konnten nicht geladen werden",
     "pendingCount": "{{count}} ausstehend"
   },
   "timeslots": {
@@ -476,6 +487,7 @@
   "org": {
     "notLinked": "Ihr Konto ist mit keiner Organisation verknüpft. Bitte wenden Sie sich an den Support.",
     "pending": "Ihre Organisation \"{{name}}\" wartet auf die Genehmigung des Administrators. Sie können Orte erstellen, sobald die Genehmigung erteilt wurde.",
-    "statusBad": "Ihre Organisation \"{{name}}\" hat den Status {{status}}. Bitte wenden Sie sich an den Support."
+    "statusBad": "Ihre Organisation \"{{name}}\" hat den Status {{status}}. Bitte wenden Sie sich an den Support.",
+    "approved": "Organisation: {{name}} — Genehmigt ✓"
   }
 }

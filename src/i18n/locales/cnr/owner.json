@@ -33,6 +33,7 @@
     "title": "Moja mjesta",
     "addNew": "Dodajte novo mjesto",
     "editPlace": "Uredite mjesto",
+    "search": "Pretražite mjesta…",
     "form": {
       "name": "Naziv mjesta",
       "slug": "URL slug",
@@ -95,7 +96,13 @@
       "mapFileTooLarge": "Slika karte mora biti ispod 10 MB"
     },
     "locationsCount": "{{count}} lokacija",
-    "locationsCount_plural": "{{count}} lokacija"
+    "locationsCount_plural": "{{count}} lokacija",
+    "sectionInfo": "Informacije o mjestu",
+    "sectionImages": "Slike",
+    "saveInformation": "Sačuvajte informacije",
+    "saveLogo": "Sačuvajte logo",
+    "saveCover": "Sačuvajte naslovnu sliku",
+    "saveMap": "Sačuvajte sliku mape"
   },
   "activityTypes": {
     "title": "Vrste aktivnosti",
@@ -209,7 +216,10 @@
       "loadFailed": "Učitavanje lokacija nije uspjelo",
       "createFailed": "Kreiranje lokacije nije uspjelo",
       "activityTypeRequired": "Potrebna je najmanje jedna vrsta aktivnosti"
-    }
+    },
+    "nameRequired": "Naziv je obavezan",
+    "mapZoneHint": "Prikazane su postojeće zone lokacija. Kliknite \"Označite na karti\" pa kliknite gdje se nalazi ova nova lokacija.",
+    "noMapHint": "Prvo postavite pozadinsku sliku karte kako biste omogućili postavljanje zona."
   },
   "spots": {
     "title": "Mjesta",
@@ -453,6 +463,7 @@
     "noTitle": "(bez naslova)",
     "averageRating": "Prosj. ocjena",
     "totalReviews": "Ukupno recenzija",
+    "loadFailed": "Učitavanje recenzija nije uspjelo",
     "pendingCount": "{{count}} na čekanju"
   },
   "timeslots": {
@@ -476,6 +487,7 @@
   "org": {
     "notLinked": "Vaš nalog nije povezan s organizacijom. Molimo kontaktirajte podršku.",
     "pending": "Vaša organizacija \"{{name}}\" čeka odobrenje administratora. Moći ćete da kreirate mjesta nakon odobrenja.",
-    "statusBad": "Vaša organizacija \"{{name}}\" je {{status}}. Molimo kontaktirajte podršku."
+    "statusBad": "Vaša organizacija \"{{name}}\" je {{status}}. Molimo kontaktirajte podršku.",
+    "approved": "Organizacija: {{name}} — Odobrena ✓"
   }
 }

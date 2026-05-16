@@ -99,7 +99,7 @@ export default async function OwnerDashboardPage() {
       )}
       {org && org.status === 'APPROVED' && (
         <Alert severity="success" icon={<Business />} sx={{ mb: 3 }}>
-          Organization: <strong>{org.name}</strong> {'\u2014'} Approved {'\u2713'}
+          {t('org.approved', { name: org.name })}
         </Alert>
       )}
 

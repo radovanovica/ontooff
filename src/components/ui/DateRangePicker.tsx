@@ -9,6 +9,7 @@
 
 import { Box, TextField, Typography, Paper } from '@mui/material';
 import { DateRange } from '@mui/icons-material';
+import { useTranslation } from '@/i18n/client';
 
 interface DateRangePickerProps {
   /** Start date value (YYYY-MM-DD) */
@@ -36,6 +37,7 @@ export default function DateRangePicker({
   size = 'medium',
   inline = false,
 }: DateRangePickerProps) {
+  const { t } = useTranslation('common');
   const today = new Date().toISOString().split('T')[0];
   const minStart = minFrom ?? today;
 
@@ -55,7 +57,7 @@ export default function DateRangePicker({
         {/* Check-in */}
         <Box sx={{ flex: 1, px: 1.5, py: 0.75, borderRight: '1px solid', borderColor: 'divider' }}>
           <Typography variant="caption" sx={{ display: 'block', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.4, fontSize: 10, mb: 0.25 }}>
-            Check-in
+            {t('datePicker.checkIn')}
           </Typography>
           <TextField
             size="small"
@@ -82,7 +84,7 @@ export default function DateRangePicker({
         {/* Check-out */}
         <Box sx={{ flex: 1, px: 1.5, py: 0.75 }}>
           <Typography variant="caption" sx={{ display: 'block', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.4, fontSize: 10, mb: 0.25 }}>
-            Check-out
+            {t('datePicker.checkOut')}
           </Typography>
           <TextField
             size="small"
@@ -141,7 +143,7 @@ export default function DateRangePicker({
         {/* From */}
         <Box sx={{ flex: 1, p: 1.5, borderRight: '1px solid', borderColor: 'divider' }}>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
-            Check-in
+            {t('datePicker.checkIn')}
           </Typography>
           <TextField
             size={size}
@@ -169,7 +171,7 @@ export default function DateRangePicker({
         {/* To */}
         <Box sx={{ flex: 1, p: 1.5 }}>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
-            Check-out
+            {t('datePicker.checkOut')}
           </Typography>
           <TextField
             size={size}

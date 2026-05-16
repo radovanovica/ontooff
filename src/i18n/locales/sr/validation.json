@@ -20,6 +20,10 @@
   "slugFormat": "Slug sme sadržati samo mala slova, brojeve i crtice",
   "colorFormat": "Unesite ispravnu hex boju (npr. #2d5a27)",
   "unique": "Ova vrednost je već zauzeta",
+  "number": "Mora biti broj",
+  "passwordMismatch": "Lozinke se ne poklapaju",
+  "minDate": "Datum ne može biti u prošlosti",
+  "maxPeople": "Maksimalno {{count}} osoba za ovo mesto",
   "auth": {
     "invalidCredentials": "Pogrešan email ili lozinka",
     "emailNotVerified": "Molimo potvrdite email adresu pre prijave",

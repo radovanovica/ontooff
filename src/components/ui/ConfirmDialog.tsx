@@ -4,6 +4,7 @@ import {
   Button, Typography, Box, CircularProgress
 } from '@mui/material';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
+import { useTranslation } from '@/i18n/client';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -21,13 +22,16 @@ export default function ConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   onCancel,
   loading = false,
   severity = 'warning',
 }: ConfirmDialogProps) {
+  const { t } = useTranslation('common');
+  const resolvedConfirmLabel = confirmLabel ?? t('common.confirm');
+  const resolvedCancelLabel = cancelLabel ?? t('common.cancel');
   const iconColor = { warning: '#f59e0b', error: '#dc2626', info: '#3b82f6' }[severity];
   const btnColor = { warning: 'warning' as const, error: 'error' as const, info: 'primary' as const }[severity];
 
@@ -44,7 +48,7 @@ export default function ConfirmDialog({
       </DialogContent>
       <DialogActions sx={{ p: 2.5, pt: 1 }}>
         <Button onClick={onCancel} disabled={loading} variant="outlined" color="inherit" sx={{ borderColor: 'divider' }}>
-          {cancelLabel}
+          {resolvedCancelLabel}
         </Button>
         <Button
           onClick={onConfirm}
@@ -53,7 +57,7 @@ export default function ConfirmDialog({
           color={btnColor}
           startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
         >
-          {loading ? 'Processing…' : confirmLabel}
+          {loading ? t('common.processing') : resolvedConfirmLabel}
         </Button>
       </DialogActions>
     </Dialog>

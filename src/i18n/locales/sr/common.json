@@ -320,5 +320,25 @@
     "hideReviewForm": "Sakrij formu",
     "review_one": "recenzija",
     "review_other": "recenzija"
+  },
+  "cookies": {
+    "title": "Koristimo kolačiće",
+    "description": "Neophodni kolačići održavaju sajt u radu. Opcioni nam pomažu da ga unapredimo.",
+    "customize": "Podešavanja",
+    "hidePreferences": "Sakrij podešavanja",
+    "essentialOnly": "Samo neophodni",
+    "acceptAll": "Prihvati sve",
+    "savePreferences": "Sačuvaj podešavanja",
+    "essential": "Neophodni",
+    "essentialDesc": "Sesije prijave, bezbednosni tokeni, jezičke postavke. Uvek aktivni.",
+    "analytics": "Analitika",
+    "analyticsDesc": "Pomaže nam da razumemo korišćenje sajta (Google Analytics). Nikakvi lični podaci se ne prodaju.",
+    "marketing": "Marketing",
+    "marketingDesc": "Personalizovane reklame i remarketing. Trenutno se ne koriste, ali su rezervisane za buduću upotrebu."
+  },
+  "datePicker": {
+    "checkIn": "Dolazak",
+    "checkOut": "Odlazak",
+    "selectDates": "Odaberite datume"
   }
 }

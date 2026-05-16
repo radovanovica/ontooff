@@ -11,5 +11,49 @@
   "dateRange": "La fecha de salida debe ser posterior a la fecha de entrada",
   "minDate": "La fecha no puede ser en el pasado",
   "atLeastOne": "Por favor, selecciona al menos un(a) {{item}}",
-  "maxPeople": "Máximo {{count}} personas permitidas para este lugar"
+  "maxPeople": "Máximo {{count}} personas permitidas para este lugar",
+  "min": "El valor mínimo es {{min}}",
+  "max": "El valor máximo es {{max}}",
+  "phone": "Por favor, introduce un número de teléfono válido",
+  "integer": "Debe ser un número entero",
+  "passwordMatch": "Las contraseñas no coinciden",
+  "pastDate": "La fecha no puede ser en el pasado",
+  "invalidDate": "Fecha inválida",
+  "selectOption": "Por favor, selecciona una opción",
+  "guestCount": "El número total de huéspedes debe ser al menos 1",
+  "slugFormat": "Solo se permiten letras minúsculas, números y guiones",
+  "colorFormat": "Por favor, introduce un color hexadecimal válido (p. ej. #2d5a27)",
+  "unique": "Este valor ya está en uso",
+  "auth": {
+    "invalidCredentials": "Correo electrónico o contraseña inválidos",
+    "emailNotVerified": "Por favor, verifica tu correo electrónico antes de iniciar sesión",
+    "accountDeactivated": "Tu cuenta está desactivada. Por favor, contacta con soporte.",
+    "emailExists": "Ya existe una cuenta con este correo electrónico",
+    "tokenExpired": "Este enlace ha expirado. Por favor, solicita uno nuevo.",
+    "tokenInvalid": "Enlace inválido. Comprueba tu correo electrónico para obtener el enlace correcto.",
+    "notAuthenticated": "Debes iniciar sesión para acceder a esta página",
+    "notAuthorized": "No tienes permiso para realizar esta acción"
+  },
+  "registration": {
+    "spotUnavailable": "El lugar seleccionado no está disponible en el horario elegido",
+    "spotsUnavailable": "Algunos de los lugares seleccionados no están disponibles: {{names}}",
+    "invalidDates": "Rango de fechas inválido",
+    "maxSpotsExceeded": "Se superó el número máximo de lugares para esta ubicación",
+    "guestCountExceedsCapacity": "El número de huéspedes supera la capacidad del lugar",
+    "paymentMethodRequired": "Por favor, selecciona un método de pago"
+  },
+  "place": {
+    "nameRequired": "El nombre del lugar es obligatorio",
+    "slugRequired": "El slug de URL es obligatorio",
+    "slugTaken": "Este slug ya está en uso"
+  },
+  "pricing": {
+    "priceRequired": "El precio es obligatorio",
+    "tierRequired": "Añade al menos un nivel de precios",
+    "duplicateAgeGroup": "Este tipo de grupo ya existe en los precios"
+  },
+  "file": {
+    "tooLarge": "El archivo es demasiado grande (máx. {{size}})",
+    "invalidType": "Tipo de archivo inválido. Permitidos: {{types}}"
+  }
 }

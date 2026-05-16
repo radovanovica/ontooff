@@ -33,6 +33,7 @@
     "title": "Mis Lugares",
     "addNew": "Agregar Nuevo Lugar",
     "editPlace": "Editar Lugar",
+    "search": "Buscar lugares…",
     "form": {
       "name": "Nombre del lugar",
       "slug": "Slug de URL",
@@ -95,7 +96,13 @@
       "mapFileTooLarge": "La imagen del mapa debe ser menor de 10 MB"
     },
     "locationsCount": "{{count}} ubicación",
-    "locationsCount_plural": "{{count}} ubicaciones"
+    "locationsCount_plural": "{{count}} ubicaciones",
+    "sectionInfo": "Información del lugar",
+    "sectionImages": "Imágenes",
+    "saveInformation": "Guardar información",
+    "saveLogo": "Guardar logo",
+    "saveCover": "Guardar foto de portada",
+    "saveMap": "Guardar imagen del mapa"
   },
   "activityTypes": {
     "title": "Tipos de Actividad",
@@ -209,7 +216,10 @@
       "loadFailed": "Error al cargar ubicaciones",
       "createFailed": "Error al crear la ubicación",
       "activityTypeRequired": "Se requiere al menos un tipo de actividad"
-    }
+    },
+    "nameRequired": "El nombre es obligatorio",
+    "mapZoneHint": "Se muestran las zonas de ubicación existentes. Haga clic en \"Marcar en el mapa\" y luego haga clic donde se encuentra esta nueva ubicación.",
+    "noMapHint": "Primero configura una imagen de fondo del mapa para habilitar la colocación de zonas."
   },
   "spots": {
     "title": "Espacios",
@@ -453,6 +463,7 @@
     "noTitle": "(sin título)",
     "averageRating": "Calif. promedio",
     "totalReviews": "Total de reseñas",
+    "loadFailed": "No se pudieron cargar las reseñas",
     "pendingCount": "{{count}} pendiente(s)"
   },
   "timeslots": {
@@ -476,6 +487,7 @@
   "org": {
     "notLinked": "Su cuenta no está vinculada a una organización. Por favor contacte al soporte.",
     "pending": "Su organización \"{{name}}\" está pendiente de aprobación del administrador. Podrá crear lugares una vez aprobada.",
-    "statusBad": "Su organización \"{{name}}\" tiene estado {{status}}. Por favor contacte al soporte."
+    "statusBad": "Su organización \"{{name}}\" tiene estado {{status}}. Por favor contacte al soporte.",
+    "approved": "Organización: {{name}} — Aprobada ✓"
   }
 }

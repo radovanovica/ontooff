@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { CookieOutlined } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/i18n/client';
 
 const CONSENT_KEY = 'ontooff_cookie_consent';
 
@@ -49,6 +50,7 @@ function writeConsent(analytics: boolean, marketing: boolean) {
 }
 
 export default function CookieConsent() {
+  const { t } = useTranslation('common');
   const [visible, setVisible] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   const [analytics, setAnalytics] = useState(true);
@@ -84,7 +86,7 @@ export default function CookieConsent() {
   return (
     <Box
       role="dialog"
-      aria-label="Cookie consent"
+      aria-label={t('cookies.title')}
       sx={{
         position: 'fixed',
         bottom: 0,
@@ -115,13 +117,13 @@ export default function CookieConsent() {
               variant="body2"
               sx={{ color: 'rgba(255,255,255,0.92)', fontWeight: 600, mb: 0.25 }}
             >
-              We use cookies
+              {t('cookies.title')}
             </Typography>
             <Typography
               variant="caption"
               sx={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, display: 'block' }}
             >
-              Essential cookies keep the site working. Optional cookies help us improve it.{' '}
+              {t('cookies.description')}{' '}
               <Box
                 component="button"
                 onClick={() => setShowPreferences((p) => !p)}
@@ -135,7 +137,7 @@ export default function CookieConsent() {
                   p: 0,
                 }}
               >
-                {showPreferences ? 'Hide preferences' : 'Customize'}
+                {showPreferences ? t('cookies.hidePreferences') : t('cookies.customize')}
               </Box>
             </Typography>
           </Box>
@@ -154,7 +156,7 @@ export default function CookieConsent() {
                 },
               }}
             >
-              Essential only
+              {t('cookies.essentialOnly')}
             </Button>
             <Button
               size="small"
@@ -162,7 +164,7 @@ export default function CookieConsent() {
               onClick={acceptAll}
               sx={{ bgcolor: '#2d5a27', '&:hover': { bgcolor: '#1e3d1a' } }}
             >
-              Accept all
+              {t('cookies.acceptAll')}
             </Button>
           </Box>
         </Box>
@@ -188,7 +190,7 @@ export default function CookieConsent() {
                 }
                 label={
                   <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
-                    Essential
+                    {t('cookies.essential')}
                   </Typography>
                 }
                 sx={{ m: 0 }}
@@ -197,7 +199,7 @@ export default function CookieConsent() {
                 variant="caption"
                 sx={{ display: 'block', color: 'rgba(255,255,255,0.4)', mt: 0.5, lineHeight: 1.5 }}
               >
-                Login sessions, security tokens, language preferences. Always active.
+                {t('cookies.essentialDesc')}
               </Typography>
             </Box>
 
@@ -217,7 +219,7 @@ export default function CookieConsent() {
                 }
                 label={
                   <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
-                    Analytics
+                    {t('cookies.analytics')}
                   </Typography>
                 }
                 sx={{ m: 0 }}
@@ -226,7 +228,7 @@ export default function CookieConsent() {
                 variant="caption"
                 sx={{ display: 'block', color: 'rgba(255,255,255,0.4)', mt: 0.5, lineHeight: 1.5 }}
               >
-                Helps us understand how the site is used (Google Analytics). No personal data sold.
+                {t('cookies.analyticsDesc')}
               </Typography>
             </Box>
 
@@ -246,7 +248,7 @@ export default function CookieConsent() {
                 }
                 label={
                   <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
-                    Marketing
+                    {t('cookies.marketing')}
                   </Typography>
                 }
                 sx={{ m: 0 }}
@@ -255,7 +257,7 @@ export default function CookieConsent() {
                 variant="caption"
                 sx={{ display: 'block', color: 'rgba(255,255,255,0.4)', mt: 0.5, lineHeight: 1.5 }}
               >
-                Personalised ads and remarketing. Currently not used but reserved for future use.
+                {t('cookies.marketingDesc')}
               </Typography>
             </Box>
           </Box>
@@ -267,7 +269,7 @@ export default function CookieConsent() {
               onClick={savePreferences}
               sx={{ bgcolor: '#2d5a27', '&:hover': { bgcolor: '#1e3d1a' } }}
             >
-              Save preferences
+              {t('cookies.savePreferences')}
             </Button>
           </Box>
         </Collapse>

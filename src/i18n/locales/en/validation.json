@@ -11,5 +11,49 @@
   "dateRange": "End date must be after start date",
   "minDate": "Date cannot be in the past",
   "atLeastOne": "Please select at least one {{item}}",
-  "maxPeople": "Maximum {{count}} people allowed for this spot"
+  "maxPeople": "Maximum {{count}} people allowed for this spot",
+  "min": "Minimum value is {{min}}",
+  "max": "Maximum value is {{max}}",
+  "phone": "Please enter a valid phone number",
+  "integer": "Must be a whole number",
+  "passwordMatch": "Passwords do not match",
+  "pastDate": "Date cannot be in the past",
+  "invalidDate": "Invalid date",
+  "selectOption": "Please select an option",
+  "guestCount": "Total guest count must be at least 1",
+  "slugFormat": "Only lowercase letters, numbers and hyphens allowed",
+  "colorFormat": "Please enter a valid hex color (e.g. #2d5a27)",
+  "unique": "This value is already taken",
+  "auth": {
+    "invalidCredentials": "Invalid email or password",
+    "emailNotVerified": "Please verify your email before logging in",
+    "accountDeactivated": "Your account is deactivated. Please contact support.",
+    "emailExists": "An account with this email already exists",
+    "tokenExpired": "This link has expired. Please request a new one.",
+    "tokenInvalid": "Invalid link. Please check your email for the correct link.",
+    "notAuthenticated": "You must be logged in to access this page",
+    "notAuthorized": "You do not have permission to perform this action"
+  },
+  "registration": {
+    "spotUnavailable": "The selected spot is not available in the chosen time slot",
+    "spotsUnavailable": "Some of the selected spots are not available: {{names}}",
+    "invalidDates": "Invalid date range",
+    "maxSpotsExceeded": "Maximum number of spots exceeded for this location",
+    "guestCountExceedsCapacity": "Guest count exceeds spot capacity",
+    "paymentMethodRequired": "Please select a payment method"
+  },
+  "place": {
+    "nameRequired": "Place name is required",
+    "slugRequired": "URL slug is required",
+    "slugTaken": "This slug is already taken"
+  },
+  "pricing": {
+    "priceRequired": "Price is required",
+    "tierRequired": "Add at least one pricing tier",
+    "duplicateAgeGroup": "This group type already exists in the pricing"
+  },
+  "file": {
+    "tooLarge": "File is too large (max. {{size}})",
+    "invalidType": "Invalid file type. Allowed: {{types}}"
+  }
 }

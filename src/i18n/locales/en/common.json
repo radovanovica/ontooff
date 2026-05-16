@@ -320,5 +320,25 @@
     "hideReviewForm": "Hide form",
     "review_one": "review",
     "review_other": "reviews"
+  },
+  "cookies": {
+    "title": "We use cookies",
+    "description": "Essential cookies keep the site working. Optional cookies help us improve it.",
+    "customize": "Customize",
+    "hidePreferences": "Hide preferences",
+    "essentialOnly": "Essential only",
+    "acceptAll": "Accept all",
+    "savePreferences": "Save preferences",
+    "essential": "Essential",
+    "essentialDesc": "Login sessions, security tokens, language preferences. Always active.",
+    "analytics": "Analytics",
+    "analyticsDesc": "Helps us understand how the site is used (Google Analytics). No personal data sold.",
+    "marketing": "Marketing",
+    "marketingDesc": "Personalised ads and remarketing. Currently not used but reserved for future use."
+  },
+  "datePicker": {
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "selectDates": "Select dates"
   }
 }

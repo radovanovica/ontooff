@@ -11,5 +11,49 @@
   "dateRange": "Datum odlaska mora biti nakon datuma dolaska",
   "minDate": "Datum ne može biti u prošlosti",
   "atLeastOne": "Odaberite najmanje jedan {{item}}",
-  "maxPeople": "Maksimalno {{count}} osoba za ovu lokaciju"
+  "maxPeople": "Maksimalno {{count}} osoba za ovu lokaciju",
+  "min": "Minimalna vrijednost je {{min}}",
+  "max": "Maksimalna vrijednost je {{max}}",
+  "phone": "Unesite ispravan broj telefona",
+  "integer": "Mora biti cijeli broj",
+  "passwordMatch": "Lozinke se ne poklapaju",
+  "pastDate": "Datum ne može biti u prošlosti",
+  "invalidDate": "Nevažeći datum",
+  "selectOption": "Odaberite opciju",
+  "guestCount": "Ukupan broj gostiju mora biti bar 1",
+  "slugFormat": "Slug smije sadržavati samo mala slova, brojeve i crtice",
+  "colorFormat": "Unesite ispravnu hex boju (npr. #2d5a27)",
+  "unique": "Ova vrijednost je već zauzeta",
+  "auth": {
+    "invalidCredentials": "Neispravni email ili lozinka",
+    "emailNotVerified": "Molimo potvrdite email adresu prije prijave",
+    "accountDeactivated": "Vaš nalog je deaktiviran. Kontaktirajte podršku.",
+    "emailExists": "Nalog sa ovom email adresom već postoji",
+    "tokenExpired": "Ovaj link je istekao. Zatražite novi.",
+    "tokenInvalid": "Neispravni link. Provjerite email za ispravan link.",
+    "notAuthenticated": "Morate biti prijavljeni da biste pristupili ovoj stranici",
+    "notAuthorized": "Nemate dozvolu za ovu radnju"
+  },
+  "registration": {
+    "spotUnavailable": "Izabrano mjesto nije dostupno u odabranom terminu",
+    "spotsUnavailable": "Neka od izabranih mjesta nisu dostupna: {{names}}",
+    "invalidDates": "Neispravni opseg datuma",
+    "maxSpotsExceeded": "Prekočren maksimalni broj mjesta za ovu lokaciju",
+    "guestCountExceedsCapacity": "Broj gostiju premašuje kapacitet mjesta",
+    "paymentMethodRequired": "Izaberite način plaćanja"
+  },
+  "place": {
+    "nameRequired": "Naziv mjesta je obavezan",
+    "slugRequired": "URL slug je obavezan",
+    "slugTaken": "Ovaj slug je već zauzet"
+  },
+  "pricing": {
+    "priceRequired": "Cijena je obavezna",
+    "tierRequired": "Dodajte bar jedan nivo cijene",
+    "duplicateAgeGroup": "Ovaj tip grupe već postoji u cjenovniku"
+  },
+  "file": {
+    "tooLarge": "Fajl je prevelik (maks. {{size}})",
+    "invalidType": "Nevažeći tip fajla. Dozvoljeni: {{types}}"
+  }
 }
