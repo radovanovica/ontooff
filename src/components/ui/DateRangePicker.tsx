@@ -134,7 +134,7 @@ export default function DateRangePicker({
       >
         <DateRange sx={{ fontSize: 16, color: 'text.secondary' }} />
         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-          Select dates
+          {t('datePicker.selectDates')}
         </Typography>
       </Box>
 
