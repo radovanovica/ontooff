@@ -528,7 +528,7 @@ export default function StepLocation({
         fullWidth
         size="large"
         sx={{ mt: 3 }}
-        disabled={!selectedLocation || availabilityLoading}
+        disabled={!selectedLocation || (availabilityLoading && effectiveRequiresSpot)}
       >
         {t('actions.continue')}
       </Button>

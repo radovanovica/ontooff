@@ -323,8 +323,9 @@ useEffect(() => {
   }, [selectedRuleId, pricingRules, getValues2, setValue2]);
 
   useEffect(() => {
-    if (!selectedLocation || !startDate || !endDate) {
+    if (!selectedLocation || !startDate || !endDate || !effectiveRequiresSpot) {
       setAvailableSpots([]);
+      setAvailabilityLoading(false);
       return;
     }
 
@@ -369,7 +370,7 @@ useEffect(() => {
     };
 
     run();
-  }, [selectedLocation?.id, startDate, endDate, selectedActivityTypeId]);
+  }, [selectedLocation?.id, startDate, endDate, selectedActivityTypeId, effectiveRequiresSpot]);
 
   const livePricing = useMemo(() => {
     if (!selectedRule || !selectedRuleId) return null;
@@ -899,7 +900,7 @@ useEffect(() => {
           onStartDateChange={(v) => setValue1('startDate', v, { shouldValidate: true })}
           onEndDateChange={(v) => setValue1('endDate', v, { shouldValidate: true })}
           availableSpots={availableSpots}
-          availabilityLoading={availabilityLoading}
+          availabilityLoading={availabilityLoading && effectiveRequiresSpot}
           availabilityError={availabilityError}
           selectedSpotIds={selectedSpotIds ?? []}
           spotTimeslotSelections={spotTimeslotSelections}
