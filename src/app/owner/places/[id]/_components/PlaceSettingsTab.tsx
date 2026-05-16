@@ -282,7 +282,7 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
           <Box sx={{ mb: 4 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
               <AccountCircle sx={{ fontSize: 18, color: 'text.secondary' }} />
-              <Typography variant="subtitle2" fontWeight={600}>{t('places.profileImage', 'Logo / Profile Image')}</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{t('places.profileImage', 'Logo / Profile Image')}</Typography>
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               {t('places.profileImageHint', 'Square logo or profile photo shown on search results and booking pages.')}
@@ -333,7 +333,7 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
           <Box sx={{ mb: 4 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
               <ImageIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-              <Typography variant="subtitle2" fontWeight={600}>{t('places.coverImage', 'Cover Photo')}</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{t('places.coverImage', 'Cover Photo')}</Typography>
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               {t('places.coverImageHint', 'Wide banner shown at the top of your place page and in search cards.')}
@@ -396,7 +396,7 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
               <MapIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-              <Typography variant="subtitle2" fontWeight={600}>{t('places.mapBackground', 'Map Background')}</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{t('places.mapBackground', 'Map Background')}</Typography>
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               {t('places.mapBackgroundHint', 'Upload an aerial photo or illustrated map of your place. Location zones will be marked on top of this image.')}
