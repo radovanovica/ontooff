@@ -322,6 +322,16 @@ useEffect(() => {
     }
   }, [selectedRuleId, pricingRules, getValues2, setValue2]);
 
+  // Derive requiresSpot from the selected activity type's join table entry
+  const effectiveRequiresSpot = useMemo(() => {
+    if (!selectedLocation) return true;
+    if (!selectedActivityTypeId) return selectedLocation.requiresSpot ?? true;
+    const joinEntry = selectedLocation.activityTypes?.find(
+      (a) => a.activityTypeId === selectedActivityTypeId
+    );
+    return joinEntry?.requiresSpot ?? true;
+  }, [selectedLocation, selectedActivityTypeId]);
+
   useEffect(() => {
     if (!selectedLocation || !startDate || !endDate || !effectiveRequiresSpot) {
       setAvailableSpots([]);
@@ -383,16 +393,6 @@ useEffect(() => {
     };
     return calculatePricingLocal(normalizedRule, guestCounts ?? {}, numberOfDays);
   }, [selectedRule, selectedRuleId, guestCounts, numberOfDays]);
-
-  // Derive requiresSpot from the selected activity type's join table entry
-  const effectiveRequiresSpot = useMemo(() => {
-    if (!selectedLocation) return true;
-    if (!selectedActivityTypeId) return selectedLocation.requiresSpot ?? true;
-    const joinEntry = selectedLocation.activityTypes?.find(
-      (a) => a.activityTypeId === selectedActivityTypeId
-    );
-    return joinEntry?.requiresSpot ?? true;
-  }, [selectedLocation, selectedActivityTypeId]);
 
   const onStep1Submit = (values: Step1Values) => {
     if (!selectedLocation) return;
