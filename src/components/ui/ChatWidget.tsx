@@ -35,17 +35,42 @@ interface HistoryPart {
 
 
 function MarkdownText({ text }: { text: string }) {
-  // Minimal markdown: **bold**, *italic*, links [text](url), bullet lists
-  const lines = text.split('\n');
+  // Pre-process: strip/convert any HTML tags the model might output
+  const sanitized = text
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/?(p|div|li|ul|ol|h[1-6])\b[^>]*>/gi, '\n')
+    .replace(/<strong\b[^>]*>(.*?)<\/strong>/gis, '**$1**')
+    .replace(/<em\b[^>]*>(.*?)<\/em>/gis, '*$1*')
+    .replace(/<a\b[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gis, '[$2]($1)')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
+    .replace(/\n{3,}/g, '\n\n');
+
+  const lines = sanitized.split('\n');
   return (
     <Box component="span" sx={{ display: 'block' }}>
       {lines.map((line, i) => {
-        // Bullet list
+        // Heading lines (# ## ###) → bold
+        const headingMatch = line.match(/^#{1,3}\s+(.*)/);
+        if (headingMatch) {
+          return <Box key={i} component="span" sx={{ display: 'block', fontWeight: 700, mt: i > 0 ? 0.5 : 0 }}>{renderInline(headingMatch[1])}</Box>;
+        }
+        // Bullet list (- or *)
         if (line.match(/^[-*]\s/)) {
           return (
             <Box key={i} component="span" sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-start', mt: 0.25 }}>
               <Box component="span" sx={{ mt: '2px', flexShrink: 0 }}>•</Box>
               <Box component="span">{renderInline(line.replace(/^[-*]\s/, ''))}</Box>
+            </Box>
+          );
+        }
+        // Numbered list (1. 2. etc.)
+        const numMatch = line.match(/^(\d+)\.\s+(.*)/);
+        if (numMatch) {
+          return (
+            <Box key={i} component="span" sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-start', mt: 0.25 }}>
+              <Box component="span" sx={{ mt: '2px', flexShrink: 0, minWidth: 16 }}>{numMatch[1]}.</Box>
+              <Box component="span">{renderInline(numMatch[2])}</Box>
             </Box>
           );
         }
@@ -58,13 +83,13 @@ function MarkdownText({ text }: { text: string }) {
 }
 
 function renderInline(text: string): React.ReactNode {
-  // Split on **bold**, *italic*, [text](url)
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g);
+  // Split on **bold**, *italic*, [text](url), and bare https:// URLs
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\)|https?:\/\/[^\s,)>"]+)/g);
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
       return <Box key={i} component="span" sx={{ fontWeight: 700 }}>{part.slice(2, -2)}</Box>;
     }
-    if (part.startsWith('*') && part.endsWith('*')) {
+    if (part.startsWith('*') && part.endsWith('*') && !part.startsWith('**')) {
       return <Box key={i} component="span" sx={{ fontStyle: 'italic' }}>{part.slice(1, -1)}</Box>;
     }
     const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
@@ -74,9 +99,26 @@ function renderInline(text: string): React.ReactNode {
           key={i}
           component="a"
           href={linkMatch[2]}
+          target="_blank"
+          rel="noopener noreferrer"
           sx={{ color: '#2d5a27', fontWeight: 600, textDecoration: 'underline', cursor: 'pointer' }}
         >
           {linkMatch[1]}
+        </Box>
+      );
+    }
+    // Bare https:// URL
+    if (part.match(/^https?:\/\//)) {
+      return (
+        <Box
+          key={i}
+          component="a"
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{ color: '#2d5a27', fontWeight: 600, textDecoration: 'underline', cursor: 'pointer', wordBreak: 'break-all' }}
+        >
+          {part.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
         </Box>
       );
     }
@@ -232,8 +274,13 @@ export default function ChatWidget() {
             right: { xs: 12, sm: 24 },
             width: { xs: 'calc(100vw - 24px)', sm: 380 },
             maxWidth: 420,
-            height: { xs: 'calc(100vh - 100px)', sm: 520 },
-            maxHeight: 600,
+            // Use dvh (dynamic viewport) so the chat doesn't go under the soft keyboard on mobile.
+            // Falls back to vh on older browsers — 100dvh is supported on iOS 15.4+ / Chrome 108+.
+            height: {
+              xs: 'min(calc(100dvh - 100px), calc(100vh - 100px))',
+              sm: 520,
+            },
+            maxHeight: { xs: 'calc(100dvh - 100px)', sm: 600 },
             display: 'flex',
             flexDirection: 'column',
             zIndex: 1300,

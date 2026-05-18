@@ -7,6 +7,7 @@ const CONTEXT_CACHE_KEY = 'chat:context:v1';
 const CONTEXT_TTL = 60 * 30; // 30 minutes — context rarely changes
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY ?? '';
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.ontooff.app').replace(/\/$/, '');
 
 // Rate-limit: simple in-memory store (resets on dyno restart — fine for free tier)
 const requestCounts = new Map<string, { count: number; resetAt: number }>();
@@ -76,13 +77,11 @@ async function buildContext(): Promise<string> {
     const placesText = places.map((p) => {
       const activities = p.activityTypes.map((a) => {
         const tags = a.tags.map((t) => t.tag.name).join(', ');
-        return `${a.name}${tags ? ` [${tags}]` : ''}`;
+        return `${a.name}${tags ? ` (${tags})` : ''}`;
       }).join(', ');
-      const zones = p.activityLocations.map((l) =>
-        `${l.name}${l.maxCapacity ? ` (cap:${l.maxCapacity})` : ''}`
-      ).join(', ');
+      const zones = p.activityLocations.map((l) => l.name).join(', ');
       return [
-        `• ${p.name} [${p.status}] — /places/${p.slug}`,
+        `• ${p.name} — ${APP_URL}/places/${p.slug}`,
         `  ${[p.city, p.country].filter(Boolean).join(', ')}`,
         activities ? `  Activities: ${activities}` : null,
         zones ? `  Zones: ${zones}` : null,
@@ -92,34 +91,39 @@ async function buildContext(): Promise<string> {
 
     const freeText = freeLocations.map((l) => {
       const tags = l.tags.map((t) => t.tag.name).join(', ');
-      return `• ${l.name} — /locations/${l.slug} | ${[l.city, l.country].filter(Boolean).join(', ')}${tags ? ` | ${tags}` : ''}`;
+      return `• ${l.name} — ${APP_URL}/locations/${l.slug} | ${[l.city, l.country].filter(Boolean).join(', ')}${tags ? ` | ${tags}` : ''}`;
     }).join('\n');
 
     const postsText = posts.map((p) =>
-      `• "${p.title}"${p.category ? ` [${p.category.name}]` : ''} — /blog/${p.slug}`
+      `• "${p.title}"${p.category ? ` (${p.category.name})` : ''} — ${APP_URL}/blog/${p.slug}`
     ).join('\n');
 
     return `PLACES:\n${placesText}\n\nFREE LOCATIONS:\n${freeText}\n\nBLOG:\n${postsText}`;
   });
 }
 
-const SYSTEM_PROMPT = `You are an outdoor activity assistant for ontooff (www.ontooff.app) — a platform for booking camping, fishing, kayaking, and other nature-based outdoor activities.
+const SYSTEM_PROMPT = `You are an outdoor activity assistant for ontooff — a platform for booking camping, fishing, kayaking, and other nature-based outdoor activities.
 
 Your role:
 - Help users find the right place or activity based on their interests, location, or dates
-- Suggest specific places from the platform and link to them using their URL path
+- Suggest specific places from the platform and link to them using Markdown links
 - Share relevant blog posts for tips and inspiration
 - Explain how to make a reservation (search → select place → pick dates → fill in guests → confirm)
 - Answer general questions about outdoor activities (camping, fishing, kayaking, hiking, etc.)
 
-Tone: Friendly, concise, enthusiastic about nature and outdoor activities. Use short paragraphs.
+Formatting rules (IMPORTANT):
+- Use only Markdown formatting — never use HTML tags like <br>, <strong>, <p>, <em> etc.
+- When linking to a place or blog post, ALWAYS use Markdown link format: [Place Name](full-url)
+- Never output raw URLs or bare paths on their own — always wrap them in a Markdown link with descriptive text
+- Use short paragraphs and bullet lists with - for readability
+- Keep responses concise (3–5 sentences or a short list)
+
+Tone: Friendly, concise, enthusiastic about nature and outdoor activities.
 
 Limitations:
 - You cannot make bookings directly — always direct users to the place page to reserve
 - Do not make up places or prices not listed in the context below
 - If asked about something not in the platform, still provide general helpful outdoor advice
-
-Reservation flow: Users can search at /search, or go directly to a place page and click the booking/reservation button.
 
 CURRENT PLATFORM DATA:
 {CONTEXT}`;
