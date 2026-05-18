@@ -9,8 +9,15 @@ import {
   CircularProgress,
   Paper,
   Grid,
+  Divider,
 } from '@mui/material';
-import { Business as BusinessIcon } from '@mui/icons-material';
+import {
+  Business as BusinessIcon,
+  CheckCircleRounded,
+  AccessTimeRounded,
+  MailOutlineRounded,
+  LockOpenRounded,
+} from '@mui/icons-material';
 import Image from 'next/image';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -64,19 +71,77 @@ export default function RegisterOrgPage() {
   };
 
   if (success) {
+    const steps = [
+      {
+        icon: <CheckCircleRounded sx={{ color: '#2d5a27', fontSize: 22 }} />,
+        label: t('registerOrg.successStep1'),
+        desc: t('registerOrg.successStep1Desc'),
+        done: true,
+      },
+      {
+        icon: <AccessTimeRounded sx={{ color: 'warning.main', fontSize: 22 }} />,
+        label: t('registerOrg.successStep2'),
+        desc: t('registerOrg.successStep2Desc'),
+        done: false,
+      },
+      {
+        icon: <MailOutlineRounded sx={{ color: 'text.disabled', fontSize: 22 }} />,
+        label: t('registerOrg.successStep3'),
+        desc: t('registerOrg.successStep3Desc'),
+        done: false,
+      },
+      {
+        icon: <LockOpenRounded sx={{ color: 'text.disabled', fontSize: 22 }} />,
+        label: t('registerOrg.successStep4'),
+        desc: t('registerOrg.successStep4Desc'),
+        done: false,
+      },
+    ];
+
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', px: 2 }}>
-        <Paper elevation={3} sx={{ p: 5, width: '100%', maxWidth: 480, borderRadius: 3, textAlign: 'center' }}>
-          <Typography variant="h2" sx={{ mb: 2 }}>🏢</Typography>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-            {t('registerOrg.successTitle', 'Registration Submitted!')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            {t('registerOrg.successBody', 'Your organization registration is under review. We will send you an email once approved.')}
-          </Typography>
-          <Button component={Link} href="/" variant="contained" color="primary">
-            {t('registerOrg.backHome', 'Back to Home')}
-          </Button>
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', px: 2, py: 6 }}>
+        <Paper elevation={3} sx={{ width: '100%', maxWidth: 560, borderRadius: 3, overflow: 'hidden' }}>
+          <Box sx={{ bgcolor: '#2d5a27', px: 4, py: 4, textAlign: 'center' }}>
+            <CheckCircleRounded sx={{ fontSize: 56, color: 'white', mb: 1 }} />
+            <Typography variant="h6" sx={{ color: 'white', fontWeight: 700 }}>
+              {t('registerOrg.successTitle')}
+            </Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,0.75)', mt: 0.5, fontSize: '0.875rem' }}>
+              {t('registerOrg.successSubtitle')}
+            </Typography>
+          </Box>
+          <Box sx={{ px: 4, py: 3 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
+              {t('registerOrg.successBody')}
+            </Typography>
+            <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary', letterSpacing: 1 }}>
+              {t('registerOrg.successNextStepsTitle')}
+            </Typography>
+            <Box sx={{ mt: 1.5 }}>
+              {steps.map((step, i) => (
+                <Box key={i} sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'flex-start' }}>
+                  <Box sx={{ mt: 0.25, flexShrink: 0 }}>{step.icon}</Box>
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: step.done ? '#2d5a27' : 'text.primary' }}>
+                      {step.label}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {step.desc}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+            <Divider sx={{ my: 2.5 }} />
+            <Box sx={{ display: 'flex', gap: 1.5, flexDirection: { xs: 'column', sm: 'row' } }}>
+              <Button component={Link} href="/" variant="outlined" fullWidth>
+                {t('registerOrg.backHome')}
+              </Button>
+              <Button component={Link} href="/auth/signin" variant="contained" fullWidth sx={{ bgcolor: '#2d5a27', '&:hover': { bgcolor: '#1e3d1b' } }}>
+                {t('registerOrg.signIn')}
+              </Button>
+            </Box>
+          </Box>
         </Paper>
       </Box>
     );
