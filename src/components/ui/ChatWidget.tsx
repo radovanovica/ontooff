@@ -39,9 +39,9 @@ function MarkdownText({ text }: { text: string }) {
   const sanitized = text
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/?(p|div|li|ul|ol|h[1-6])\b[^>]*>/gi, '\n')
-    .replace(/<strong\b[^>]*>(.*?)<\/strong>/gis, '**$1**')
-    .replace(/<em\b[^>]*>(.*?)<\/em>/gis, '*$1*')
-    .replace(/<a\b[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gis, '[$2]($1)')
+    .replace(/<strong\b[^>]*>([\s\S]*?)<\/strong>/gi, '**$1**')
+    .replace(/<em\b[^>]*>([\s\S]*?)<\/em>/gi, '*$1*')
+    .replace(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)')
     .replace(/<[^>]+>/g, '')
     .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
     .replace(/\n{3,}/g, '\n\n');
