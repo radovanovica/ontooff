@@ -73,6 +73,8 @@ export default withAuth(
         if (publicPaths.some((p) => pathname.startsWith(p))) return true;
         if (pathname === '/') return true;
         if (pathname === '/search') return true;
+        // One-click approve links in owner emails — token in query string is the auth mechanism
+        if (pathname.match(/^\/api\/registrations\/[^/]+\/approve$/)) return true;
 
         // Protected routes require a token
         return !!token;

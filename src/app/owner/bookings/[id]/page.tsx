@@ -32,12 +32,11 @@ function formatDate(value: Date | null | undefined): string {
 export default async function OwnerBookingDetailsPage({ params }: Props) {
   const { t } = await getTranslation(defaultLocale, 'owner');
   const session = await getServerSession(authOptions);
+  const { id } = await params;
 
   if (!session) {
-    redirect('/auth/signin?callbackUrl=/owner/bookings');
+    redirect(`/auth/signin?callbackUrl=/owner/bookings/${id}`);
   }
-
-  const { id } = await params;
 
   const booking = await prisma.registration.findUnique({
     where: { id },
