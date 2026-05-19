@@ -27,9 +27,10 @@ import {
   TableBody,
   Badge,
 } from '@mui/material';
-import { Add, Edit, Delete, ContentCopy, Event as EventIcon, People } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { Add, Edit, Delete, ContentCopy, Event as EventIcon, People, CloudUpload } from '@mui/icons-material';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '@/i18n/client';
+import { uploadFileToS3 } from '@/lib/upload';
 
 interface PricingRule {
   id: string;
@@ -98,6 +99,8 @@ export default function EventsTab({ placeId }: Props) {
   const [form, setForm] = useState<EventForm>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Delete confirm
   const [deleteTarget, setDeleteTarget] = useState<PlaceEvent | null>(null);
@@ -234,6 +237,22 @@ export default function EventsTab({ placeId }: Props) {
   const isEventPast = (dateStr: string) => new Date(dateStr) < new Date();
   const isFull = (ev: PlaceEvent) =>
     ev.maxReservations != null && ev._count.registrations >= ev.maxReservations;
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setFormError(null);
+    try {
+      const url = await uploadFileToS3(file, 'events');
+      setForm((f) => ({ ...f, imageUrl: url }));
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   if (loading) {
     return (
@@ -392,13 +411,44 @@ export default function EventsTab({ placeId }: Props) {
               />
             </Grid>
             <Grid size={{ xs: 12 }}>
-              <TextField
-                label={t('events.form.imageUrl', 'Image URL (optional)')}
-                value={form.imageUrl}
-                onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
-                fullWidth
-                placeholder="https://..."
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleImageUpload}
               />
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                <TextField
+                  label={t('events.form.imageUrl', 'Image URL (optional)')}
+                  value={form.imageUrl}
+                  onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
+                  fullWidth
+                  placeholder="https://..."
+                />
+                <Tooltip title={t('events.form.uploadImage', 'Upload image')}>
+                  <span>
+                    <IconButton
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading || saving}
+                      color="primary"
+                      sx={{ mt: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+                    >
+                      {uploading ? <CircularProgress size={20} /> : <CloudUpload />}
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              </Box>
+              {form.imageUrl && (
+                <Box sx={{ mt: 1 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={form.imageUrl}
+                    alt="preview"
+                    style={{ maxHeight: 80, maxWidth: '100%', borderRadius: 4, objectFit: 'cover' }}
+                  />
+                </Box>
+              )}
             </Grid>
 
             <Grid size={{ xs: 12, sm: 4 }}>

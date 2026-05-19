@@ -484,6 +484,54 @@
       "createFailed": "Kreiranje vremenskog slota nije uspjelo"
     }
   },
+  "events": {
+    "title": "Doga\u0111aji",
+    "subtitle": "Kreirajte i upravljajte zakazanim doga\u0111ajima za koje gosti mogu rezervirati mjesta",
+    "addNew": "Dodaj doga\u0111aj",
+    "editTitle": "Uredi doga\u0111aj",
+    "empty": "Nema doga\u0111aja. Dodajte prvi doga\u0111aj za primanje rezervacija.",
+    "full": "Popunjeno",
+    "noPricing": "Besplatno / Bez cjenika",
+    "past": "Pro\u0161lo",
+    "active": "Aktivno",
+    "copied": "Kopirano!",
+    "copyLink": "Kopiraj javnu vezu",
+    "deleteTitle": "Obri\u0161i doga\u0111aj?",
+    "deleteConfirm": "Jeste li sigurni da \u017eelite obrisati \"{{name}}\"? Ovo se ne mo\u017ee poni\u0161titi.",
+    "deleteWithReservationsWarning": "Ovaj doga\u0111aj ima {{count}} aktivnih rezervacija. Prvo ih otka\u017eite.",
+    "deleting": "Brisanje\u2026",
+    "table": {
+      "title": "Naziv",
+      "date": "Datum i vrijeme",
+      "reservations": "Rezervacije",
+      "pricing": "Cjenik",
+      "status": "Status"
+    },
+    "form": {
+      "title": "Naziv doga\u0111aja",
+      "description": "Opis",
+      "imageUrl": "URL slike (neobavezno)",
+      "uploadImage": "Prenesi sliku",
+      "eventDate": "Datum doga\u0111aja",
+      "startTime": "Po\u010detak",
+      "endTime": "Zavr\u0161etak",
+      "maxReservations": "Maks. rezervacija",
+      "maxReservationsHint": "Ostavite prazno za neograni\u010deno",
+      "reservationDeadline": "Rok za rezervacije",
+      "reservationDeadlineHint": "Zatvorite rezervacije u ovom trenutku",
+      "pricingRule": "Pravilo cjenika",
+      "pricingRuleHint": "Odaberite postoje\u0107i cjenik ili ostavite prazno za besplatne doga\u0111aje",
+      "noPrice": "\u2014 Besplatno (bez cjenika) \u2014",
+      "isActive": "Aktivno (vidljivo gostima)"
+    },
+    "errors": {
+      "loadFailed": "Nije uspjelo u\u010ditavanje doga\u0111aja",
+      "titleRequired": "Naziv je obavezan",
+      "dateRequired": "Datum doga\u0111aja je obavezan",
+      "saveFailed": "\u010cuvanje nije uspjelo",
+      "deleteFailed": "Brisanje nije uspjelo"
+    }
+  },
   "org": {
     "notLinked": "Vaš račun nije povezan s organizacijom. Molimo kontaktirajte podršku.",
     "pending": "Vaša organizacija \"{{name}}\" čeka odobrenje administratora. Moći ćete kreirati mjesta nakon odobrenja.",

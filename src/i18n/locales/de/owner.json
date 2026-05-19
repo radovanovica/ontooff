@@ -484,6 +484,54 @@
       "createFailed": "Zeitfenster konnte nicht erstellt werden"
     }
   },
+  "events": {
+    "title": "Veranstaltungen",
+    "subtitle": "Erstellen und verwalten Sie geplante Veranstaltungen, f\u00fcr die G\u00e4ste Pl\u00e4tze reservieren k\u00f6nnen",
+    "addNew": "Veranstaltung hinzuf\u00fcgen",
+    "editTitle": "Veranstaltung bearbeiten",
+    "empty": "Noch keine Veranstaltungen. F\u00fcgen Sie Ihre erste Veranstaltung hinzu, um Reservierungen zu erhalten.",
+    "full": "Ausgebucht",
+    "noPricing": "Kostenlos / Kein Preis",
+    "past": "Vergangen",
+    "active": "Aktiv",
+    "copied": "Kopiert!",
+    "copyLink": "\u00d6ffentlichen Link kopieren",
+    "deleteTitle": "Veranstaltung l\u00f6schen?",
+    "deleteConfirm": "Sind Sie sicher, dass Sie \"{{name}}\" l\u00f6schen m\u00f6chten? Dies kann nicht r\u00fckg\u00e4ngig gemacht werden.",
+    "deleteWithReservationsWarning": "Diese Veranstaltung hat {{count}} aktive Reservierung(en). Stornieren Sie diese zuerst.",
+    "deleting": "L\u00f6schen\u2026",
+    "table": {
+      "title": "Titel",
+      "date": "Datum & Uhrzeit",
+      "reservations": "Reservierungen",
+      "pricing": "Preisgestaltung",
+      "status": "Status"
+    },
+    "form": {
+      "title": "Veranstaltungstitel",
+      "description": "Beschreibung",
+      "imageUrl": "Bild-URL (optional)",
+      "uploadImage": "Bild hochladen",
+      "eventDate": "Veranstaltungsdatum",
+      "startTime": "Startzeit",
+      "endTime": "Endzeit",
+      "maxReservations": "Max. Reservierungen",
+      "maxReservationsHint": "Leer lassen f\u00fcr unbegrenzt",
+      "reservationDeadline": "Reservierungsschluss",
+      "reservationDeadlineHint": "Reservierungen zu diesem Zeitpunkt schlie\u00dfen",
+      "pricingRule": "Preisregel",
+      "pricingRuleHint": "W\u00e4hlen Sie eine vorhandene Preisregel oder lassen Sie es leer f\u00fcr kostenlose Veranstaltungen",
+      "noPrice": "\u2014 Kostenlos (kein Preis) \u2014",
+      "isActive": "Aktiv (f\u00fcr G\u00e4ste sichtbar)"
+    },
+    "errors": {
+      "loadFailed": "Veranstaltungen konnten nicht geladen werden",
+      "titleRequired": "Titel ist erforderlich",
+      "dateRequired": "Veranstaltungsdatum ist erforderlich",
+      "saveFailed": "Speichern fehlgeschlagen",
+      "deleteFailed": "L\u00f6schen fehlgeschlagen"
+    }
+  },
   "org": {
     "notLinked": "Ihr Konto ist mit keiner Organisation verknüpft. Bitte wenden Sie sich an den Support.",
     "pending": "Ihre Organisation \"{{name}}\" wartet auf die Genehmigung des Administrators. Sie können Orte erstellen, sobald die Genehmigung erteilt wurde.",

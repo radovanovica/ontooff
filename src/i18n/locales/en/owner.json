@@ -482,6 +482,54 @@
       "createFailed": "Failed to create timeslot"
     }
   },
+  "events": {
+    "title": "Events",
+    "subtitle": "Create and manage scheduled events guests can reserve spots for",
+    "addNew": "Add Event",
+    "editTitle": "Edit Event",
+    "empty": "No events yet. Add your first event to start accepting reservations.",
+    "full": "Full",
+    "noPricing": "Free / No pricing",
+    "past": "Past",
+    "active": "Active",
+    "copied": "Copied!",
+    "copyLink": "Copy public link",
+    "deleteTitle": "Delete Event?",
+    "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This cannot be undone.",
+    "deleteWithReservationsWarning": "This event has {{count}} active reservation(s). Cancel them first.",
+    "deleting": "Deleting\u2026",
+    "table": {
+      "title": "Title",
+      "date": "Date & Time",
+      "reservations": "Reservations",
+      "pricing": "Pricing",
+      "status": "Status"
+    },
+    "form": {
+      "title": "Event Title",
+      "description": "Description",
+      "imageUrl": "Image URL (optional)",
+      "uploadImage": "Upload image",
+      "eventDate": "Event Date",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "maxReservations": "Max Reservations",
+      "maxReservationsHint": "Leave blank for unlimited",
+      "reservationDeadline": "Reservation Deadline",
+      "reservationDeadlineHint": "Close reservations at this time",
+      "pricingRule": "Pricing Rule",
+      "pricingRuleHint": "Select an existing pricing rule or leave blank for free events",
+      "noPrice": "\u2014 Free (no pricing) \u2014",
+      "isActive": "Active (visible to guests)"
+    },
+    "errors": {
+      "loadFailed": "Failed to load events",
+      "titleRequired": "Title is required",
+      "dateRequired": "Event date is required",
+      "saveFailed": "Save failed",
+      "deleteFailed": "Delete failed"
+    }
+  },
   "org": {
     "notLinked": "Your account is not linked to an organization. Please contact support.",
     "pending": "Your organization \"{{name}}\" is pending admin approval. You will be able to create places once approved.",

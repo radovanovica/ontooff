@@ -68,10 +68,13 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const activityLocationId = searchParams.get('activityLocationId');
   const activityTypeId = searchParams.get('activityTypeId');
+  const placeId = searchParams.get('placeId');
 
   const where: Record<string, unknown> = { isActive: true };
 
-  if (activityTypeId) {
+  if (placeId) {
+    where.activityType = { place: { id: placeId } };
+  } else if (activityTypeId) {
     where.activityTypeId = activityTypeId;
   } else if (activityLocationId) {
     const location = await prisma.activityLocation.findUnique({

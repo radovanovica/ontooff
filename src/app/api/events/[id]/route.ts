@@ -60,6 +60,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     );
   }
 
+  if (result.data.pricingRuleId) {
+    const rule = await prisma.pricingRule.findFirst({
+      where: { id: result.data.pricingRuleId, isActive: true, activityType: { place: { id: event.placeId } } },
+    });
+    if (!rule) return NextResponse.json({ success: false, error: 'Invalid pricing rule' }, { status: 422 });
+  }
+
   const { eventDate, reservationDeadline, ...rest } = result.data;
 
   const updated = await prisma.placeEvent.update({

@@ -484,6 +484,54 @@
       "createFailed": "Error al crear la franja horaria"
     }
   },
+  "events": {
+    "title": "Eventos",
+    "subtitle": "Cree y gestione eventos programados para los que los hu\u00e9spedes pueden reservar plazas",
+    "addNew": "Agregar evento",
+    "editTitle": "Editar evento",
+    "empty": "A\u00fan no hay eventos. Agregue su primer evento para comenzar a recibir reservas.",
+    "full": "Completo",
+    "noPricing": "Gratis / Sin precios",
+    "past": "Pasado",
+    "active": "Activo",
+    "copied": "\u00a1Copiado!",
+    "copyLink": "Copiar enlace p\u00fablico",
+    "deleteTitle": "\u00bfEliminar evento?",
+    "deleteConfirm": "\u00bfEst\u00e1 seguro de que desea eliminar \"{{name}}\"? Esta acci\u00f3n no se puede deshacer.",
+    "deleteWithReservationsWarning": "Este evento tiene {{count}} reserva(s) activa(s). Canc\u00e9lelas primero.",
+    "deleting": "Eliminando\u2026",
+    "table": {
+      "title": "T\u00edtulo",
+      "date": "Fecha y hora",
+      "reservations": "Reservas",
+      "pricing": "Precios",
+      "status": "Estado"
+    },
+    "form": {
+      "title": "T\u00edtulo del evento",
+      "description": "Descripci\u00f3n",
+      "imageUrl": "URL de imagen (opcional)",
+      "uploadImage": "Subir imagen",
+      "eventDate": "Fecha del evento",
+      "startTime": "Hora de inicio",
+      "endTime": "Hora de fin",
+      "maxReservations": "M\u00e1x. reservas",
+      "maxReservationsHint": "Dejar en blanco para ilimitado",
+      "reservationDeadline": "Fecha l\u00edmite de reserva",
+      "reservationDeadlineHint": "Cerrar reservas en este momento",
+      "pricingRule": "Regla de precios",
+      "pricingRuleHint": "Seleccione una regla de precios existente o d\u00e9jelo en blanco para eventos gratuitos",
+      "noPrice": "\u2014 Gratis (sin precios) \u2014",
+      "isActive": "Activo (visible para los hu\u00e9spedes)"
+    },
+    "errors": {
+      "loadFailed": "Error al cargar eventos",
+      "titleRequired": "El t\u00edtulo es obligatorio",
+      "dateRequired": "La fecha del evento es obligatoria",
+      "saveFailed": "Error al guardar",
+      "deleteFailed": "Error al eliminar"
+    }
+  },
   "org": {
     "notLinked": "Su cuenta no está vinculada a una organización. Por favor contacte al soporte.",
     "pending": "Su organización \"{{name}}\" está pendiente de aprobación del administrador. Podrá crear lugares una vez aprobada.",

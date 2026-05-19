@@ -238,7 +238,8 @@
     "noFavorites": "Nema omiljenih",
     "noFavoritesHint": "Kliknite na ikonu srca na bilo kom mestu da ga sačuvate kao omiljeno",
     "noCommunity": "Nema mesta zajednice",
-    "noCommunityHint": "Nijedan doprinos zajednice ne odgovara vašoj pretrazi"
+    "noCommunityHint": "Nijedan doprinos zajednice ne odgovara vašoj pretrazi",
+    "allEvents": "Svi doga\u0111aji"
   },
   "tags": {
     "camping": "Kampovanje",

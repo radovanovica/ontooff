@@ -480,6 +480,54 @@
       "createFailed": "Kreiranje termina nije uspelo"
     }
   },
+  "events": {
+    "title": "Doga\u0111aji",
+    "subtitle": "Kreirajte i upravljajte zakazanim doga\u0111ajima za koje gosti mogu rezervisati mesta",
+    "addNew": "Dodaj doga\u0111aj",
+    "editTitle": "Uredi doga\u0111aj",
+    "empty": "Nema doga\u0111aja. Dodajte prvi doga\u0111aj da biste po\u010deli da primate rezervacije.",
+    "full": "Popunjeno",
+    "noPricing": "Besplatno / Bez cenovnika",
+    "past": "Pro\u0161lo",
+    "active": "Aktivno",
+    "copied": "Kopirano!",
+    "copyLink": "Kopiraj javni link",
+    "deleteTitle": "Izbri\u0161i doga\u0111aj?",
+    "deleteConfirm": "Da li ste sigurni da \u017eelite da izbri\u0161ete \"{{name}}\"? Ovo se ne mo\u017ee poni\u0161titi.",
+    "deleteWithReservationsWarning": "Ovaj doga\u0111aj ima {{count}} aktivnih rezervacija. Prvo ih otka\u017eite.",
+    "deleting": "Brisanje\u2026",
+    "table": {
+      "title": "Naziv",
+      "date": "Datum i vreme",
+      "reservations": "Rezervacije",
+      "pricing": "Cenovnik",
+      "status": "Status"
+    },
+    "form": {
+      "title": "Naziv doga\u0111aja",
+      "description": "Opis",
+      "imageUrl": "URL slike (opciono)",
+      "uploadImage": "Otpremite sliku",
+      "eventDate": "Datum doga\u0111aja",
+      "startTime": "Vreme po\u010detka",
+      "endTime": "Vreme zavr\u0161etka",
+      "maxReservations": "Maks. rezervacija",
+      "maxReservationsHint": "Ostavite prazno za neograni\u010deno",
+      "reservationDeadline": "Rok za rezervacije",
+      "reservationDeadlineHint": "Zatvorite rezervacije u ovom trenutku",
+      "pricingRule": "Pravilo cenovnika",
+      "pricingRuleHint": "Izaberite postoje\u0107e pravilo ili ostavite prazno za besplatne doga\u0111aje",
+      "noPrice": "\u2014 Besplatno (bez cenovnika) \u2014",
+      "isActive": "Aktivno (vidljivo gostima)"
+    },
+    "errors": {
+      "loadFailed": "Nije uspelo u\u010ditavanje doga\u0111aja",
+      "titleRequired": "Naziv je obavezan",
+      "dateRequired": "Datum doga\u0111aja je obavezan",
+      "saveFailed": "\u010cuvanje nije uspelo",
+      "deleteFailed": "Brisanje nije uspelo"
+    }
+  },
   "org": {
     "notLinked": "Vaš nalog nije povezan sa organizacijom. Kontaktirajte podršku.",
     "pending": "Vaša organizacija \"{{name}}\" čeka odobrenje admina. Moći ćete da kreirate mesta kada bude odobreno.",

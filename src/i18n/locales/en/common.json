@@ -238,7 +238,8 @@
     "noFavorites": "No favorites yet",
     "noFavoritesHint": "Click the heart icon on any place to save it as a favorite",
     "noCommunity": "No community places found",
-    "noCommunityHint": "No community-contributed places match your current search"
+    "noCommunityHint": "No community-contributed places match your current search",
+    "allEvents": "All Events"
   },
   "tags": {
     "camping": "Camping",

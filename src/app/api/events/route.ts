@@ -119,7 +119,9 @@ export async function POST(req: NextRequest) {
   }
 
   if (pricingRuleId) {
-    const rule = await prisma.pricingRule.findFirst({ where: { id: pricingRuleId, placeId, isActive: true } });
+    const rule = await prisma.pricingRule.findFirst({
+      where: { id: pricingRuleId, isActive: true, activityType: { place: { id: placeId } } },
+    });
     if (!rule) return NextResponse.json({ success: false, error: 'Invalid pricing rule' }, { status: 422 });
   }
 

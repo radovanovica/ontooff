@@ -238,7 +238,8 @@
     "noFavorites": "Noch keine Favoriten",
     "noFavoritesHint": "Klicken Sie auf das Herz-Symbol bei einem Ort, um ihn als Favorit zu speichern",
     "noCommunity": "Keine Community-Orte gefunden",
-    "noCommunityHint": "Keine Community-Orte entsprechen Ihrer aktuellen Suche"
+    "noCommunityHint": "Keine Community-Orte entsprechen Ihrer aktuellen Suche",
+    "allEvents": "Alle Veranstaltungen"
   },
   "tags": {
     "camping": "Camping",
