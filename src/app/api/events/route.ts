@@ -1,0 +1,147 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
+import { UserRole } from '@/types';
+
+async function canManagePlace(placeId: string, userId: string, role: UserRole): Promise<boolean> {
+  if (role === UserRole.SUPER_ADMIN) return true;
+  const place = await prisma.place.findUnique({ where: { id: placeId }, select: { ownerId: true } });
+  return place?.ownerId === userId;
+}
+
+const createSchema = z.object({
+  placeId: z.string(),
+  title: z.string().min(1),
+  description: z.string().optional().nullable(),
+  imageUrl: z.string().url().optional().nullable().or(z.literal('')),
+  eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}(T.+)?$/),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/),
+  maxReservations: z.number().int().positive().optional().nullable(),
+  reservationDeadline: z.string().datetime({ offset: true }).optional().nullable(),
+  pricingRuleId: z.string().optional().nullable(),
+  isActive: z.boolean().default(true),
+});
+
+// GET /api/events
+// ?placeId= (owner) — list events for a place
+// ?upcoming=true&location=... — list upcoming public events
+export async function GET(req: NextRequest) {
+  const { searchParams } = req.nextUrl;
+  const placeId = searchParams.get('placeId');
+  const upcoming = searchParams.get('upcoming');
+  const location = searchParams.get('location');
+  const page = Math.max(1, Number(searchParams.get('page') ?? 1));
+  const pageSize = Math.min(50, Math.max(1, Number(searchParams.get('pageSize') ?? 20)));
+
+  // Public upcoming events query (no auth required)
+  if (upcoming === 'true') {
+    const where: Record<string, unknown> = {
+      isActive: true,
+      eventDate: { gte: new Date() },
+      ...(placeId ? { placeId } : {}),
+    };
+
+    if (location) {
+      where.place = {
+        OR: [
+          { city: { contains: location, mode: 'insensitive' } },
+          { country: { contains: location, mode: 'insensitive' } },
+        ],
+      };
+    }
+
+    const [events, total] = await Promise.all([
+      prisma.placeEvent.findMany({
+        where,
+        include: {
+          place: { select: { id: true, name: true, slug: true, city: true, country: true, coverUrl: true, logoUrl: true } },
+          pricingRule: { select: { id: true, name: true, currency: true, requiresPayment: true, paymentMethod: true, pricingTiers: true } },
+          _count: { select: { registrations: { where: { status: { notIn: ['CANCELLED'] } } } } },
+        },
+        orderBy: { eventDate: 'asc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.placeEvent.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      data: { items: events, total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+    });
+  }
+
+  // Owner / admin query
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  if (!placeId) return NextResponse.json({ success: false, error: 'placeId required' }, { status: 400 });
+
+  if (!(await canManagePlace(placeId, session.user.id, session.user.role as UserRole))) {
+    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+  }
+
+  const [events, total] = await Promise.all([
+    prisma.placeEvent.findMany({
+      where: { placeId },
+      include: {
+        pricingRule: { select: { id: true, name: true, currency: true, requiresPayment: true, pricingTiers: true } },
+        _count: { select: { registrations: { where: { status: { notIn: ['CANCELLED'] } } } } },
+      },
+      orderBy: { eventDate: 'asc' },
+    }),
+    prisma.placeEvent.count({ where: { placeId } }),
+  ]);
+
+  return NextResponse.json({ success: true, data: { items: events, total } });
+}
+
+// POST /api/events — create event (owner)
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+
+  const body = await req.json();
+  const result = createSchema.safeParse(body);
+  if (!result.success) {
+    return NextResponse.json(
+      { success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors },
+      { status: 422 }
+    );
+  }
+
+  const { placeId, title, description, imageUrl, eventDate, startTime, endTime, maxReservations, reservationDeadline, pricingRuleId, isActive } = result.data;
+
+  if (!(await canManagePlace(placeId, session.user.id, session.user.role as UserRole))) {
+    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+  }
+
+  if (pricingRuleId) {
+    const rule = await prisma.pricingRule.findFirst({ where: { id: pricingRuleId, placeId, isActive: true } });
+    if (!rule) return NextResponse.json({ success: false, error: 'Invalid pricing rule' }, { status: 422 });
+  }
+
+  const event = await prisma.placeEvent.create({
+    data: {
+      placeId,
+      title,
+      description: description ?? null,
+      imageUrl: imageUrl || null,
+      eventDate: new Date(eventDate),
+      startTime,
+      endTime,
+      maxReservations: maxReservations ?? null,
+      reservationDeadline: reservationDeadline ? new Date(reservationDeadline) : null,
+      pricingRuleId: pricingRuleId ?? null,
+      isActive,
+    },
+    include: {
+      pricingRule: { select: { id: true, name: true, currency: true, requiresPayment: true, pricingTiers: true } },
+      _count: { select: { registrations: true } },
+    },
+  });
+
+  return NextResponse.json({ success: true, data: event }, { status: 201 });
+}

@@ -15,7 +15,8 @@ const guestCountsSchema = z.record(z.string(), z.number().int().nonnegative()).r
 );
 
 const createSchema = z.object({
-  activityLocationId: z.string(),
+  activityLocationId: z.string().optional(),
+  eventId: z.string().optional(),
   // New: explicit spot+timeslot pairs (preferred)
   spotTimeslots: z.array(z.object({
     spotId: z.string(),
@@ -29,8 +30,8 @@ const createSchema = z.object({
   email: z.string().email(),
   phone: z.string().optional(),
   address: z.string().optional(),
-  startDate: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
-  endDate: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
+  startDate: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).optional(),
+  endDate: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).optional(),
   notes: z.string().optional(),
   guestCounts: guestCountsSchema,
   paymentMethod: z.nativeEnum(PaymentMethod).optional(),
@@ -38,6 +39,19 @@ const createSchema = z.object({
   source: z.string().optional().default('web'),
   sendConfirmation: z.boolean().optional().default(true),
   initialStatus: z.enum(['PENDING', 'CONFIRMED', 'COMPLETED']).optional(),
+}).superRefine((data, ctx) => {
+  if (!data.activityLocationId && !data.eventId) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'activityLocationId or eventId is required', path: ['activityLocationId'] });
+  }
+  if (data.activityLocationId && data.eventId) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Cannot set both activityLocationId and eventId', path: ['eventId'] });
+  }
+  if (data.activityLocationId && !data.startDate) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'startDate is required for activity bookings', path: ['startDate'] });
+  }
+  if (data.activityLocationId && !data.endDate) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'endDate is required for activity bookings', path: ['endDate'] });
+  }
 });
 
 export async function GET(req: NextRequest) {
@@ -49,34 +63,43 @@ export async function GET(req: NextRequest) {
   const pageSize = Number(searchParams.get('pageSize') ?? 20);
   const status = searchParams.get('status');
   const locationId = searchParams.get('activityLocationId');
+  const eventId = searchParams.get('eventId');
 
   const where: Record<string, unknown> = {};
 
   if (session.user.role === UserRole.USER) {
     where.userId = session.user.id;
   } else if (session.user.role === UserRole.PLACE_OWNER) {
-    // Owner sees registrations for their places
+    // Owner sees registrations for their places (both activity and event)
     const ownerPlaces = await prisma.place.findMany({
       where: { ownerId: session.user.id },
       select: { id: true },
     });
+    const ownerPlaceIds = ownerPlaces.map((p) => p.id);
     const locationIds = await prisma.activityLocation.findMany({
-      where: { placeId: { in: ownerPlaces.map((p) => p.id) } },
+      where: { placeId: { in: ownerPlaceIds } },
       select: { id: true },
     });
-    where.activityLocationId = { in: locationIds.map((l) => l.id) };
+    where.OR = [
+      { activityLocationId: { in: locationIds.map((l) => l.id) } },
+      { event: { placeId: { in: ownerPlaceIds } } },
+    ];
   }
 
   const placeId = searchParams.get('placeId');
   if (status) where.status = status;
   if (locationId) where.activityLocationId = locationId;
+  if (eventId) where.eventId = eventId;
   if (placeId) {
-    // Filter by all locations belonging to this place
+    // Filter by all locations and events belonging to this place
     const placeLocations = await prisma.activityLocation.findMany({
       where: { placeId },
       select: { id: true },
     });
-    where.activityLocationId = { in: placeLocations.map((l: { id: string }) => l.id) };
+    where.OR = [
+      { activityLocationId: { in: placeLocations.map((l: { id: string }) => l.id) } },
+      { event: { placeId } },
+    ];
   }
 
   const [registrations, total] = await Promise.all([
@@ -119,8 +142,192 @@ export async function POST(req: NextRequest) {
     }
 
     const data = result.data;
-    const startDate = new Date(data.startDate);
-    const endDate = new Date(data.endDate);
+
+    // ── EVENT BOOKING PATH ──
+    if (data.eventId) {
+      const event = await prisma.placeEvent.findUnique({
+        where: { id: data.eventId, isActive: true },
+        include: {
+          place: { select: { name: true, id: true, owner: { select: { email: true, name: true } } } },
+          pricingRule: { include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } } },
+          _count: { select: { registrations: { where: { status: { notIn: ['CANCELLED'] } } } } },
+        },
+      });
+
+      if (!event) {
+        return NextResponse.json({ success: false, error: 'Event not found or inactive' }, { status: 404 });
+      }
+      if (event.eventDate < new Date()) {
+        return NextResponse.json({ success: false, error: 'This event has already passed' }, { status: 409 });
+      }
+      if (event.reservationDeadline && new Date() > event.reservationDeadline) {
+        return NextResponse.json({ success: false, error: 'The reservation deadline for this event has passed' }, { status: 409 });
+      }
+      if (event.maxReservations != null && event._count.registrations >= event.maxReservations) {
+        return NextResponse.json({ success: false, error: 'This event is fully booked' }, { status: 409 });
+      }
+
+      const eventDate = event.eventDate;
+      const numberOfDays = 1;
+      const totalGuests = getTotalGuests(data.guestCounts as GuestCounts);
+
+      let pricingData: {
+        totalAmount?: number;
+        pricingRuleId?: string;
+        paymentBreakdown?: Array<{
+          label: string;
+          ageGroup?: AgeGroupType;
+          quantity: number;
+          unitPrice: number;
+          totalPrice: number;
+          sortOrder: number;
+        }>;
+      } = {};
+
+      if (event.pricingRule) {
+        if (event.pricingRule.minPeople != null && totalGuests < event.pricingRule.minPeople) {
+          return NextResponse.json(
+            { success: false, error: `Minimum guests for this event is ${event.pricingRule.minPeople}` },
+            { status: 422 }
+          );
+        }
+        if (event.pricingRule.maxPeople != null && totalGuests > event.pricingRule.maxPeople) {
+          return NextResponse.json(
+            { success: false, error: `Maximum guests for this event is ${event.pricingRule.maxPeople}` },
+            { status: 422 }
+          );
+        }
+        if (event.pricingRule.requiresPayment && !data.paymentMethod) {
+          return NextResponse.json(
+            { success: false, error: 'Payment method is required for this event' },
+            { status: 422 }
+          );
+        }
+
+        const tiersMapped = event.pricingRule.pricingTiers.map((t: PricingTier) => ({
+          ...t,
+          pricePerUnit: Number(t.pricePerUnit),
+        }));
+        const calc = calculatePricing(
+          { ...event.pricingRule, pricingTiers: tiersMapped },
+          data.guestCounts as GuestCounts,
+          numberOfDays
+        );
+        pricingData = {
+          totalAmount: calc.totalAmount,
+          pricingRuleId: event.pricingRule.id,
+          paymentBreakdown: calc.breakdown.map((item, idx) => ({
+            label: item.label,
+            ageGroup: item.ageGroup,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice,
+            sortOrder: idx,
+          })),
+        };
+      }
+
+      const registrationNumber = await generateRegistrationNumber();
+      const registration = await prisma.registration.create({
+        data: {
+          registrationNumber,
+          eventId: event.id,
+          userId: session?.user.id ?? null,
+          pricingRuleId: pricingData.pricingRuleId ?? null,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email.toLowerCase(),
+          phone: data.phone,
+          address: data.address,
+          startDate: eventDate,
+          endDate: eventDate,
+          numberOfDays,
+          notes: data.notes,
+          guestCounts: data.guestCounts,
+          totalAmount: pricingData.totalAmount,
+          paymentMethod: data.paymentMethod ?? null,
+          source: data.source ?? 'web',
+          status: data.initialStatus ?? 'PENDING',
+          embedTokenId: data.embedTokenId ?? null,
+          paymentBreakdown: pricingData.paymentBreakdown
+            ? { create: pricingData.paymentBreakdown }
+            : undefined,
+        },
+        include: {
+          paymentBreakdown: { orderBy: { sortOrder: 'asc' } },
+          pricingRule: true,
+        },
+      });
+
+      if (data.sendConfirmation !== false) {
+        await sendRegistrationConfirmation(data.email, {
+          registrationNumber,
+          firstName: data.firstName,
+          locationName: event.title,
+          activityName: event.title,
+          placeName: event.place.name,
+          startDate: eventDate.toLocaleDateString('en-GB'),
+          endDate: eventDate.toLocaleDateString('en-GB'),
+          numberOfDays,
+          spotNames: [],
+          guestSummary: formatGuestSummary(data.guestCounts as GuestCounts),
+          totalAmount: pricingData.totalAmount,
+          currency: event.pricingRule?.currency ?? 'EUR',
+          paymentMethod: data.paymentMethod
+            ? ({ CASH: 'Cash', CARD: 'Card', BOTH: 'Cash or Card' })[data.paymentMethod]
+            : undefined,
+          requiresPayment: event.pricingRule?.requiresPayment ?? false,
+          paymentBreakdown: registration.paymentBreakdown.map(
+            (item: { label: string; totalPrice: unknown }) => ({
+              label: item.label,
+              totalPrice: Number(item.totalPrice),
+            })
+          ),
+          editToken: registration.editToken,
+          status: registration.status,
+        }).catch(console.error);
+      }
+
+      const ownerEmail = event.place.owner?.email;
+      if (ownerEmail) {
+        await sendOwnerNewBookingNotification(ownerEmail, {
+          registrationId: registration.id,
+          registrationNumber,
+          guestName: `${data.firstName} ${data.lastName}`,
+          guestEmail: data.email,
+          guestPhone: data.phone,
+          locationName: event.title,
+          activityName: event.title,
+          placeName: event.place.name,
+          startDate: eventDate.toLocaleDateString('en-GB'),
+          endDate: eventDate.toLocaleDateString('en-GB'),
+          numberOfDays,
+          spotNames: [],
+          guestSummary: formatGuestSummary(data.guestCounts as GuestCounts),
+          totalAmount: pricingData.totalAmount,
+          currency: event.pricingRule?.currency ?? 'EUR',
+          requiresPayment: event.pricingRule?.requiresPayment ?? false,
+          editToken: registration.editToken,
+        }).catch(console.error);
+      }
+
+      return NextResponse.json(
+        {
+          success: true,
+          registrationNumber,
+          data: {
+            registrationNumber,
+            editToken: registration.editToken,
+            totalAmount: pricingData.totalAmount,
+          },
+        },
+        { status: 201 }
+      );
+    }
+
+    // ── ACTIVITY LOCATION PATH ──
+    const startDate = new Date(data.startDate!);
+    const endDate = new Date(data.endDate!);
 
     if (endDate <= startDate) {
       return NextResponse.json({ success: false, error: 'End date must be after start date' }, { status: 422 });
@@ -130,7 +337,7 @@ export async function POST(req: NextRequest) {
 
     // Check location exists
     const location = await prisma.activityLocation.findUnique({
-      where: { id: data.activityLocationId, isActive: true },
+      where: { id: data.activityLocationId!, isActive: true },
       include: {
         activityTypes: { include: { activityType: true } },
         place: { select: { name: true, id: true, owner: { select: { email: true, name: true } } } },
@@ -154,7 +361,7 @@ export async function POST(req: NextRequest) {
       // Validate spots belong to the location
       const spotIds = resolvedSpotTimeslots.map((st) => st.spotId);
       const selectedSpots = await prisma.spot.findMany({
-        where: { id: { in: spotIds }, activityLocationId: data.activityLocationId },
+        where: { id: { in: spotIds }, activityLocationId: data.activityLocationId! },
         include: { timeslots: { where: { isActive: true } } },
       });
 
@@ -339,7 +546,7 @@ export async function POST(req: NextRequest) {
     const registration = await prisma.registration.create({
       data: {
         registrationNumber,
-        activityLocationId: data.activityLocationId,
+        activityLocationId: data.activityLocationId!,
         userId: session?.user.id ?? null,
         pricingRuleId: pricingData.pricingRuleId ?? null,
         firstName: data.firstName,

@@ -45,6 +45,9 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
           activityTypes: { include: { activityType: { select: { id: true, name: true } } } },
         },
       },
+      event: {
+        include: { place: { select: { id: true, name: true } } },
+      },
       registrationSpots: {
         include: { spot: { select: { id: true, name: true, code: true } } },
       },
@@ -72,7 +75,7 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
             Booking #{booking.registrationNumber}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {booking.activityLocation.place.name} — {booking.activityLocation.name}
+            {booking.activityLocation?.place.name ?? booking.event?.place.name} — {booking.activityLocation?.name ?? booking.event?.title}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -143,12 +146,12 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">Activity</Typography>
                   <Typography variant="body2">
-                    {booking.activityLocation.activityTypes
+                    {booking.activityLocation?.activityTypes
                       .map((a: { activityType: { name: string } }) => a.activityType.name)
-                      .join(', ') || '—'}
+                      .join(', ') || booking.event?.title || '—'}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {booking.activityLocation.name}
+                    {booking.activityLocation?.name ?? booking.event?.title}
                   </Typography>
                 </Grid>
 
@@ -257,12 +260,12 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
                 Place
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {booking.activityLocation.place.name}
+                {booking.activityLocation?.place.name ?? booking.event?.place.name}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                {booking.activityLocation.name}
+                {booking.activityLocation?.name ?? booking.event?.title}
               </Typography>
-              <Link href={`/admin/places/${booking.activityLocation.place.id}`} style={{ textDecoration: 'none' }}>
+              <Link href={`/admin/places/${booking.activityLocation?.place.id ?? booking.event?.place.id}`} style={{ textDecoration: 'none' }}>
                 <Button variant="outlined" size="small">
                   View place
                 </Button>

@@ -141,7 +141,14 @@ export async function getAvailableSpots(
 export async function validateEmbedToken(token: string) {
   const embedToken = await prisma.embedToken.findUnique({
     where: { token },
-    include: {
+    select: {
+      id: true,
+      token: true,
+      placeId: true,
+      activityLocationId: true,
+      eventId: true,
+      isActive: true,
+      expiresAt: true,
       place: { select: { id: true, name: true, isActive: true, logoUrl: true, slug: true } },
       activityLocation: {
         select: {

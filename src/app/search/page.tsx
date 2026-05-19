@@ -40,10 +40,15 @@ import {
   Favorite,
   FavoriteBorder,
   WorkspacePremium,
+  CalendarMonth,
+  AccessTime,
+  Event as EventIcon,
 } from '@mui/icons-material';
+import { Tabs, Tab } from '@mui/material';
 import { ActivityTag } from '@/types';
 import DateRangePicker from '@/components/ui/DateRangePicker';
 import Navbar from '@/components/layout/Navbar';
+import EventCard from '@/components/event/EventCard';
 import { useTranslation } from '@/i18n/client';
 import { useSession } from 'next-auth/react';
 
@@ -103,6 +108,20 @@ interface SearchPlace {
     tags: { tag: ActivityTag }[];
   }[];
   availableLocations: AvailableLocation[];
+}
+
+interface SearchEvent {
+  id: string;
+  title: string;
+  eventDate: string;
+  startTime: string;
+  endTime: string;
+  imageUrl: string | null;
+  maxReservations: number | null;
+  isActive: boolean;
+  place: { id: string; name: string; slug: string; city: string | null; country: string | null; coverUrl: string | null };
+  pricingRule: { currency: string; pricingTiers: { label: string; pricePerUnit: string }[] } | null;
+  _count: { registrations: number };
 }
 
 interface BBox {
@@ -227,6 +246,20 @@ function SearchPage() {
   const initialLocation = searchParams.get('location') ?? '';
   const initialFrom = searchParams.get('from') ?? '';
   const initialTo = searchParams.get('to') ?? '';
+  const initialTab = (searchParams.get('tab') === 'events' ? 'events' : 'places') as 'places' | 'events';
+
+  // ── Tab state
+  const [activeTab, setActiveTab] = useState<'places' | 'events'>(initialTab);
+
+  // ── Events state
+  const [events, setEvents] = useState<SearchEvent[]>([]);
+  const [eventsTotal, setEventsTotal] = useState(0);
+  const [eventsPage, setEventsPage] = useState(1);
+  const [eventsTotalPages, setEventsTotalPages] = useState(1);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsLoadingMore, setEventsLoadingMore] = useState(false);
+  const [eventsError, setEventsError] = useState('');
+  const [eventDateFilter, setEventDateFilter] = useState('');
 
   // ── Filter state
   const [locationInput, setLocationInput] = useState(initialLocation);
@@ -323,18 +356,52 @@ function SearchPage() {
     [router]
   );
 
+  // ── Fetch events
+  const fetchEvents = useCallback(
+    async (opts: { location: string; date: string; page?: number; append?: boolean }) => {
+      const page = opts.page ?? 1;
+      if (opts.append) setEventsLoadingMore(true);
+      else setEventsLoading(true);
+      setEventsError('');
+      try {
+        const p = new URLSearchParams({ upcoming: 'true', pageSize: '12', page: String(page) });
+        if (opts.location) p.set('location', opts.location);
+        if (opts.date) p.set('date', opts.date);
+        const res = await fetch(`/api/events?${p.toString()}`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error ?? 'Failed to load events');
+        const items: SearchEvent[] = data.data.items ?? [];
+        if (opts.append) setEvents((prev) => [...prev, ...items]);
+        else setEvents(items);
+        setEventsTotal(data.data.total ?? 0);
+        setEventsPage(data.data.page ?? 1);
+        setEventsTotalPages(data.data.totalPages ?? 1);
+      } catch (e: unknown) {
+        setEventsError(e instanceof Error ? e.message : 'Failed to load events');
+      } finally {
+        setEventsLoading(false);
+        setEventsLoadingMore(false);
+      }
+    },
+    []
+  );
+
   // ── Initial fetch on mount
   useEffect(() => {
-    fetchResults({
-      tags: initialTags,
-      location: initialLocation,
-      from: initialFrom,
-      to: initialTo,
-      bbox: null,
-      page: 1,
-      append: false,
-      updateUrl: false,
-    });
+    if (initialTab === 'events') {
+      fetchEvents({ location: initialLocation, date: '', page: 1 });
+    } else {
+      fetchResults({
+        tags: initialTags,
+        location: initialLocation,
+        from: initialFrom,
+        to: initialTo,
+        bbox: null,
+        page: 1,
+        append: false,
+        updateUrl: false,
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -677,6 +744,111 @@ function SearchPage() {
 
       {/* ── Results area ── */}
       <Container maxWidth="xl" sx={{ py: 3 }}>
+        {/* Tab switcher */}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+          <Tabs
+            value={activeTab}
+            onChange={(_, v) => {
+              setActiveTab(v);
+              router.replace(`/search?tab=${v}`, { scroll: false });
+              if (v === 'events' && events.length === 0) {
+                fetchEvents({ location: locationQuery, date: eventDateFilter, page: 1 });
+              }
+            }}
+          >
+            <Tab label="Places" value="places" />
+            <Tab label="Events" value="events" icon={<EventIcon sx={{ fontSize: 16 }} />} iconPosition="end" />
+          </Tabs>
+        </Box>
+
+        {/* Events date filter (only visible on events tab) */}
+        {activeTab === 'events' && (
+          <Box sx={{ display: 'flex', gap: 1.5, mb: 2, alignItems: 'center' }}>
+            <TextField
+              size="small"
+              label="Filter by date"
+              type="date"
+              value={eventDateFilter}
+              onChange={(e) => setEventDateFilter(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              sx={{ width: 180 }}
+            />
+            <Button
+              variant="contained"
+              startIcon={<Search />}
+              onClick={() => fetchEvents({ location: locationQuery, date: eventDateFilter, page: 1 })}
+            >
+              Search Events
+            </Button>
+            {eventDateFilter && (
+              <Button
+                variant="outlined"
+                startIcon={<Clear />}
+                onClick={() => {
+                  setEventDateFilter('');
+                  fetchEvents({ location: locationQuery, date: '', page: 1 });
+                }}
+              >
+                Clear Date
+              </Button>
+            )}
+            <Typography variant="body2" color="text.secondary" sx={{ ml: 'auto' }}>
+              {eventsLoading ? 'Searching…' : `${eventsTotal} event${eventsTotal !== 1 ? 's' : ''} found`}
+            </Typography>
+          </Box>
+        )}
+
+        {/* Events results */}
+        {activeTab === 'events' && (
+          <Box>
+            {eventsError && <Alert severity="error" sx={{ mb: 2 }}>{eventsError}</Alert>}
+            {eventsLoading ? (
+              <Grid container spacing={2}>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Grid key={i} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                    <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
+                    <Skeleton sx={{ mt: 1 }} />
+                    <Skeleton width="60%" />
+                  </Grid>
+                ))}
+              </Grid>
+            ) : events.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 10 }}>
+                <CalendarMonth sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
+                <Typography variant="h6" color="text.secondary">No upcoming events found</Typography>
+                <Typography variant="body2" color="text.secondary">Try a different location or date</Typography>
+              </Box>
+            ) : (
+              <>
+                <Grid container spacing={2}>
+                  {events.map((event) => (
+                    <Grid key={event.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                      <EventCard event={event} />
+                    </Grid>
+                  ))}
+                </Grid>
+                {eventsPage < eventsTotalPages && (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      onClick={() => fetchEvents({ location: locationQuery, date: eventDateFilter, page: eventsPage + 1, append: true })}
+                      disabled={eventsLoadingMore}
+                      startIcon={eventsLoadingMore ? <CircularProgress size={18} /> : undefined}
+                      sx={{ minWidth: 180 }}
+                    >
+                      {eventsLoadingMore ? 'Loading…' : `Load More (${eventsTotal - events.length} left)`}
+                    </Button>
+                  </Box>
+                )}
+              </>
+            )}
+          </Box>
+        )}
+
+        {/* Places results (only visible when places tab active) */}
+        {activeTab === 'places' && (
+          <>
         {/* Status bar */}
         <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
           <Typography variant="body2" color="text.secondary">
@@ -894,6 +1066,8 @@ function SearchPage() {
               />
             </Box>
           </Box>
+        )}
+          </>
         )}
       </Container>
     </Box>

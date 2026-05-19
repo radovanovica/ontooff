@@ -47,6 +47,9 @@ export default async function OwnerBookingDetailsPage({ params }: Props) {
           activityTypes: { include: { activityType: { select: { id: true, name: true } } } },
         },
       },
+      event: {
+        include: { place: { select: { id: true, name: true, ownerId: true } } },
+      },
       registrationSpots: {
         include: {
           spot: { select: { id: true, name: true, code: true } },
@@ -63,7 +66,10 @@ export default async function OwnerBookingDetailsPage({ params }: Props) {
 
   const canAccess =
     session.user.role === UserRole.SUPER_ADMIN
-    || (session.user.role === UserRole.PLACE_OWNER && booking.activityLocation.place.ownerId === session.user.id);
+    || (session.user.role === UserRole.PLACE_OWNER && (
+      booking.activityLocation?.place?.ownerId === session.user.id ||
+      booking.event?.place?.ownerId === session.user.id
+    ));
 
   if (!canAccess) {
     notFound();
@@ -84,7 +90,7 @@ export default async function OwnerBookingDetailsPage({ params }: Props) {
             {t('bookings.details.titleWithNumber', { number: booking.registrationNumber })}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {booking.activityLocation.place.name} — {booking.activityLocation.name}
+            {booking.activityLocation?.place.name ?? booking.event?.place.name} — {booking.activityLocation?.name ?? booking.event?.title}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -135,8 +141,8 @@ export default async function OwnerBookingDetailsPage({ params }: Props) {
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">{t('bookings.details.activity')}</Typography>
-                  <Typography variant="body2">{booking.activityLocation.activityTypes.map((a: { activityType: { name: string } }) => a.activityType.name).join(', ') || t('bookings.table.empty')}</Typography>
-                  <Typography variant="body2" color="text.secondary">{booking.activityLocation.name}</Typography>
+                  <Typography variant="body2">{booking.activityLocation?.activityTypes.map((a: { activityType: { name: string } }) => a.activityType.name).join(', ') || booking.event?.title || t('bookings.table.empty')}</Typography>
+                  <Typography variant="body2" color="text.secondary">{booking.activityLocation?.name ?? booking.event?.title}</Typography>
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                   <Typography variant="caption" color="text.secondary">{t('bookings.details.spots')}</Typography>

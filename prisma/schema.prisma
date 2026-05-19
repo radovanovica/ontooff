@@ -207,6 +207,7 @@ model Place {
   activityLocations ActivityLocation[]
   embedTokens       EmbedToken[]
   pricingRules      PricingRule[]
+  events            PlaceEvent[]
   reviews           Review[]
   blogPosts         BlogPost[]
   contributorAccess ContributorPlaceAccess[]
@@ -374,6 +375,7 @@ model PricingRule {
   activityLocation ActivityLocation? @relation(fields: [activityLocationId], references: [id], onDelete: SetNull)
   pricingTiers     PricingTier[]
   registrations    Registration[]
+  placeEvents      PlaceEvent[]
 
   @@index([placeId])
   @@index([activityTypeId])
@@ -407,7 +409,8 @@ model PricingTier {
 model Registration {
   id                 String             @id @default(cuid())
   registrationNumber String             @unique
-  activityLocationId String
+  activityLocationId String?
+  eventId            String?
   userId             String?
   pricingRuleId      String?
 
@@ -442,7 +445,8 @@ model Registration {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
-  activityLocation  ActivityLocation     @relation(fields: [activityLocationId], references: [id], onDelete: Restrict)
+  activityLocation  ActivityLocation?    @relation(fields: [activityLocationId], references: [id], onDelete: Restrict)
+  event             PlaceEvent?          @relation(fields: [eventId], references: [id], onDelete: SetNull)
   user              User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
   pricingRule       PricingRule?         @relation(fields: [pricingRuleId], references: [id], onDelete: SetNull)
   registrationSpots RegistrationSpot[]
@@ -452,6 +456,7 @@ model Registration {
 
   @@index([activityLocationId, status, startDate, endDate])
   @@index([activityLocationId])
+  @@index([eventId])
   @@index([userId])
   @@index([status])
   @@index([paymentStatus])
@@ -508,6 +513,7 @@ model EmbedToken {
   token              String    @unique @default(cuid())
   placeId            String
   activityLocationId String?
+  eventId            String?
   label              String
   isActive           Boolean   @default(true)
   allowedOrigins     String[]
@@ -519,10 +525,12 @@ model EmbedToken {
 
   place            Place             @relation(fields: [placeId], references: [id], onDelete: Cascade)
   activityLocation ActivityLocation? @relation(fields: [activityLocationId], references: [id], onDelete: SetNull)
+  event            PlaceEvent?       @relation(fields: [eventId], references: [id], onDelete: SetNull)
   registrations    Registration[]
 
   @@index([token])
   @@index([placeId])
+  @@index([eventId])
   @@map("embed_tokens")
 }
 
@@ -763,3 +771,36 @@ model ContributorPlaceAccess {
   @@index([placeId])
   @@map("contributor_place_access")
 }
+
+// ─────────────────────────────────────────
+// EVENTS
+// ─────────────────────────────────────────
+
+model PlaceEvent {
+  id                  String    @id @default(cuid())
+  placeId             String
+  title               String
+  description         String?   @db.Text
+  imageUrl            String?
+  eventDate           DateTime
+  startTime           String    // "HH:MM"
+  endTime             String    // "HH:MM"
+  maxReservations     Int?
+  reservationDeadline DateTime?
+  pricingRuleId       String?
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  place        Place              @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  pricingRule  PricingRule?       @relation(fields: [pricingRuleId], references: [id], onDelete: SetNull)
+  registrations Registration[]
+  embedTokens  EmbedToken[]
+
+  @@index([placeId])
+  @@index([eventDate])
+  @@index([isActive])
+  @@map("place_events")
+}
+
+

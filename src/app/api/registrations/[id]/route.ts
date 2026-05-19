@@ -25,6 +25,7 @@ async function canAccessRegistration(id: string, userId: string, role: UserRole,
     where: { id },
     include: {
       activityLocation: { include: { place: { select: { ownerId: true } } } },
+      event: { include: { place: { select: { ownerId: true } } } },
     },
   });
   if (!reg) return null;
@@ -32,7 +33,10 @@ async function canAccessRegistration(id: string, userId: string, role: UserRole,
   // Super admin can do everything
   if (role === UserRole.SUPER_ADMIN) return reg;
   // Place owner sees registrations for their places
-  if (role === UserRole.PLACE_OWNER && reg.activityLocation.place.ownerId === userId) return reg;
+  if (role === UserRole.PLACE_OWNER) {
+    const placeOwnerId = reg.activityLocation?.place?.ownerId ?? reg.event?.place?.ownerId;
+    if (placeOwnerId === userId) return reg;
+  }
   // Regular user sees their own registrations
   if (reg.userId === userId) return reg;
   // Anyone with edit token can view/edit
@@ -143,6 +147,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
               place: { select: { name: true } },
             },
           },
+          event: { include: { place: { select: { name: true } } } },
           registrationSpots: { include: { spot: { select: { name: true, code: true } } } },
           paymentBreakdown: { orderBy: { sortOrder: 'asc' } },
           pricingRule: { select: { requiresPayment: true, currency: true } },
@@ -152,9 +157,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         return sendRegistrationConfirmation(fullReg.email, {
           registrationNumber: fullReg.registrationNumber,
           firstName: fullReg.firstName,
-          locationName: fullReg.activityLocation.name,
-          activityName: fullReg.activityLocation.activityTypes.map((a) => a.activityType.name).join(', '),
-          placeName: fullReg.activityLocation.place.name,
+          locationName: fullReg.activityLocation?.name ?? fullReg.event?.title ?? '—',
+          activityName: fullReg.activityLocation?.activityTypes.map((a) => a.activityType.name).join(', ') ?? fullReg.event?.title ?? '—',
+          placeName: fullReg.activityLocation?.place.name ?? fullReg.event?.place.name ?? '—',
           startDate: fullReg.startDate.toLocaleDateString('en-GB'),
           endDate: fullReg.endDate.toLocaleDateString('en-GB'),
           numberOfDays: fullReg.numberOfDays,

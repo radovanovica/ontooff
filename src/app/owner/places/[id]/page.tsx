@@ -19,6 +19,7 @@ import PlaceSettingsTab from './_components/PlaceSettingsTab';
 import LocationsTab from './_components/LocationsTab';
 import ActivityTypesTab from './_components/ActivityTypesTab';
 import EmbedTokensTab from './_components/EmbedTokensTab';
+import EventsTab from './_components/EventsTab';
 import BookingsTab from './_components/BookingsTab';
 import ReviewsTab from './_components/ReviewsTab';
 
@@ -83,6 +84,7 @@ export default function PlaceDetailPage() {
         <Tab label={t('places.editPlace')} />
         <Tab label={t('activityTypes.title')} />
         <Tab label={t('locations.title')} />
+        <Tab label={t('events.title', 'Events')} />
         <Tab label={t('embedTokens.title')} />
         <Tab label={t('bookings.title')} />
         <Tab label={t('reviews.tabLabel')} />
@@ -98,12 +100,15 @@ export default function PlaceDetailPage() {
         <LocationsTab placeId={placeId} />
       </TabPanel>
       <TabPanel value={tab} index={3}>
-        <EmbedTokensTab placeId={placeId} />
+        <EventsTab placeId={placeId} />
       </TabPanel>
       <TabPanel value={tab} index={4}>
-        <BookingsTab placeId={placeId} />
+        <EmbedTokensTab placeId={placeId} />
       </TabPanel>
       <TabPanel value={tab} index={5}>
+        <BookingsTab placeId={placeId} />
+      </TabPanel>
+      <TabPanel value={tab} index={6}>
         <ReviewsTab placeId={placeId} />
       </TabPanel>
     </Box>
