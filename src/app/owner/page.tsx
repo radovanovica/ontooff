@@ -2,7 +2,7 @@ import { Box, Card, CardContent, Grid, Typography, Button, Alert } from '@mui/ma
 import { Place, Pending, AttachMoney, HourglassTop, Business, EventNote } from '@mui/icons-material';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { getTranslation } from '@/i18n/server';
+import { getTranslation, getServerLocale } from '@/i18n/server';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 
@@ -50,7 +50,8 @@ async function getOwnerOrg(ownerId: string) {
 
 export default async function OwnerDashboardPage() {
   const session = await getServerSession(authOptions);
-  const { t } = await getTranslation('en', 'owner');
+  const locale = await getServerLocale();
+  const { t } = await getTranslation(locale, 'owner');
   const [stats, org] = await Promise.all([
     getOwnerStats(session!.user.id),
     getOwnerOrg(session!.user.id),

@@ -48,6 +48,14 @@ export function changeLanguage(locale: Locale) {
   } catch {
     // localStorage not available
   }
+  // Also persist as a cookie so server components can read the locale
+  try {
+    if (!runsOnServerSide) {
+      document.cookie = `${STORAGE_KEY}=${locale}; path=/; max-age=31536000; SameSite=Lax`;
+    }
+  } catch {
+    // cookie write not available
+  }
   return i18next.changeLanguage(locale);
 }
 

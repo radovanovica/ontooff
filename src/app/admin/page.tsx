@@ -11,7 +11,7 @@ import {
 import Link from 'next/link';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { getTranslation } from '@/i18n/server';
+import { getTranslation, getServerLocale } from '@/i18n/server';
 import { prisma } from '@/lib/prisma';
 
 export const metadata = { title: 'Admin Dashboard — ontooff' };
@@ -54,7 +54,8 @@ async function getStats() {
 export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions);
   void session;
-  const { t } = await getTranslation('en', 'admin');
+  const locale = await getServerLocale();
+  const { t } = await getTranslation(locale, 'admin');
   const stats = await getStats();
 
   const statCards = [

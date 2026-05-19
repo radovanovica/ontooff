@@ -11,7 +11,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import InstagramStoryShare from '@/components/blog/InstagramStoryShare';
 import type { Metadata } from 'next';
-import { getTranslation } from '@/i18n/server';
+import { getTranslation, getServerLocale } from '@/i18n/server';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.ontooff.app';
 
@@ -79,7 +79,8 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
-  const { t } = await getTranslation('en', 'blog');
+  const locale = await getServerLocale();
+  const { t } = await getTranslation(locale, 'blog');
 
   // Fire-and-forget view count increment
   prisma.blogPost

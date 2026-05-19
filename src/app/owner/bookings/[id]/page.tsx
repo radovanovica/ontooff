@@ -9,8 +9,7 @@ import { authOptions } from '@/lib/auth';
 import { RegistrationStatus, UserRole } from '@/types';
 import BookingDecisionActions from './_components/BookingDecisionActions';
 import ApprovalBanner from './_components/ApprovalBanner';
-import { getTranslation } from '@/i18n/server';
-import { defaultLocale } from '@/i18n/config';
+import { getTranslation, getServerLocale } from '@/i18n/server';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -30,7 +29,8 @@ function formatDate(value: Date | null | undefined): string {
 }
 
 export default async function OwnerBookingDetailsPage({ params }: Props) {
-  const { t } = await getTranslation(defaultLocale, 'owner');
+  const locale = await getServerLocale();
+  const { t } = await getTranslation(locale, 'owner');
   const session = await getServerSession(authOptions);
   const { id } = await params;
 

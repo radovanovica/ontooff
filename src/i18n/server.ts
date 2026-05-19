@@ -1,7 +1,8 @@
 import { createInstance } from 'i18next';
 import resourcesToBackend from 'i18next-resources-to-backend';
 import { initReactI18next } from 'react-i18next/initReactI18next';
-import { i18nConfig, type Locale } from './config';
+import { cookies } from 'next/headers';
+import { i18nConfig, defaultLocale, locales, type Locale } from './config';
 
 async function initI18next(locale: Locale, ns: string | string[]) {
   const i18nInstance = createInstance();
@@ -15,6 +16,21 @@ async function initI18next(locale: Locale, ns: string | string[]) {
     )
     .init({ ...i18nConfig, lng: locale, ns });
   return i18nInstance;
+}
+
+/**
+ * Read the user's chosen locale from the `ontooff_locale` cookie set by
+ * `changeLanguage()` on the client. Falls back to defaultLocale ('en').
+ */
+export async function getServerLocale(): Promise<Locale> {
+  try {
+    const cookieStore = await cookies();
+    const value = cookieStore.get('ontooff_locale')?.value as Locale | undefined;
+    if (value && (locales as readonly string[]).includes(value)) return value;
+  } catch {
+    // cookies() unavailable during static generation
+  }
+  return defaultLocale;
 }
 
 export async function getTranslation(locale: Locale, ns: string | string[] = 'common') {
