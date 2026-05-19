@@ -8,6 +8,7 @@ const schema = z.object({
   name: z.string().min(2).optional(),
   phone: z.string().optional(),
   image: z.string().url().optional().or(z.literal('')),
+  preferredCurrency: z.enum(['EUR', 'USD', 'GBP', 'CHF', 'RSD', 'HRK', 'BAM']).optional(),
 });
 
 export async function GET() {
@@ -16,7 +17,7 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true, phone: true, image: true, role: true, createdAt: true, emailVerified: true },
+    select: { id: true, name: true, email: true, phone: true, image: true, role: true, createdAt: true, emailVerified: true, preferredCurrency: true },
   });
 
   if (!user) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
@@ -36,7 +37,7 @@ export async function PATCH(req: NextRequest) {
     );
   }
 
-  const { name, phone, image } = result.data;
+  const { name, phone, image, preferredCurrency } = result.data;
 
   const updated = await prisma.user.update({
     where: { id: session.user.id },
@@ -44,8 +45,9 @@ export async function PATCH(req: NextRequest) {
       ...(name !== undefined && { name }),
       ...(phone !== undefined && { phone }),
       ...(image !== undefined && { image: image || null }),
+      ...(preferredCurrency !== undefined && { preferredCurrency }),
     },
-    select: { id: true, name: true, email: true, phone: true, image: true, role: true },
+    select: { id: true, name: true, email: true, phone: true, image: true, role: true, preferredCurrency: true },
   });
 
   return NextResponse.json({ success: true, data: updated });

@@ -57,19 +57,29 @@ export async function POST(req: NextRequest) {
     // Send confirmation email to the registering org (non-blocking)
     sendOrgRegistrationEmail(normalizedEmail, name).catch(console.error);
 
-    // Notify super admin (non-blocking)
-    const superAdminEmail = process.env.SUPER_ADMIN_EMAIL ?? process.env.SMTP_USER;
-    if (superAdminEmail) {
-      sendAdminNewOrgNotification(superAdminEmail, {
-        name,
-        email: normalizedEmail,
-        phone: phone || null,
-        city: city || null,
-        country: country || null,
-        website: website || null,
-        description: description || null,
-      }).catch(console.error);
-    }
+    // Notify all super admins (non-blocking)
+    const orgPayload = {
+      name,
+      email: normalizedEmail,
+      phone: phone || null,
+      city: city || null,
+      country: country || null,
+      website: website || null,
+      description: description || null,
+    };
+
+    prisma.user
+      .findMany({ where: { role: 'SUPER_ADMIN' }, select: { email: true } })
+      .then((admins) => {
+        const targets = admins.map((a) => a.email).filter(Boolean) as string[];
+        // Also include the env-var address if set and not already in the list
+        const envEmail = process.env.SUPER_ADMIN_EMAIL;
+        if (envEmail && !targets.includes(envEmail)) targets.push(envEmail);
+        return Promise.all(
+          targets.map((addr) => sendAdminNewOrgNotification(addr, orgPayload).catch(console.error))
+        );
+      })
+      .catch(console.error);
 
     return NextResponse.json(
       { success: true, message: 'Organization registered! We will review your application and contact you.', id: org.id },

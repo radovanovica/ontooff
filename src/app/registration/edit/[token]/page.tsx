@@ -25,6 +25,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n/client';
+import { useCurrency } from '@/lib/currency';
 import StatusBadge from '@/components/ui/StatusBadge';
 import Navbar from '@/components/layout/Navbar';
 
@@ -60,8 +61,19 @@ interface RegistrationData {
 
 export default function RegistrationEditPage() {
   const { t } = useTranslation('registration');
+  const { formatPrice, currency } = useCurrency();
   const params = useParams<{ token: string }>();
   const token = params.token;
+
+  // Inline helper: show converted amount when currency differs from EUR
+  const CurrencyConversion = ({ amount, sourceCurrency }: { amount: number; sourceCurrency: string }) => {
+    if (currency === sourceCurrency) return null;
+    return (
+      <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+        (≈ {formatPrice(amount, sourceCurrency)})
+      </Typography>
+    );
+  };
 
   const [registration, setRegistration] = useState<RegistrationData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -191,6 +203,7 @@ export default function RegistrationEditPage() {
                   {registration.totalAmount != null && (
                     <Typography variant="body2" sx={{ mt: 1 }}>
                       {t('pricing.total')}: <strong>€{Number(registration.totalAmount).toFixed(2)}</strong>
+                      <CurrencyConversion amount={Number(registration.totalAmount)} sourceCurrency="EUR" />
                     </Typography>
                   )}
                 </Box>

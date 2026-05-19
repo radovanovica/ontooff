@@ -112,6 +112,7 @@ model User {
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
+  preferredCurrency      String    @default("EUR")
   favoriteLocationIds String[]
 
   accounts           Account[]

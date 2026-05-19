@@ -26,6 +26,7 @@ import {
   Visibility,
   VisibilityOff,
   Edit,
+  TuneRounded,
 } from '@mui/icons-material';
 import { useState, useEffect, useMemo } from 'react';
 import { useSession, signOut } from 'next-auth/react';
@@ -36,6 +37,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from '@/i18n/client';
 import { format } from 'date-fns';
+import { useCurrency, SUPPORTED_CURRENCIES, CURRENCY_LABELS, type Currency } from '@/lib/currency';
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
@@ -83,6 +85,7 @@ interface UserProfile {
   role: string;
   createdAt: string;
   emailVerified: string | null;
+  preferredCurrency: string;
 }
 
 function ProfileTab({ user, onUpdated }: { user: UserProfile; onUpdated: (updated: UserProfile) => void }) {
@@ -209,7 +212,64 @@ function ProfileTab({ user, onUpdated }: { user: UserProfile; onUpdated: (update
   );
 }
 
-// ─── Change Password Tab ─────────────────────────────────────────────────────
+// ─── Preferences Tab ─────────────────────────────────────────────────────────
+
+function PreferencesTab() {
+  const { t } = useTranslation('auth');
+  const { currency, setCurrency, formatPrice } = useCurrency();
+
+  return (
+    <Box sx={{ maxWidth: 480 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
+        {t('profile.displayCurrencyLabel', 'Display Currency')}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        {t('profile.displayCurrencyHint', 'Prices are stored in EUR. Select a currency to see converted display amounts.')}
+      </Typography>
+
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+        {SUPPORTED_CURRENCIES.map((code) => (
+          <Box
+            key={code}
+            onClick={() => setCurrency(code as Currency)}
+            sx={{
+              px: 2, py: 1.25,
+              borderRadius: 2,
+              border: '2px solid',
+              borderColor: currency === code ? '#2d5a27' : 'divider',
+              bgcolor: currency === code ? '#eef5ee' : 'background.paper',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              '&:hover': { borderColor: '#4a7c59' },
+            }}
+          >
+            <Typography variant="body2" sx={{ fontWeight: currency === code ? 700 : 400, color: currency === code ? '#2d5a27' : 'text.primary' }}>
+              {CURRENCY_LABELS[code as Currency]}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+
+      <Box sx={{ mt: 3, p: 2, bgcolor: 'background.default', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+        <Typography variant="caption" color="text.secondary">
+          {t('profile.currencyPreviewLabel', 'Preview')}
+        </Typography>
+        <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.5 }}>
+          {formatPrice(100)}
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          {t('profile.currencyPreviewHint', '= €100.00 in your selected currency')}
+        </Typography>
+      </Box>
+
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
+        {t('profile.currencyRatesNote', 'Exchange rates are updated daily from the European Central Bank.')}
+      </Typography>
+    </Box>
+  );
+}
+
+// ─── Change Password Tab ──────────────────────────────────────────────────────
 
 function ChangePasswordTab() {
   const { t } = useTranslation('auth');
@@ -431,6 +491,7 @@ export default function ProfilePage() {
             sx={{ px: 3, borderBottom: 1, borderColor: 'divider' }}
           >
             <Tab icon={<Person />} iconPosition="start" label={t('profile.tab', 'Profile')} />
+            <Tab icon={<TuneRounded />} iconPosition="start" label={t('profile.preferencesTab', 'Preferences')} />
             <Tab icon={<Lock />} iconPosition="start" label={t('profile.changePasswordTab', 'Change Password')} />
           </Tabs>
 
@@ -439,6 +500,9 @@ export default function ProfilePage() {
               <ProfileTab user={profile} onUpdated={setProfile} />
             </TabPanel>
             <TabPanel value={tab} index={1}>
+              <PreferencesTab />
+            </TabPanel>
+            <TabPanel value={tab} index={2}>
               <ChangePasswordTab />
             </TabPanel>
           </Box>

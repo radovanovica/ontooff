@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { Controller, Control } from 'react-hook-form';
 import { useTranslation } from '@/i18n/client';
+import { useCurrency } from '@/lib/currency';
 import type { PricingRule, PricingCalculation } from '@/types';
 import { PaymentMethod } from '@/types';
 import type { Step2Values } from '../types';
@@ -51,6 +52,7 @@ export default function StepGuestsPayment({
 }: StepGuestsPaymentProps) {
   const { t } = useTranslation('registration');
   const { t: tc } = useTranslation('common');
+  const { formatPrice, currency } = useCurrency();
 
   return (
     <Box component="form" onSubmit={onFormSubmit}>
@@ -147,10 +149,18 @@ export default function StepGuestsPayment({
                 <Typography variant="body2">{item.label}</Typography>
                 <Typography variant="caption" color="text.secondary">
                   {item.quantity} × {livePricing.currency} {item.unitPrice.toFixed(2)}
+                  {currency !== livePricing.currency && (
+                    <> ({formatPrice(item.unitPrice, livePricing.currency)} each)</>
+                  )}
                 </Typography>
               </Box>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>
                 {livePricing.currency} {item.totalPrice.toFixed(2)}
+                {currency !== livePricing.currency && (
+                  <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
+                    ({formatPrice(item.totalPrice, livePricing.currency)})
+                  </Typography>
+                )}
               </Typography>
             </Box>
           ))}
@@ -159,6 +169,11 @@ export default function StepGuestsPayment({
             <Typography variant="subtitle2">{t('pricing.total')}</Typography>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2d5a27' }}>
               {livePricing.currency} {Number(livePricing.totalAmount).toFixed(2)}
+              {currency !== livePricing.currency && (
+                <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                  ≈ {formatPrice(Number(livePricing.totalAmount), livePricing.currency)}
+                </Typography>
+              )}
             </Typography>
           </Box>
         </Paper>

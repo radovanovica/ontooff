@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { CheckCircle } from '@mui/icons-material';
 import { useTranslation } from '@/i18n/client';
+import { useCurrency } from '@/lib/currency';
 import type { PricingCalculation, RegistrationFormData } from '@/types';
 import { PaymentMethod } from '@/types';
 import type { LocationWithDetails, AvailableSpot } from '../types';
@@ -45,6 +46,7 @@ export default function StepConfirm({
 }: StepConfirmProps) {
   const { t } = useTranslation('registration');
   const { t: tc } = useTranslation('common');
+  const { formatPrice, currency } = useCurrency();
   const activePricing = formData.pricing ?? livePricing;
 
   return (
@@ -112,9 +114,16 @@ export default function StepConfirm({
             <Divider sx={{ my: 1.2 }} />
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="subtitle2">{t('pricing.total')}</Typography>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d5a27' }}>
-                {activePricing.currency} {activePricing.totalAmount?.toFixed(2)}
-              </Typography>
+              <Box sx={{ textAlign: 'right' }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d5a27' }}>
+                  {activePricing.currency} {activePricing.totalAmount?.toFixed(2)}
+                </Typography>
+                {currency !== activePricing.currency && activePricing.totalAmount != null && (
+                  <Typography variant="caption" color="text.secondary">
+                    ≈ {formatPrice(activePricing.totalAmount, activePricing.currency)}
+                  </Typography>
+                )}
+              </Box>
             </Box>
             {formData.paymentMethod && (
               <Box sx={{ mt: 1 }}>
