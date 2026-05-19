@@ -8,7 +8,7 @@ const schema = z.object({
   name: z.string().min(2).optional(),
   phone: z.string().optional(),
   image: z.string().url().optional().or(z.literal('')),
-  preferredCurrency: z.enum(['EUR', 'USD', 'GBP', 'CHF', 'RSD', 'HRK', 'BAM']).optional(),
+  preferredCurrency: z.enum(['EUR', 'USD', 'CHF', 'RSD']).optional(),
 });
 
 export async function GET() {

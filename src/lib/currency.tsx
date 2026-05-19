@@ -12,28 +12,22 @@ import { useSession } from 'next-auth/react';
 
 // ─── Supported currencies ────────────────────────────────────────────────────
 
-export const SUPPORTED_CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'RSD', 'HRK', 'BAM'] as const;
+export const SUPPORTED_CURRENCIES = ['EUR', 'USD', 'CHF', 'RSD'] as const;
 export type Currency = (typeof SUPPORTED_CURRENCIES)[number];
 
 export const CURRENCY_LABELS: Record<Currency, string> = {
   EUR: 'Euro (€)',
   USD: 'US Dollar ($)',
-  GBP: 'British Pound (£)',
   CHF: 'Swiss Franc (CHF)',
   RSD: 'Serbian Dinar (RSD)',
-  HRK: 'Croatian Kuna (HRK)',
-  BAM: 'Bosnian Mark (BAM)',
 };
 
 // Fallback rates (EUR base) — used before the API responds
 const FALLBACK_RATES: Record<string, number> = {
   EUR: 1,
   USD: 1.10,
-  GBP: 0.86,
   CHF: 0.96,
   RSD: 117.0,
-  HRK: 7.53,
-  BAM: 1.955,
 };
 
 const STORAGE_KEY = 'ontooff_currency';
@@ -130,8 +124,8 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         return new Intl.NumberFormat(undefined, {
           style: 'currency',
           currency,
-          maximumFractionDigits: ['RSD', 'HRK', 'BAM'].includes(currency) ? 0 : 2,
-          minimumFractionDigits: ['RSD', 'HRK', 'BAM'].includes(currency) ? 0 : 2,
+          maximumFractionDigits: currency === 'RSD' ? 0 : 2,
+          minimumFractionDigits: currency === 'RSD' ? 0 : 2,
         }).format(converted);
       } catch {
         return `${currency} ${converted.toFixed(2)}`;

@@ -7,11 +7,8 @@ export const revalidate = 21600;
 const FALLBACK_RATES: Record<string, number> = {
   EUR: 1,
   USD: 1.10,
-  GBP: 0.86,
   CHF: 0.96,
   RSD: 117.0,
-  HRK: 7.53,
-  BAM: 1.955,
 };
 
 export async function GET() {

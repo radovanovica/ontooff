@@ -3,6 +3,7 @@
 import {
   Box,
   Button,
+  Collapse,
   TextField,
   Typography,
   IconButton,
@@ -22,9 +23,10 @@ import {
   FormControlLabel,
   Checkbox,
 } from '@mui/material';
-import { Add, Edit, Delete, LocalOffer } from '@mui/icons-material';
+import { Add, Edit, Delete, ExpandLess, ExpandMore, LocalOffer } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/i18n/client';
+import { useCurrency } from '@/lib/currency';
 
 interface ActivityTag {
   id: string;
@@ -77,6 +79,7 @@ interface Props {
 
 export default function ActivityTypesTab({ placeId }: Props) {
   const { t } = useTranslation('owner');
+  const { rates } = useCurrency();
   const [types, setTypes] = useState<ActivityType[]>([]);
   const [allTags, setAllTags] = useState<ActivityTag[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,7 +105,8 @@ export default function ActivityTypesTab({ placeId }: Props) {
   const [pricingFormError, setPricingFormError] = useState<string | null>(null);
   const [ruleName, setRuleName] = useState('');
   const [pricingType, setPricingType] = useState('PER_PERSON_PER_DAY');
-  const [currency, setCurrency] = useState('RSD');
+  const currency = 'EUR';
+  const [showCurrencyPreview, setShowCurrencyPreview] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('BOTH');
   const [requiresPayment, setRequiresPayment] = useState(true);
   const [pricingTiersDraft, setPricingTiersDraft] = useState<PricingTierDraft[]>([
@@ -244,7 +248,7 @@ export default function ActivityTypesTab({ placeId }: Props) {
     setPricingFormError(null);
     setRuleName('');
     setPricingType('PER_PERSON_PER_DAY');
-    setCurrency('RSD');
+    setShowCurrencyPreview(false);
     setPaymentMethod('BOTH');
     setRequiresPayment(true);
     setPricingTiersDraft([{ ageGroup: 'ADULT', label: t('pricing.tiers.ageGroups.ADULT'), pricePerUnit: '0' }]);
@@ -611,7 +615,13 @@ export default function ActivityTypesTab({ placeId }: Props) {
               </TextField>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField label={t('pricing.form.currency')} value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} fullWidth />
+              <TextField
+                label={t('pricing.form.currency')}
+                value="EUR"
+                fullWidth
+                slotProps={{ input: { readOnly: true } }}
+                helperText={t('pricing.form.currencyFixed', 'Prices are always stored in EUR')}
+              />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField label={t('pricing.form.paymentMethod')} select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} fullWidth>
@@ -683,6 +693,44 @@ export default function ActivityTypesTab({ placeId }: Props) {
                 </Box>
               </Box>
             </Grid>
+            {pricingTiersDraft.some((tier) => parseFloat(tier.pricePerUnit) > 0) && (
+              <Grid size={{ xs: 12 }}>
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={() => setShowCurrencyPreview((v) => !v)}
+                  endIcon={showCurrencyPreview ? <ExpandLess /> : <ExpandMore />}
+                  sx={{ px: 0 }}
+                >
+                  {showCurrencyPreview
+                    ? t('pricing.preview.hide', 'Hide price preview')
+                    : t('pricing.preview.show', 'Show price preview')}
+                </Button>
+                <Collapse in={showCurrencyPreview}>
+                  <Box sx={{ mt: 1, p: 1.5, bgcolor: 'grey.50', borderRadius: 1 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                      {t('pricing.preview.note', 'Approximate amounts based on current ECB rates')}
+                    </Typography>
+                    {pricingTiersDraft
+                      .filter((tier) => parseFloat(tier.pricePerUnit) > 0)
+                      .map((tier, idx) => {
+                        const eur = parseFloat(tier.pricePerUnit);
+                        const label = tier.label || tier.ageGroup;
+                        return (
+                          <Box key={idx} sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 0.5 }}>
+                            <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 80 }}>{label}:</Typography>
+                            {(['USD', 'CHF', 'RSD'] as const).map((code) => (
+                              <Typography key={code} variant="caption" color="text.secondary">
+                                {code}&nbsp;{(eur * (rates[code] ?? 1)).toFixed(code === 'RSD' ? 0 : 2)}
+                              </Typography>
+                            ))}
+                          </Box>
+                        );
+                      })}
+                  </Box>
+                </Collapse>
+              </Grid>
+            )}
           </Grid>
         </DialogContent>
         <DialogActions>
