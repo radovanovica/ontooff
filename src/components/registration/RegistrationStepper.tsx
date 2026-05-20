@@ -73,6 +73,7 @@ interface RegistrationStepperProps {
   locations?: LocationWithDetails[];
   embedTokenId?: string;
   initialActivityTypeId?: string | null;
+  lockActivityType?: boolean;
   onSuccess?: (registrationNumber: string) => void;
 }
 
@@ -81,6 +82,7 @@ export default function RegistrationStepper({
   locations,
   embedTokenId,
   initialActivityTypeId,
+  lockActivityType = false,
   onSuccess,
 }: RegistrationStepperProps) {
   const { t } = useTranslation('registration');
@@ -786,7 +788,8 @@ useEffect(() => {
             </Box>
             {/* Divider */}
             <Box sx={{ width: '1.5px', alignSelf: 'stretch', bgcolor: at.color ? `${at.color}44` : 'divider' }} />
-            {/* Change button */}
+            {/* Change button — hidden when activity type is locked by embed token */}
+            {!lockActivityType && (
             <Button
               size="small"
               onClick={() => {
@@ -807,6 +810,7 @@ useEffect(() => {
             >
               {tc('stepper.changeActivity')}
             </Button>
+            )}
           </Box>
         ) : null;
       })()}

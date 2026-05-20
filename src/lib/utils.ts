@@ -147,6 +147,7 @@ export async function validateEmbedToken(token: string) {
       placeId: true,
       activityLocationId: true,
       eventId: true,
+      activityTypeId: true,
       isActive: true,
       expiresAt: true,
       place: { select: { id: true, name: true, isActive: true, logoUrl: true, slug: true } },

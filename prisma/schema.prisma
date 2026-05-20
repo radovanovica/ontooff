@@ -236,6 +236,7 @@ model ActivityType {
   pricingRules      PricingRule[]
   tags              ActivityTypeTag[]
   spots             Spot[]
+  embedTokens       EmbedToken[]
 
   @@index([placeId])
   @@index([isActive])
@@ -515,6 +516,7 @@ model EmbedToken {
   placeId            String
   activityLocationId String?
   eventId            String?
+  activityTypeId     String?
   label              String
   isActive           Boolean   @default(true)
   allowedOrigins     String[]
@@ -527,11 +529,13 @@ model EmbedToken {
   place            Place             @relation(fields: [placeId], references: [id], onDelete: Cascade)
   activityLocation ActivityLocation? @relation(fields: [activityLocationId], references: [id], onDelete: SetNull)
   event            PlaceEvent?       @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  activityType     ActivityType?     @relation(fields: [activityTypeId], references: [id], onDelete: SetNull)
   registrations    Registration[]
 
   @@index([token])
   @@index([placeId])
   @@index([eventId])
+  @@index([activityTypeId])
   @@map("embed_tokens")
 }
 

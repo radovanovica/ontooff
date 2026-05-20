@@ -27,7 +27,7 @@ import {
   TableBody,
   Badge,
 } from '@mui/material';
-import { Add, Edit, Delete, ContentCopy, Event as EventIcon, People, CloudUpload } from '@mui/icons-material';
+import { Add, Edit, Delete, ContentCopy, Event as EventIcon, People, CloudUpload, Code, Check } from '@mui/icons-material';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '@/i18n/client';
 import { uploadFileToS3 } from '@/lib/upload';
@@ -42,6 +42,16 @@ interface PricingRule {
 interface EventPricingRuleItem {
   id: string;
   pricingRule: PricingRule;
+}
+
+interface EmbedTokenData {
+  id: string;
+  token: string;
+  label: string;
+  isActive: boolean;
+  useCount: number;
+  expiresAt: string | null;
+  lastUsedAt: string | null;
 }
 
 interface PlaceEvent {
@@ -114,6 +124,16 @@ export default function EventsTab({ placeId }: Props) {
 
   // Embed token copy state
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Embed token dialog state
+  const [embedDialogEvent, setEmbedDialogEvent] = useState<PlaceEvent | null>(null);
+  const [embedTokens, setEmbedTokens] = useState<EmbedTokenData[]>([]);
+  const [embedTokensLoading, setEmbedTokensLoading] = useState(false);
+  const [embedCreateLabel, setEmbedCreateLabel] = useState('');
+  const [embedCreateExpiry, setEmbedCreateExpiry] = useState('');
+  const [embedCreating, setEmbedCreating] = useState(false);
+  const [embedError, setEmbedError] = useState<string | null>(null);
+  const [embedCopied, setEmbedCopied] = useState<string | null>(null);
 
   const APP_URL = typeof window !== 'undefined' ? window.location.origin : '';
 
@@ -273,6 +293,63 @@ export default function EventsTab({ placeId }: Props) {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const openEmbedDialog = (ev: PlaceEvent) => {
+    setEmbedDialogEvent(ev);
+    setEmbedError(null);
+    setEmbedCreateLabel('');
+    setEmbedCreateExpiry('');
+    setEmbedTokens([]);
+    setEmbedTokensLoading(true);
+    fetch(`/api/embed-tokens?placeId=${placeId}&eventId=${ev.id}`)
+      .then((r) => r.json())
+      .then((d) => setEmbedTokens(d.data ?? []))
+      .catch(() => setEmbedError('Failed to load embed tokens'))
+      .finally(() => setEmbedTokensLoading(false));
+  };
+
+  const handleCreateEmbedToken = async () => {
+    if (!embedDialogEvent || !embedCreateLabel.trim()) return;
+    setEmbedCreating(true);
+    setEmbedError(null);
+    try {
+      const res = await fetch('/api/embed-tokens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          placeId,
+          eventId: embedDialogEvent.id,
+          label: embedCreateLabel.trim(),
+          expiresAt: embedCreateExpiry ? new Date(`${embedCreateExpiry}T00:00:00.000Z`).toISOString() : undefined,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed to create token');
+      setEmbedTokens((prev) => [json.data, ...prev]);
+      setEmbedCreateLabel('');
+      setEmbedCreateExpiry('');
+    } catch (err) {
+      setEmbedError(err instanceof Error ? err.message : 'Failed to create token');
+    } finally {
+      setEmbedCreating(false);
+    }
+  };
+
+  const handleDeleteEmbedToken = async (id: string) => {
+    if (!confirm('Delete this embed token?')) return;
+    const res = await fetch(`/api/embed-tokens?id=${id}`, { method: 'DELETE' });
+    if (res.ok) setEmbedTokens((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const copyEmbedTokenUrl = (token: string, type: 'url' | 'iframe') => {
+    const url = `${APP_URL}/embed/event/${token}`;
+    const text = type === 'iframe'
+      ? `<iframe src="${url}" width="100%" height="700" frameborder="0" allow="payment"></iframe>`
+      : url;
+    navigator.clipboard.writeText(text).catch(() => {});
+    setEmbedCopied(token + type);
+    setTimeout(() => setEmbedCopied(null), 2000);
+  };
+
   const isEventPast = (dateStr: string) => new Date(dateStr) < new Date();
   const isFull = (ev: PlaceEvent) =>
     ev.maxReservations != null && ev._count.registrations >= ev.maxReservations;
@@ -412,6 +489,11 @@ export default function EventsTab({ placeId }: Props) {
                     <Tooltip title={copiedId === ev.id ? t('events.copied', 'Copied!') : t('events.copyLink', 'Copy public link')}>
                       <IconButton size="small" onClick={() => copyEmbedUrl(ev)} color={copiedId === ev.id ? 'success' : 'default'}>
                         <ContentCopy fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={t('events.embedToken', 'Embed / iFrame')}>
+                      <IconButton size="small" onClick={() => openEmbedDialog(ev)}>
+                        <Code fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={t('common.edit', 'Edit')}>
@@ -653,6 +735,114 @@ export default function EventsTab({ placeId }: Props) {
           >
             {deleting ? t('events.deleting', 'Deleting…') : t('common.delete', 'Delete')}
           </Button>
+        </DialogActions>
+      </Dialog>
+      {/* ── Embed token dialog ────────────────────────────────────────────── */}
+      <Dialog open={!!embedDialogEvent} onClose={() => setEmbedDialogEvent(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Code fontSize="small" />
+          {t('events.embedDialog.title', 'Embed Token — {{name}}', { name: embedDialogEvent?.title ?? '' })}
+        </DialogTitle>
+        <DialogContent sx={{ pt: '12px !important' }}>
+          {embedError && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setEmbedError(null)}>{embedError}</Alert>}
+
+          {/* Create new token */}
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+            {t('events.embedDialog.createNew', 'Create New Token')}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
+            <TextField
+              size="small"
+              label={t('events.embedDialog.label', 'Label')}
+              value={embedCreateLabel}
+              onChange={(e) => setEmbedCreateLabel(e.target.value)}
+              sx={{ flex: '1 1 160px' }}
+            />
+            <TextField
+              size="small"
+              label={t('events.embedDialog.expiresAt', 'Expires (optional)')}
+              type="date"
+              value={embedCreateExpiry}
+              onChange={(e) => setEmbedCreateExpiry(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              sx={{ flex: '1 1 150px' }}
+            />
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={embedCreating ? <CircularProgress size={14} color="inherit" /> : <Add />}
+              disabled={embedCreating || !embedCreateLabel.trim()}
+              onClick={handleCreateEmbedToken}
+            >
+              {t('common.create', 'Create')}
+            </Button>
+          </Box>
+
+          <Divider sx={{ mb: 2 }} />
+
+          {/* Existing tokens */}
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+            {t('events.embedDialog.tokens', 'Tokens')}
+          </Typography>
+          {embedTokensLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}><CircularProgress size={28} /></Box>
+          ) : embedTokens.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+              {t('events.embedDialog.noTokens', 'No tokens yet. Create one above.')}
+            </Typography>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {embedTokens.map((tok) => {
+                const embedUrl = `${APP_URL}/embed/event/${tok.token}`;
+                const iframeCode = `<iframe src="${embedUrl}" width="100%" height="700" frameborder="0" allow="payment"></iframe>`;
+                return (
+                  <Paper key={tok.id} variant="outlined" sx={{ p: 1.5, borderRadius: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.75 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{tok.label}</Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        {tok.expiresAt && (
+                          <Typography variant="caption" color="text.secondary">
+                            {t('events.embedDialog.expires', 'Expires')} {new Date(tok.expiresAt).toLocaleDateString()}
+                          </Typography>
+                        )}
+                        <Chip label={`${tok.useCount} uses`} size="small" sx={{ height: 18, fontSize: '0.68rem' }} />
+                        <Tooltip title={t('common.delete', 'Delete')}>
+                          <IconButton size="small" color="error" onClick={() => handleDeleteEmbedToken(tok.id)}>
+                            <Delete sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </Box>
+                    {/* Direct URL */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                      <Typography variant="caption" sx={{ fontFamily: 'monospace', flex: 1, bgcolor: 'grey.100', borderRadius: 0.5, px: 0.75, py: 0.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {embedUrl}
+                      </Typography>
+                      <Tooltip title={embedCopied === tok.token + 'url' ? t('events.copied', 'Copied!') : t('events.embedDialog.copyUrl', 'Copy URL')}>
+                        <IconButton size="small" color={embedCopied === tok.token + 'url' ? 'success' : 'default'} onClick={() => copyEmbedTokenUrl(tok.token, 'url')}>
+                          {embedCopied === tok.token + 'url' ? <Check sx={{ fontSize: 16 }} /> : <ContentCopy sx={{ fontSize: 16 }} />}
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                    {/* iFrame snippet */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Typography variant="caption" sx={{ fontFamily: 'monospace', flex: 1, bgcolor: 'grey.100', borderRadius: 0.5, px: 0.75, py: 0.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'text.secondary' }}>
+                        {iframeCode}
+                      </Typography>
+                      <Tooltip title={embedCopied === tok.token + 'iframe' ? t('events.copied', 'Copied!') : t('events.embedDialog.copyIframe', 'Copy iFrame')}>
+                        <IconButton size="small" color={embedCopied === tok.token + 'iframe' ? 'success' : 'default'} onClick={() => copyEmbedTokenUrl(tok.token, 'iframe')}>
+                          {embedCopied === tok.token + 'iframe' ? <Check sx={{ fontSize: 16 }} /> : <Code sx={{ fontSize: 16 }} />}
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </Paper>
+                );
+              })}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEmbedDialogEvent(null)}>{t('common.close', 'Close')}</Button>
         </DialogActions>
       </Dialog>
     </Box>

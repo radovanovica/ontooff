@@ -107,6 +107,8 @@ export default async function EmbedPage({ params }: Props) {
             location={serializedLocation as unknown as Parameters<typeof RegistrationStepper>[0]['location']}
             locations={serializedLocations as unknown as Parameters<typeof RegistrationStepper>[0]['locations']}
             embedTokenId={embedToken.id}
+            initialActivityTypeId={embedToken.activityTypeId ?? null}
+            lockActivityType={!!embedToken.activityTypeId}
           />
         </Paper>
       </Container>

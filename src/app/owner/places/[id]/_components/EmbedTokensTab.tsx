@@ -22,6 +22,7 @@ import {
   TextField,
   Chip,
   Snackbar,
+  MenuItem,
 } from '@mui/material';
 import { Add, ContentCopy, Delete } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
@@ -37,6 +38,12 @@ interface TokenData {
   useCount: number;
   expiresAt: string | null;
   lastUsedAt: string | null;
+  activityTypeId: string | null;
+}
+
+interface ActivityTypeOption {
+  id: string;
+  name: string;
 }
 
 export default function EmbedTokensTab({ placeId }: { placeId: string }) {
@@ -46,7 +53,8 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const { register, handleSubmit, reset } = useForm<{ label: string; expiresAt?: string }>();
+  const [activityTypes, setActivityTypes] = useState<ActivityTypeOption[]>([]);
+  const { register, handleSubmit, reset } = useForm<{ label: string; expiresAt?: string; activityTypeId?: string }>();
 
   const fetch_ = () => {
     fetch(`/api/embed-tokens?placeId=${placeId}`)
@@ -56,15 +64,22 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
       .finally(() => setLoading(false));
   };
 
-  useEffect(fetch_, [placeId]);
+  useEffect(() => {
+    fetch_();
+    fetch(`/api/activity-types?placeId=${placeId}`)
+      .then((r) => r.json())
+      .then((d) => setActivityTypes(d.data ?? []))
+      .catch(() => {/* non-critical */});
+  }, [placeId]);
 
-  const onCreate = async (data: { label: string; expiresAt?: string }) => {
+  const onCreate = async (data: { label: string; expiresAt?: string; activityTypeId?: string }) => {
     const res = await fetch('/api/embed-tokens', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         placeId,
         label: data.label,
+        activityTypeId: data.activityTypeId || undefined,
         expiresAt: data.expiresAt ? new Date(`${data.expiresAt}T00:00:00.000Z`).toISOString() : undefined,
       }),
     });
@@ -111,6 +126,7 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
             <TableRow>
               <TableCell sx={{ fontWeight: 700 }}>{t('embedTokens.form.label')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('embedTokens.table.token')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('embedTokens.table.activityType', { defaultValue: 'Activity' })}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('embedTokens.usageCount', { count: 0 }).replace('0 ', '')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('embedTokens.lastUsed', { date: '' }).replace(' ', '')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('embedTokens.table.expires')}</TableCell>
@@ -120,7 +136,7 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
           <TableBody>
             {tokens.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                   <Typography color="text.secondary">{t('embedTokens.empty')}</Typography>
                 </TableCell>
               </TableRow>
@@ -134,6 +150,11 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
                     <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
                       {token.token.slice(0, 20)}…
                     </Typography>
+                  </TableCell>
+                  <TableCell>
+                    {token.activityTypeId
+                      ? (activityTypes.find((a) => a.id === token.activityTypeId)?.name ?? '—')
+                      : <Typography variant="caption" color="text.secondary">{t('embedTokens.table.allActivities', { defaultValue: 'All' })}</Typography>}
                   </TableCell>
                   <TableCell>{token.useCount}</TableCell>
                   <TableCell>
@@ -177,6 +198,20 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
         >
           <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <TextField {...register('label', { required: true })} label={t('embedTokens.form.label')} fullWidth />
+            {activityTypes.length > 1 && (
+              <TextField
+                {...register('activityTypeId')}
+                select
+                label={t('embedTokens.form.activityType', { defaultValue: 'Lock to Activity (optional)' })}
+                fullWidth
+                defaultValue=""
+              >
+                <MenuItem value="">{t('embedTokens.form.activityTypeAll', { defaultValue: 'All activities (general token)' })}</MenuItem>
+                {activityTypes.map((at) => (
+                  <MenuItem key={at.id} value={at.id}>{at.name}</MenuItem>
+                ))}
+              </TextField>
+            )}
             <TextField
               {...register('expiresAt')}
               label={t('embedTokens.form.expiresAt')}

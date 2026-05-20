@@ -8,6 +8,8 @@ import { UserRole } from '@/types';
 const schema = z.object({
   placeId: z.string(),
   activityLocationId: z.string().optional(),
+  eventId: z.string().optional(),
+  activityTypeId: z.string().optional(),
   label: z.string().min(1),
   allowedOrigins: z.array(z.string()).default([]),
   expiresAt: z.string().datetime().nullable().optional(),
@@ -24,14 +26,17 @@ export async function GET(req: NextRequest) {
   if (!session) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
   const placeId = req.nextUrl.searchParams.get('placeId');
+  const eventId = req.nextUrl.searchParams.get('eventId');
   if (!placeId) return NextResponse.json({ success: false, error: 'placeId required' }, { status: 400 });
 
   if (!(await canManagePlace(placeId, session.user.id, session.user.role))) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
 
+  const activityTypeId = req.nextUrl.searchParams.get('activityTypeId');
+  const where = eventId ? { placeId, eventId } : activityTypeId ? { placeId, activityTypeId } : { placeId };
   const tokens = await prisma.embedToken.findMany({
-    where: { placeId },
+    where,
     include: { activityLocation: { select: { id: true, name: true } } },
     orderBy: { createdAt: 'desc' },
   });
