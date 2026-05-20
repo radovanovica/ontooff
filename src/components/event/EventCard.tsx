@@ -17,13 +17,15 @@ interface SearchEvent {
   place: { id: string; name: string; slug: string; city: string | null; country: string | null; coverUrl: string | null };
   pricingRule: { currency: string; pricingTiers: { label: string; pricePerUnit: string }[] } | null;
   _count: { registrations: number };
+  totalGuests?: number;
 }
 
 export default function EventCard({ event }: { event: SearchEvent }) {
   const { formatPrice } = useCurrency();
   const date = new Date(event.eventDate);
-  const isFull = event.maxReservations != null && event._count.registrations >= event.maxReservations;
-  const spotsLeft = event.maxReservations != null ? event.maxReservations - event._count.registrations : null;
+  const displayCount = event.totalGuests ?? event._count.registrations;
+  const isFull = event.maxReservations != null && displayCount >= event.maxReservations;
+  const spotsLeft = event.maxReservations != null ? event.maxReservations - displayCount : null;
   const coverImage = event.imageUrl ?? event.place.coverUrl;
 
   const minPrice = event.pricingRule?.pricingTiers.length
@@ -85,7 +87,7 @@ export default function EventCard({ event }: { event: SearchEvent }) {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <People fontSize="small" color="action" />
               <Typography variant="caption" color="text.secondary">
-                {event._count.registrations} / {event.maxReservations}
+                {displayCount} / {event.maxReservations}
               </Typography>
             </Box>
           )}

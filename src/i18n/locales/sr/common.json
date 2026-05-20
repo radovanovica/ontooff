@@ -1,4 +1,4 @@
-{
+﻿{
   "appName": "ontooff",
   "tagline": "Rezervišite kampove, ribolov i aktivnosti u prirodi",
   "nav": {
@@ -89,10 +89,10 @@
     "upcomingEvents": "Predstojeći događaji",
     "upcomingEventsSub": "Ne propustite ova predstojeća dešavanja.",
     "viewAllEvents": "Vidi sve događaje →",
-    "noUpcomingEvents": "Nema predstojećih događaja. Provjerite uskoro!",
+    "noUpcomingEvents": "Nema predstojećih događaja. Proverite uskoro!",
     "featured": {
       "title": "Istaknute lokacije",
-      "subtitle": "Pažljivo odabrana premium i preporučena mjesta.",
+      "subtitle": "Pažljivo odabrana premium i preporučena mesta.",
       "badgePremium": "Premium",
       "badgeRecommended": "Preporučeno"
     }
@@ -104,11 +104,11 @@
     "inputPlaceholder": "Pitajte o outdoor aktivnostima…",
     "fabTooltip": "Razgovarajte sa asistentom",
     "inviteMessage": "👋 Kako mogu da vam pomognem?",
-    "inviteSubtitle": "Pitajte me bilo šta o outdoor aktivnostima, događajima i mjestima.",
+    "inviteSubtitle": "Pitajte me bilo šta o outdoor aktivnostima, događajima i mestima.",
     "catCamping": "Kampovanje",
     "catFishing": "Ribolov",
     "catEvents": "Doga\u0111aji",
-    "catHiking": "Pje\u0161a\u010denje",
+    "catHiking": "Pe\u0161a\u010denje",
     "startChat": "Po\u010dni razgovor \u2192",
     "suggestions": [
       "Koje outdoor aktivnosti nudite?",
@@ -217,7 +217,7 @@
     "hr": "Hrvatski",
     "bs": "Bosanski",
     "cnr": "Crnogorski",
-    "de": "Njemački",
+    "de": "Nemački",
     "es": "Španski"
   },
   "search": {
@@ -249,7 +249,13 @@
     "noFavoritesHint": "Kliknite na ikonu srca na bilo kom mestu da ga sačuvate kao omiljeno",
     "noCommunity": "Nema mesta zajednice",
     "noCommunityHint": "Nijedan doprinos zajednice ne odgovara vašoj pretrazi",
-    "allEvents": "Svi doga\u0111aji"
+    "allEvents": "Svi doga\u0111aji",
+    "tabPlaces": "Mesta",
+    "tabEvents": "Doga\u0111aji",
+    "filters": "Filteri",
+    "filterByDate": "Filtriraj po datumu",
+    "noEventsFound": "Nema predstoje\u0107ih doga\u0111aja",
+    "tryDifferentFilter": "Poku\u0161ajte sa drugom lokacijom ili datumom"
   },
   "tags": {
     "camping": "Kampovanje",
@@ -305,7 +311,7 @@
     "filterBookingHint": "Kliknite aktivnost za filtriranje widget-a za rezervaciju",
     "bookASpot": "Rezervišite",
     "noBookingAvailable": "Online rezervacija još nije dostupna za ovo mesto. Kontaktirajte ih direktno.",
-    "noLocationsFound": "Nema aktivnih lokacija. Dodajte lokaciju i mjesta u kontrolnoj tabli vlasnika.",
+    "noLocationsFound": "Nema aktivnih lokacija. Dodajte lokaciju i mesta u kontrolnoj tabli vlasnika.",
     "reviews": "Recenzije",
     "writeReview": "Napišite recenziju",
     "hideReviewForm": "Sakrij formu",
@@ -356,10 +362,10 @@
     "inactive": "Neaktivno",
     "pastEvent": "Prošli događaj",
     "fullyBooked": "Popunjeno",
-    "spotsLeft": "{{count}} mjesta preostalo",
+    "spotsLeft": "{{count}} mesta preostalo",
     "reserved": "rezervisano",
-    "choosePricingOption": "Odaberite opciju cijene",
-    "pricing": "Cijene",
+    "choosePricingOption": "Izaberite opciju cene",
+    "pricing": "Cene",
     "reservationConfirmed": "Rezervacija potvrđena!",
     "bookingPrefix": "Rezervacija #",
     "confirmationEmailSent": "Email potvrde je poslan na",
@@ -372,11 +378,11 @@
     "deadlinePassedMsg": "Rok za rezervaciju je istekao.",
     "notAvailable": "Rezervacije nisu dostupne za ovaj događaj.",
     "notAvailableMsg": "Rezervacije trenutno nisu dostupne.",
-    "reserveYourSpot": "Rezervišite mjesto",
+    "reserveYourSpot": "Rezervišite mesto",
     "selectGuests": "Odaberite goste",
     "guests": "Gosti",
     "each": "po osobi",
-    "estimatedTotal": "Procijenjen ukupan iznos",
+    "estimatedTotal": "Procenjen ukupan iznos",
     "continue": "Nastavi",
     "yourDetails": "Vaši podaci",
     "firstName": "Ime",

@@ -80,10 +80,15 @@ function PlaceContent() {
       .then((d) => {
         if (!d.success) throw new Error(d.error ?? 'Place not found');
         setPlace(d.data);
+        const urlActivityTypeId = searchParams.get('activityTypeId');
+        if (urlActivityTypeId) {
+          const exists = d.data.activityTypes?.find((at: { id: string }) => at.id === urlActivityTypeId);
+          if (exists) setSelectedActivityTypeId(urlActivityTypeId);
+        }
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [params.slug]);
+  }, [params.slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!place?.id) return;

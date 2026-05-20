@@ -249,7 +249,13 @@
     "noFavoritesHint": "Haz clic en el ícono de corazón en cualquier lugar para guardarlo como favorito",
     "noCommunity": "No se encontraron lugares de la comunidad",
     "noCommunityHint": "Ning\u00fan lugar de la comunidad coincide con tu b\u00fasqueda actual",
-    "allEvents": "Todos los eventos"
+    "allEvents": "Todos los eventos",
+    "tabPlaces": "Lugares",
+    "tabEvents": "Eventos",
+    "filters": "Filtros",
+    "filterByDate": "Filtrar por fecha",
+    "noEventsFound": "No se encontraron eventos próximos",
+    "tryDifferentFilter": "Prueba con otra ubicación o fecha"
   },
   "tags": {
     "camping": "Camping",

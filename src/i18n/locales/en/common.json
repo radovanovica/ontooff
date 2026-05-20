@@ -249,7 +249,13 @@
     "noFavoritesHint": "Click the heart icon on any place to save it as a favorite",
     "noCommunity": "No community places found",
     "noCommunityHint": "No community-contributed places match your current search",
-    "allEvents": "All Events"
+    "allEvents": "All Events",
+    "tabPlaces": "Places",
+    "tabEvents": "Events",
+    "filters": "Filters",
+    "filterByDate": "Filter by date",
+    "noEventsFound": "No upcoming events found",
+    "tryDifferentFilter": "Try a different location or date"
   },
   "tags": {
     "camping": "Camping",

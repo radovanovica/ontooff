@@ -73,9 +73,29 @@ export async function GET(req: NextRequest) {
       prisma.placeEvent.count({ where }),
     ]);
 
+    // Compute total guest count per event (sum of guestCounts values across all non-cancelled registrations)
+    const eventIds = events.map((e) => e.id);
+    const regsForGuests = eventIds.length > 0
+      ? await prisma.registration.findMany({
+          where: { eventId: { in: eventIds }, status: { notIn: ['CANCELLED'] } },
+          select: { eventId: true, guestCounts: true },
+        })
+      : [];
+    const guestTotalsMap = new Map<string, number>();
+    for (const reg of regsForGuests) {
+      if (!reg.eventId) continue;
+      const counts = (reg.guestCounts ?? {}) as Record<string, number>;
+      const sum = Object.values(counts).reduce((acc, v) => acc + (Number(v) || 0), 0);
+      guestTotalsMap.set(reg.eventId, (guestTotalsMap.get(reg.eventId) ?? 0) + (sum > 0 ? sum : 1));
+    }
+    const eventsWithGuests = events.map((e) => ({
+      ...e,
+      totalGuests: guestTotalsMap.get(e.id) ?? 0,
+    }));
+
     return NextResponse.json({
       success: true,
-      data: { items: events, total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+      data: { items: eventsWithGuests, total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     });
   }
 

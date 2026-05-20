@@ -26,6 +26,8 @@ import {
   Tooltip,
   Container,
   CircularProgress,
+  Popover,
+  Badge,
 } from '@mui/material';
 import {
   Search,
@@ -122,6 +124,7 @@ interface SearchEvent {
   place: { id: string; name: string; slug: string; city: string | null; country: string | null; coverUrl: string | null };
   pricingRule: { currency: string; pricingTiers: { label: string; pricePerUnit: string }[] } | null;
   _count: { registrations: number };
+  totalGuests?: number;
 }
 
 interface BBox {
@@ -250,6 +253,7 @@ function SearchPage() {
 
   // ── Tab state
   const [activeTab, setActiveTab] = useState<'places' | 'events'>(initialTab);
+  const [filterAnchor, setFilterAnchor] = useState<HTMLElement | null>(null);
 
   // ── Events state
   const [events, setEvents] = useState<SearchEvent[]>([]);
@@ -457,12 +461,33 @@ function SearchPage() {
     setFrom('');
     setTo('');
     setSelectedTags([]);
+    setCommunityFilter(false);
+    setFavoritesFilter(false);
+    setEventDateFilter('');
     setMapBbox(null);
     setCurrentPage(1);
     setTotalPages(1);
     suppressNextBboxSearch.current = true;
-    fetchResults({ tags: [], location: '', from: '', to: '', bbox: null, page: 1, append: false, updateUrl: true });
-  }, [fetchResults]);
+    if (activeTab === 'events') {
+      fetchEvents({ location: '', date: '', page: 1 });
+    } else {
+      fetchResults({ tags: [], location: '', from: '', to: '', bbox: null, page: 1, append: false, updateUrl: true });
+    }
+  }, [activeTab, fetchResults, fetchEvents]);
+
+  const handleSearch = useCallback(() => {
+    const loc = locationInput;
+    setLocationQuery(loc);
+    if (activeTab === 'events') {
+      fetchEvents({ location: loc, date: eventDateFilter, page: 1 });
+    } else {
+      setMapBbox(null);
+      setCurrentPage(1);
+      setTotalPages(1);
+      suppressNextBboxSearch.current = true;
+      fetchResults({ tags: selectedTags, location: loc, from, to, bbox: null, page: 1, append: false, updateUrl: true });
+    }
+  }, [activeTab, locationInput, eventDateFilter, fetchEvents, fetchResults, selectedTags, from, to]);
 
   const toggleTag = useCallback((slug: string) => {
     setSelectedTags((prev) =>
@@ -487,8 +512,14 @@ function SearchPage() {
 
   // ── Map pins
   const mapPins = useMemo<MapPin[]>(() =>
-    places.flatMap((place) =>
-      place.availableLocations
+    places.flatMap((place) => {
+      const matchingActivity = !place.isFree && selectedTags.length > 0
+        ? place.activityTypes.find((at) => at.tags.some((t) => selectedTags.includes(t.tag.slug)))
+        : null;
+      const href = place.isFree
+        ? `/locations/${place.slug}`
+        : `/places/${place.slug}${matchingActivity ? `?activityTypeId=${matchingActivity.id}` : ''}`;
+      return place.availableLocations
         .filter((l) => l.latitude != null && l.longitude != null)
         .map((l) => ({
           id: place.isFree ? `free__${place.id}` : place.id,
@@ -499,10 +530,10 @@ function SearchPage() {
           color: place.isFree ? '#7b3f00' : '#1976d2',
           highlighted: highlightedId === place.id,
           coverUrl: place.coverUrl ?? undefined,
-          href: place.isFree ? `/locations/${place.slug}` : `/places/${place.slug}`,
-        }))
-    ),
-    [places, highlightedId]
+          href,
+        }));
+    }),
+    [places, highlightedId, selectedTags]
   );
 
   // Filter down to favorites / community when those toggles are active
@@ -510,7 +541,10 @@ function SearchPage() {
     .filter((p) => !favoritesFilter || favoriteIds.has(p.id))
     .filter((p) => !communityFilter || p.isFree);
 
-  const hasFilters = selectedTags.length > 0 || locationQuery || from || to;
+  const activeFilterCount = selectedTags.length + (communityFilter ? 1 : 0) + (favoritesFilter ? 1 : 0);
+  const hasFilters = activeTab === 'places'
+    ? (selectedTags.length > 0 || locationQuery || from || to || communityFilter || favoritesFilter)
+    : Boolean(locationQuery || eventDateFilter);
   const today = new Date().toISOString().split('T')[0];
 
   // ── Render ─────────────────────────────────────────────────────────────
@@ -526,7 +560,7 @@ function SearchPage() {
           bgcolor: 'background.paper',
           borderBottom: '1px solid',
           borderColor: 'divider',
-          py: { xs: 1, sm: 2 },
+          py: { xs: 1, sm: 1.5 },
           position: 'sticky',
           top: { xs: '56px', sm: '64px' },
           zIndex: 99,
@@ -534,114 +568,24 @@ function SearchPage() {
         }}
       >
         <Container maxWidth="xl">
-          <Stack spacing={1.5}>
-            {/* Row 1: inputs */}
-            <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
-              {/* Location search */}
-              <Box sx={{ flex: '1 1 220px', minWidth: 180, maxWidth: 340 }}>
-                <TextField
-                  size="small"
-                  fullWidth
-                  placeholder={t('search.locationPlaceholder')}
-                  value={locationInput}
-                  onChange={(e) => setLocationInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      const loc = locationInput;
-                      setLocationQuery(loc);
-                      setMapBbox(null);
-                      setCurrentPage(1);
-                      setTotalPages(1);
-                      suppressNextBboxSearch.current = true;
-                      fetchResults({
-                        tags: selectedTags,
-                        location: loc,
-                        from,
-                        to,
-                        bbox: null,
-                        page: 1,
-                        append: false,
-                        updateUrl: true,
-                      });
-                    }
-                  }}
-                  slotProps={{
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationOn fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
-                      endAdornment: locationInput ? (
-                        <InputAdornment position="end">
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              setLocationInput('');
-                              setLocationQuery('');
-                            }}
-                          >
-                            <Clear fontSize="small" />
-                          </IconButton>
-                        </InputAdornment>
-                      ) : null,
-                    },
-                  }}
-                />
-              </Box>
-
-              {/* Date range picker */}
-              <DateRangePicker
-                inline
-                fromValue={from}
-                toValue={to}
-                onFromChange={(v) => {
-                  setFrom(v);
-                  if (to && v && v >= to) setTo('');
+          <Stack spacing={1}>
+            {/* Row 1: Tabs + View toggle */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+              <Tabs
+                value={activeTab}
+                onChange={(_, v) => {
+                  setActiveTab(v);
+                  router.replace(`/search?tab=${v}`, { scroll: false });
+                  if (v === 'events' && events.length === 0) {
+                    fetchEvents({ location: locationQuery, date: eventDateFilter, page: 1 });
+                  }
                 }}
-                onToChange={setTo}
-                minFrom={today}
-              />
-
-              {/* Search button */}
-              <Button
-                variant="contained"
-                startIcon={<Search />}
-                onClick={() => {
-                  const loc = locationInput;
-                  setLocationQuery(loc);
-                  setMapBbox(null);
-                  setCurrentPage(1);
-                  setTotalPages(1);
-                  suppressNextBboxSearch.current = true;
-                  fetchResults({
-                    tags: selectedTags,
-                    location: loc,
-                    from,
-                    to,
-                    bbox: null,
-                    page: 1,
-                    append: false,
-                    updateUrl: true,
-                  });
-                }}
-                disabled={loading}
-                sx={{ flexShrink: 0 }}
+                sx={{ minHeight: 36, '& .MuiTab-root': { minHeight: 36, py: 0.5 } }}
               >
-                {t('search.search')}
-              </Button>
-
-              {/* Clear */}
-              {hasFilters && (
-                <Tooltip title={t('search.clearAll')}>
-                  <IconButton onClick={handleClear}>
-                    <Clear />
-                  </IconButton>
-                </Tooltip>
-              )}
-
-              {/* View toggle — pushed right */}
-              <Box sx={{ ml: 'auto' }}>
+                <Tab label={t('search.tabPlaces')} value="places" />
+                <Tab label={t('search.tabEvents')} value="events" icon={<EventIcon sx={{ fontSize: 16 }} />} iconPosition="end" />
+              </Tabs>
+              {activeTab === 'places' && (
                 <ToggleButtonGroup
                   size="small"
                   value={view}
@@ -674,129 +618,187 @@ function SearchPage() {
                     <Tooltip title={t('search.mapView')}><MapIcon /></Tooltip>
                   </ToggleButton>
                 </ToggleButtonGroup>
-              </Box>
+              )}
             </Box>
 
-            {/* Row 2: tag chips */}
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'nowrap', overflowX: 'auto', alignItems: 'center', '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none', pb: 0.5 }}>
-                <FilterAlt fontSize="small" color="action" />
-                {/* Community filter */}
-                <Chip
-                  icon={<Public sx={{ fontSize: '14px !important' }} />}
-                  label={t('search.community', 'Community')}
+            {/* Row 2: Search inputs + Filters button + Clear */}
+            <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
+              {/* Location search */}
+              <Box sx={{ flex: '1 1 220px', minWidth: 180, maxWidth: 340 }}>
+                <TextField
                   size="small"
-                  variant={communityFilter ? 'filled' : 'outlined'}
-                  onClick={() => setCommunityFilter((p) => !p)}
-                  sx={{
-                    cursor: 'pointer',
-                    flexShrink: 0,
-                    ...(communityFilter && {
-                      bgcolor: '#7b3f00',
-                      color: 'white',
-                      '& .MuiChip-icon': { color: 'white' },
-                      '&:hover': { bgcolor: '#5a2d00' },
-                    }),
+                  fullWidth
+                  placeholder={t('search.locationPlaceholder')}
+                  value={locationInput}
+                  onChange={(e) => setLocationInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LocationOn fontSize="small" color="action" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: locationInput ? (
+                        <InputAdornment position="end">
+                          <IconButton
+                            size="small"
+                            onClick={() => { setLocationInput(''); setLocationQuery(''); }}
+                          >
+                            <Clear fontSize="small" />
+                          </IconButton>
+                        </InputAdornment>
+                      ) : null,
+                    },
                   }}
                 />
-                {/* Favorites filter */}
-                {session && (
+              </Box>
+
+              {/* Date range picker — places tab */}
+              {activeTab === 'places' && (
+                <DateRangePicker
+                  inline
+                  fromValue={from}
+                  toValue={to}
+                  onFromChange={(v) => {
+                    setFrom(v);
+                    if (to && v && v >= to) setTo('');
+                  }}
+                  onToChange={setTo}
+                  minFrom={today}
+                />
+              )}
+
+              {/* Date filter — events tab */}
+              {activeTab === 'events' && (
+                <TextField
+                  size="small"
+                  label={t('search.filterByDate')}
+                  type="date"
+                  value={eventDateFilter}
+                  onChange={(e) => setEventDateFilter(e.target.value)}
+                  slotProps={{ inputLabel: { shrink: true } }}
+                  sx={{ width: 180 }}
+                />
+              )}
+
+              {/* Search button */}
+              <Button
+                variant="contained"
+                startIcon={<Search />}
+                onClick={handleSearch}
+                disabled={loading || eventsLoading}
+                sx={{ flexShrink: 0 }}
+              >
+                {t('search.search')}
+              </Button>
+
+              {/* Filters popup button — places tab */}
+              {activeTab === 'places' && (
+                <Badge badgeContent={activeFilterCount > 0 ? activeFilterCount : undefined} color="primary">
+                  <Button
+                    variant="outlined"
+                    startIcon={<FilterAlt />}
+                    onClick={(e) => setFilterAnchor(e.currentTarget)}
+                    sx={{ flexShrink: 0 }}
+                  >
+                    {t('search.filters')}
+                  </Button>
+                </Badge>
+              )}
+
+              {/* Clear all */}
+              {hasFilters && (
+                <Tooltip title={t('search.clearAll')}>
+                  <IconButton onClick={handleClear}><Clear /></IconButton>
+                </Tooltip>
+              )}
+            </Box>
+
+            {/* Row 3: Active filter chips (places tab only, only when filters are active) */}
+            {activeTab === 'places' && (selectedTags.length > 0 || communityFilter || favoritesFilter) && (
+              <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center' }}>
+                {communityFilter && (
+                  <Chip
+                    icon={<Public sx={{ fontSize: '14px !important' }} />}
+                    label={t('search.community', 'Community')}
+                    size="small"
+                    onDelete={() => setCommunityFilter(false)}
+                    sx={{ bgcolor: '#7b3f00', color: 'white', '& .MuiChip-icon': { color: 'white' }, '& .MuiChip-deleteIcon': { color: 'rgba(255,255,255,0.7)', '&:hover': { color: 'white' } } }}
+                  />
+                )}
+                {session && favoritesFilter && (
                   <Chip
                     icon={<Favorite sx={{ fontSize: '14px !important' }} />}
                     label={t('search.favorites', 'Favorites')}
                     size="small"
-                    variant={favoritesFilter ? 'filled' : 'outlined'}
-                    onClick={() => setFavoritesFilter((p) => !p)}
-                    disabled={favoritesLoading}
-                    sx={{
-                      cursor: 'pointer',
-                      flexShrink: 0,
-                      ...(favoritesFilter && {
-                        bgcolor: '#c0392b',
-                        color: 'white',
-                        '& .MuiChip-icon': { color: 'white' },
-                        '&:hover': { bgcolor: '#922b21' },
-                      }),
-                    }}
+                    onDelete={() => setFavoritesFilter(false)}
+                    sx={{ bgcolor: '#c0392b', color: 'white', '& .MuiChip-icon': { color: 'white' }, '& .MuiChip-deleteIcon': { color: 'rgba(255,255,255,0.7)', '&:hover': { color: 'white' } } }}
                   />
                 )}
-                {allTags.map((tag) => (
-                  <Chip
-                    key={tag.slug}
-                    label={`${tag.icon ?? ''} ${t(`tags.${tag.slug}`, tag.name)}`.trim()}
-                    size="small"
-                    variant={selectedTags.includes(tag.slug) ? 'filled' : 'outlined'}
-                    onClick={() => toggleTag(tag.slug)}
-                    sx={{
-                      cursor: 'pointer',
-                      flexShrink: 0,
-                      ...(selectedTags.includes(tag.slug) && {
-                        bgcolor: '#2d5a27',
-                        color: 'white',
-                        '&:hover': { bgcolor: '#1e3d1a' },
-                      }),
-                    }}
-                  />
-                ))}
+                {selectedTags.map((slug) => {
+                  const tag = allTags.find((a) => a.slug === slug);
+                  return tag ? (
+                    <Chip
+                      key={slug}
+                      label={`${tag.icon ?? ''} ${t(`tags.${tag.slug}`, tag.name)}`.trim()}
+                      size="small"
+                      onDelete={() => toggleTag(slug)}
+                    />
+                  ) : null;
+                })}
               </Box>
+            )}
           </Stack>
         </Container>
       </Box>
 
+      {/* Filters Popover */}
+      <Popover
+        open={Boolean(filterAnchor)}
+        anchorEl={filterAnchor}
+        onClose={() => setFilterAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      >
+        <Box sx={{ p: 2, minWidth: 280, maxWidth: 420 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>{t('search.filters')}</Typography>
+          <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+            <Chip
+              icon={<Public sx={{ fontSize: '14px !important' }} />}
+              label={t('search.community', 'Community')}
+              size="small"
+              variant={communityFilter ? 'filled' : 'outlined'}
+              onClick={() => setCommunityFilter((p) => !p)}
+              sx={{ cursor: 'pointer', ...(communityFilter && { bgcolor: '#7b3f00', color: 'white', '& .MuiChip-icon': { color: 'white' }, '&:hover': { bgcolor: '#5a2d00' } }) }}
+            />
+            {session && (
+              <Chip
+                icon={<Favorite sx={{ fontSize: '14px !important' }} />}
+                label={t('search.favorites', 'Favorites')}
+                size="small"
+                variant={favoritesFilter ? 'filled' : 'outlined'}
+                onClick={() => setFavoritesFilter((p) => !p)}
+                disabled={favoritesLoading}
+                sx={{ cursor: 'pointer', ...(favoritesFilter && { bgcolor: '#c0392b', color: 'white', '& .MuiChip-icon': { color: 'white' }, '&:hover': { bgcolor: '#922b21' } }) }}
+              />
+            )}
+            {allTags.map((tag) => (
+              <Chip
+                key={tag.slug}
+                label={`${tag.icon ?? ''} ${t(`tags.${tag.slug}`, tag.name)}`.trim()}
+                size="small"
+                variant={selectedTags.includes(tag.slug) ? 'filled' : 'outlined'}
+                onClick={() => toggleTag(tag.slug)}
+                sx={{ cursor: 'pointer', ...(selectedTags.includes(tag.slug) && { bgcolor: '#2d5a27', color: 'white', '&:hover': { bgcolor: '#1e3d1a' } }) }}
+              />
+            ))}
+          </Box>
+        </Box>
+      </Popover>
+
       {/* ── Results area ── */}
       <Container maxWidth="xl" sx={{ py: 3 }}>
-        {/* Tab switcher */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-          <Tabs
-            value={activeTab}
-            onChange={(_, v) => {
-              setActiveTab(v);
-              router.replace(`/search?tab=${v}`, { scroll: false });
-              if (v === 'events' && events.length === 0) {
-                fetchEvents({ location: locationQuery, date: eventDateFilter, page: 1 });
-              }
-            }}
-          >
-            <Tab label="Places" value="places" />
-            <Tab label="Events" value="events" icon={<EventIcon sx={{ fontSize: 16 }} />} iconPosition="end" />
-          </Tabs>
-        </Box>
-
-        {/* Events date filter (only visible on events tab) */}
-        {activeTab === 'events' && (
-          <Box sx={{ display: 'flex', gap: 1.5, mb: 2, alignItems: 'center' }}>
-            <TextField
-              size="small"
-              label="Filter by date"
-              type="date"
-              value={eventDateFilter}
-              onChange={(e) => setEventDateFilter(e.target.value)}
-              slotProps={{ inputLabel: { shrink: true } }}
-              sx={{ width: 180 }}
-            />
-            <Button
-              variant="contained"
-              startIcon={<Search />}
-              onClick={() => fetchEvents({ location: locationQuery, date: eventDateFilter, page: 1 })}
-            >
-              Search Events
-            </Button>
-            {eventDateFilter && (
-              <Button
-                variant="outlined"
-                startIcon={<Clear />}
-                onClick={() => {
-                  setEventDateFilter('');
-                  fetchEvents({ location: locationQuery, date: '', page: 1 });
-                }}
-              >
-                Clear Date
-              </Button>
-            )}
-            <Typography variant="body2" color="text.secondary" sx={{ ml: 'auto' }}>
-              {eventsLoading ? 'Searching…' : `${eventsTotal} event${eventsTotal !== 1 ? 's' : ''} found`}
-            </Typography>
-          </Box>
-        )}
 
         {/* Events results */}
         {activeTab === 'events' && (
@@ -815,8 +817,8 @@ function SearchPage() {
             ) : events.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 10 }}>
                 <CalendarMonth sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
-                <Typography variant="h6" color="text.secondary">No upcoming events found</Typography>
-                <Typography variant="body2" color="text.secondary">Try a different location or date</Typography>
+                <Typography variant="h6" color="text.secondary">{t('search.noEventsFound')}</Typography>
+                <Typography variant="body2" color="text.secondary">{t('search.tryDifferentFilter')}</Typography>
               </Box>
             ) : (
               <>
@@ -962,6 +964,7 @@ function SearchPage() {
                         onMouseLeave={() => setHighlightedId(null)}
                         isFavorite={favoriteIds.has(place.id)}
                         onToggleFavorite={session ? (e) => toggleFavorite(place.id, e) : undefined}
+                        selectedTags={selectedTags}
                       />
                     </Grid>
                   ))}
@@ -1032,6 +1035,7 @@ function SearchPage() {
                     onMouseLeave={() => setHighlightedId(null)}
                     isFavorite={favoriteIds.has(place.id)}
                     onToggleFavorite={session ? (e) => toggleFavorite(place.id, e) : undefined}
+                    selectedTags={selectedTags}
                   />
                 ))
               )}
@@ -1083,6 +1087,7 @@ function PlaceCard({
   onMouseLeave,
   isFavorite = false,
   onToggleFavorite,
+  selectedTags = [],
 }: {
   place: SearchPlace;
   highlighted: boolean;
@@ -1090,13 +1095,19 @@ function PlaceCard({
   onMouseLeave: () => void;
   isFavorite?: boolean;
   onToggleFavorite?: (e: React.MouseEvent) => void;
+  selectedTags?: string[];
 }) {
   const tags: ActivityTag[] = place.isFree
     ? (place.tags ?? []).map((t) => t.tag)
     : place.activityTypes.flatMap((at) => at.tags.map((t) => t.tag));
 
   const uniqueTags = Array.from(new Map(tags.map((t) => [t.id, t])).values()).slice(0, 4);
-  const href = place.isFree ? `/locations/${place.slug}` : `/places/${place.slug}`;
+  const matchingActivity = !place.isFree && selectedTags.length > 0
+    ? place.activityTypes.find((at) => at.tags.some((t) => selectedTags.includes(t.tag.slug)))
+    : null;
+  const href = place.isFree
+    ? `/locations/${place.slug}`
+    : `/places/${place.slug}${matchingActivity ? `?activityTypeId=${matchingActivity.id}` : ''}`;
   const { t } = useTranslation('common');
 
   return (
@@ -1296,6 +1307,7 @@ function PlaceCardCompact({
   onMouseLeave,
   isFavorite = false,
   onToggleFavorite,
+  selectedTags = [],
 }: {
   place: SearchPlace;
   highlighted: boolean;
@@ -1303,8 +1315,14 @@ function PlaceCardCompact({
   onMouseLeave: () => void;
   isFavorite?: boolean;
   onToggleFavorite?: (e: React.MouseEvent) => void;
+  selectedTags?: string[];
 }) {
-  const href = place.isFree ? `/locations/${place.slug}` : `/places/${place.slug}`;
+  const matchingActivity = !place.isFree && selectedTags.length > 0
+    ? place.activityTypes.find((at) => at.tags.some((t) => selectedTags.includes(t.tag.slug)))
+    : null;
+  const href = place.isFree
+    ? `/locations/${place.slug}`
+    : `/places/${place.slug}${matchingActivity ? `?activityTypeId=${matchingActivity.id}` : ''}`;
   const { t } = useTranslation('common');
 
   return (

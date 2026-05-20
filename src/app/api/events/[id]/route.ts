@@ -38,7 +38,18 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   if (!event) return NextResponse.json({ success: false, error: 'Event not found' }, { status: 404 });
 
-  return NextResponse.json({ success: true, data: event });
+  // Compute total guest count for capacity display
+  const regsForGuests = await prisma.registration.findMany({
+    where: { eventId: event.id, status: { notIn: ['CANCELLED'] } },
+    select: { guestCounts: true },
+  });
+  const totalGuests = regsForGuests.reduce((acc, reg) => {
+    const counts = (reg.guestCounts ?? {}) as Record<string, number>;
+    const sum = Object.values(counts).reduce((s, v) => s + (Number(v) || 0), 0);
+    return acc + (sum > 0 ? sum : 1);
+  }, 0);
+
+  return NextResponse.json({ success: true, data: { ...event, totalGuests } });
 }
 
 // PATCH /api/events/[id] — owner update

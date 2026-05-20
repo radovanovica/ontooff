@@ -249,7 +249,13 @@
     "noFavoritesHint": "Kliknite ikonu srca na bilo kojem mjestu da ga pohranite kao favorit",
     "noCommunity": "Nema pronađenih mjesta zajednice",
     "noCommunityHint": "Nijedno mjesto zajednice ne odgovara vašoj trenutnoj pretrazi",
-    "allEvents": "Svi doga\u0111aji"
+    "allEvents": "Svi doga\u0111aji",
+    "tabPlaces": "Mjesta",
+    "tabEvents": "Doga\u0111aji",
+    "filters": "Filteri",
+    "filterByDate": "Filtriraj po datumu",
+    "noEventsFound": "Nema predstoje\u0107ih doga\u0111aja",
+    "tryDifferentFilter": "Poku\u0161ajte drugom lokacijom ili datumom"
   },
   "tags": {
     "camping": "Kampiranje",

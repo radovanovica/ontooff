@@ -74,6 +74,7 @@ interface PlaceEvent {
     email: string | null;
   };
   _count: { registrations: number };
+  totalGuests?: number;
 }
 
 type Step = 'guests' | 'contact' | 'confirm' | 'done';
@@ -155,10 +156,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
   const eventDate = new Date(event.eventDate);
   const isPast = eventDate < new Date();
-  const isFull = event.maxReservations != null && event._count.registrations >= event.maxReservations;
+  const displayGuestCount = event.totalGuests ?? event._count.registrations;
+  const isFull = event.maxReservations != null && displayGuestCount >= event.maxReservations;
   const isDeadlinePassed = event.reservationDeadline ? new Date() > new Date(event.reservationDeadline) : false;
   const canReserve = event.isActive && !isPast && !isFull && !isDeadlinePassed;
-  const spotsLeft = event.maxReservations != null ? event.maxReservations - event._count.registrations : null;
+  const spotsLeft = event.maxReservations != null ? event.maxReservations - displayGuestCount : null;
 
   // Build list of all available pricing rules (multi list takes priority)
   const availablePricingRules: PricingRule[] = event.eventPricingRules.length > 0
@@ -300,7 +302,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
                 <People fontSize="small" color="action" />
                 <Typography variant="body2" color="text.secondary">
-                  {event._count.registrations} / {event.maxReservations} {t('event.reserved', 'reserved')}
+                  {displayGuestCount} / {event.maxReservations} {t('event.reserved', 'reserved')}
                 </Typography>
               </Box>
             )}

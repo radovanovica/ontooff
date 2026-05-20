@@ -167,8 +167,22 @@ export async function POST(req: NextRequest) {
       if (event.reservationDeadline && new Date() > event.reservationDeadline) {
         return NextResponse.json({ success: false, error: 'The reservation deadline for this event has passed' }, { status: 409 });
       }
-      if (event.maxReservations != null && event._count.registrations >= event.maxReservations) {
-        return NextResponse.json({ success: false, error: 'This event is fully booked' }, { status: 409 });
+      // Capacity check: sum actual guest counts rather than counting registration records
+      if (event.maxReservations != null) {
+        const existingRegs = await prisma.registration.findMany({
+          where: { eventId: event.id, status: { notIn: ['CANCELLED'] } },
+          select: { guestCounts: true },
+        });
+        const existingGuestTotal = existingRegs.reduce((acc, reg) => {
+          const counts = (reg.guestCounts ?? {}) as Record<string, number>;
+          const sum = Object.values(counts).reduce((s, v) => s + (Number(v) || 0), 0);
+          return acc + (sum > 0 ? sum : 1);
+        }, 0);
+        const newGuestTotal = Object.values((data.guestCounts ?? {}) as Record<string, number>)
+          .reduce((s, v) => s + (Number(v) || 0), 0) || 1;
+        if (existingGuestTotal + newGuestTotal > event.maxReservations) {
+          return NextResponse.json({ success: false, error: 'This event is fully booked' }, { status: 409 });
+        }
       }
 
       const eventDate = event.eventDate;
