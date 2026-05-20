@@ -13,6 +13,7 @@
     "error": "Fehler",
     "all": "Alle",
     "noData": "Keine Daten vorhanden",
+    "close": "Schließen",
     "actions": "Aktionen"
   },
   "dashboard": {
@@ -327,7 +328,9 @@
       "location": "Bestimmter Standort (optional)",
       "allowedOrigins": "Erlaubte Ursprünge",
       "originsHint": "Kommagetrennte Domains, z.B. meineseite.de, shop.beispiel.de",
-      "expiresAt": "Ablaufdatum (optional)"
+      "expiresAt": "Ablaufdatum (optional)",
+      "activityType": "Auf Aktivität beschränken (optional)",
+      "activityTypeAll": "Alle Aktivitäten (allgemeiner Token)"
     },
     "embedCode": "Einbettungscode",
     "embedUrl": "Direktlink",
@@ -337,7 +340,9 @@
     "lastUsed": "Zuletzt verwendet: {{date}}",
     "table": {
       "token": "Token",
-      "expires": "Läuft ab"
+      "expires": "Läuft ab",
+      "activityType": "Aktivität",
+      "allActivities": "Alle"
     },
     "empty": "Noch keine Einbettungstoken",
     "errors": {
@@ -494,6 +499,8 @@
     "noPricing": "Kostenlos / Kein Preis",
     "past": "Vergangen",
     "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "embedToken": "Embed / iFrame",
     "copied": "Kopiert!",
     "copyLink": "\u00d6ffentlichen Link kopieren",
     "deleteTitle": "Veranstaltung l\u00f6schen?",
@@ -535,6 +542,17 @@
       "endTimeBeforeStart": "Endzeit muss nach der Startzeit liegen",
       "datePast": "Veranstaltungsdatum kann nicht in der Vergangenheit liegen",
       "deadlineAfterEvent": "Reservierungsschluss muss vor Beginn der Veranstaltung liegen"
+    },
+    "embedDialog": {
+      "title": "Einbettungstoken — {{name}}",
+      "createNew": "Neuen Token erstellen",
+      "label": "Bezeichnung",
+      "expiresAt": "Läuft ab (optional)",
+      "tokens": "Tokens",
+      "noTokens": "Noch keine Tokens. Erstellen Sie einen oben.",
+      "expires": "Läuft ab",
+      "copyUrl": "URL kopieren",
+      "copyIframe": "iFrame kopieren"
     }
   },
   "org": {

@@ -13,6 +13,7 @@
     "error": "Greška",
     "all": "Sve",
     "noData": "Nema podataka",
+    "close": "Zatvori",
     "actions": "Akcije"
   },
   "dashboard": {
@@ -325,7 +326,9 @@
       "location": "Specifična lokacija (opciono)",
       "allowedOrigins": "Dozvoljeni domeni",
       "originsHint": "Domeni odvojeni zarezom, npr. mojsajt.rs, prodavnica.primer.rs",
-      "expiresAt": "Datum isteka (opciono)"
+      "expiresAt": "Datum isteka (opciono)",
+      "activityType": "Zaključaj za aktivnost (opciono)",
+      "activityTypeAll": "Sve aktivnosti (opšti token)"
     },
     "embedCode": "Kod za ugradnju",
     "embedUrl": "Direktni link",
@@ -335,7 +338,9 @@
     "lastUsed": "Poslednje korišćeno: {{date}}",
     "table": {
       "token": "Token",
-      "expires": "Ističe"
+      "expires": "Ističe",
+      "activityType": "Aktivnost",
+      "allActivities": "Sve"
     },
     "empty": "Još nema embed tokena",
     "errors": {
@@ -490,6 +495,8 @@
     "noPricing": "Besplatno / Bez cenovnika",
     "past": "Pro\u0161lo",
     "active": "Aktivno",
+    "inactive": "Neaktivno",
+    "embedToken": "Embed / iFrame",
     "copied": "Kopirano!",
     "copyLink": "Kopiraj javni link",
     "deleteTitle": "Izbri\u0161i doga\u0111aj?",
@@ -518,7 +525,9 @@
       "pricingRule": "Pravilo cenovnika",
       "pricingRuleHint": "Izaberite postoje\u0107e pravilo ili ostavite prazno za besplatne doga\u0111aje",
       "noPrice": "\u2014 Besplatno (bez cenovnika) \u2014",
-      "isActive": "Aktivno (vidljivo gostima)"
+      "isActive": "Aktivno (vidljivo gostima)",
+      "pricingRules": "Opcije cena",
+      "pricingRulesHint": "Izaberite jednu ili više opcija cena. Gosti biraju jednu pri rezervaciji."
     },
     "errors": {
       "loadFailed": "Nije uspelo u\u010ditavanje doga\u0111aja",

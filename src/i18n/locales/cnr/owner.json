@@ -13,6 +13,7 @@
     "error": "Greška",
     "all": "Sve",
     "noData": "Nema dostupnih podataka",
+    "close": "Zatvori",
     "actions": "Akcije"
   },
   "dashboard": {
@@ -327,7 +328,9 @@
       "location": "Određena lokacija (neobavezno)",
       "allowedOrigins": "Dozvoljene domene",
       "originsHint": "Domene odvojene zarezom, npr. mojaweb.com, shop.primjer.com",
-      "expiresAt": "Datum isteka (neobavezno)"
+      "expiresAt": "Datum isteka (neobavezno)",
+      "activityType": "Zaključajte za aktivnost (neobavezno)",
+      "activityTypeAll": "Sve aktivnosti (opšti token)"
     },
     "embedCode": "Kod za ugradnju",
     "embedUrl": "Direktna veza",
@@ -337,7 +340,9 @@
     "lastUsed": "Zadnji put korišten: {{date}}",
     "table": {
       "token": "Token",
-      "expires": "Ističe"
+      "expires": "Ističe",
+      "activityType": "Aktivnost",
+      "allActivities": "Sve"
     },
     "empty": "Nema embed tokena",
     "errors": {
@@ -494,6 +499,8 @@
     "noPricing": "Besplatno / Bez cjenovnika",
     "past": "Pro\u0161lo",
     "active": "Aktivno",
+    "inactive": "Neaktivno",
+    "embedToken": "Embed / iFrame",
     "copied": "Kopirano!",
     "copyLink": "Kopiraj javni link",
     "deleteTitle": "Izbri\u0161i doga\u0111aj?",
@@ -522,7 +529,9 @@
       "pricingRule": "Pravilo cjenovnika",
       "pricingRuleHint": "Izaberite postoje\u0107e pravilo ili ostavite prazno za besplatne doga\u0111aje",
       "noPrice": "\u2014 Besplatno (bez cjenovnika) \u2014",
-      "isActive": "Aktivno (vidljivo gostima)"
+      "isActive": "Aktivno (vidljivo gostima)",
+      "pricingRules": "Opcije cijena",
+      "pricingRulesHint": "Odaberite jednu ili više opcija cijena. Gosti biraju jednu pri rezervaciji."
     },
     "errors": {
       "loadFailed": "Nije uspjelo u\u010ditavanje doga\u0111aja",
@@ -535,6 +544,17 @@
       "endTimeBeforeStart": "Vrijeme završetka mora biti poslije vremena početka",
       "datePast": "Datum događaja ne može biti u prošlosti",
       "deadlineAfterEvent": "Rok za rezervacije mora biti prije početka događaja"
+    },
+    "embedDialog": {
+      "title": "Embed token — {{name}}",
+      "createNew": "Kreirajte novi token",
+      "label": "Oznaka",
+      "expiresAt": "Ističe (neobavezno)",
+      "tokens": "Tokeni",
+      "noTokens": "Nema tokena. Kreirajte jedan gore.",
+      "expires": "Ističe",
+      "copyUrl": "Kopirajte URL",
+      "copyIframe": "Kopirajte iFrame"
     }
   },
   "org": {

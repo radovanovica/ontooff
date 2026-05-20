@@ -13,6 +13,7 @@
     "error": "Error",
     "all": "Todo",
     "noData": "No hay datos disponibles",
+    "close": "Cerrar",
     "actions": "Acciones"
   },
   "dashboard": {
@@ -327,7 +328,9 @@
       "location": "Ubicación específica (opcional)",
       "allowedOrigins": "Orígenes permitidos",
       "originsHint": "Dominios separados por comas, ej. misitio.com, tienda.ejemplo.com",
-      "expiresAt": "Fecha de vencimiento (opcional)"
+      "expiresAt": "Fecha de vencimiento (opcional)",
+      "activityType": "Bloquear a actividad (opcional)",
+      "activityTypeAll": "Todas las actividades (token general)"
     },
     "embedCode": "Código de incrustación",
     "embedUrl": "Enlace directo",
@@ -337,7 +340,9 @@
     "lastUsed": "Último uso: {{date}}",
     "table": {
       "token": "Token",
-      "expires": "Vence"
+      "expires": "Vence",
+      "activityType": "Actividad",
+      "allActivities": "Todas"
     },
     "empty": "Aún no hay tokens de incrustación",
     "errors": {
@@ -522,7 +527,9 @@
       "pricingRule": "Regla de precios",
       "pricingRuleHint": "Seleccione una regla de precios existente o d\u00e9jelo en blanco para eventos gratuitos",
       "noPrice": "\u2014 Gratis (sin precios) \u2014",
-      "isActive": "Activo (visible para los hu\u00e9spedes)"
+      "isActive": "Activo (visible para los huéspedes)",
+      "pricingRules": "Opciones de precios",
+      "pricingRulesHint": "Seleccione una o más opciones de precios. Los huéspedes elegirán una al reservar."
     },
     "errors": {
       "loadFailed": "Error al cargar eventos",

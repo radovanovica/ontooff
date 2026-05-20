@@ -13,6 +13,7 @@
     "error": "Error",
     "all": "All",
     "noData": "No data available",
+    "close": "Close",
     "actions": "Actions"
   },
   "dashboard": {
@@ -327,7 +328,9 @@
       "location": "Specific location (optional)",
       "allowedOrigins": "Allowed origins",
       "originsHint": "Comma-separated domains, e.g. mysite.com, shop.example.com",
-      "expiresAt": "Expiry date (optional)"
+      "expiresAt": "Expiry date (optional)",
+      "activityType": "Lock to Activity (optional)",
+      "activityTypeAll": "All activities (general token)"
     },
     "embedCode": "Embed code",
     "embedUrl": "Direct link",
@@ -337,7 +340,9 @@
     "lastUsed": "Last used: {{date}}",
     "table": {
       "token": "Token",
-      "expires": "Expires"
+      "expires": "Expires",
+      "activityType": "Activity",
+      "allActivities": "All"
     },
     "empty": "No embed tokens yet",
     "errors": {
@@ -492,6 +497,8 @@
     "noPricing": "Free / No pricing",
     "past": "Past",
     "active": "Active",
+    "inactive": "Inactive",
+    "embedToken": "Embed / iFrame",
     "copied": "Copied!",
     "copyLink": "Copy public link",
     "deleteTitle": "Delete Event?",
@@ -520,7 +527,9 @@
       "pricingRule": "Pricing Rule",
       "pricingRuleHint": "Select an existing pricing rule or leave blank for free events",
       "noPrice": "\u2014 Free (no pricing) \u2014",
-      "isActive": "Active (visible to guests)"
+      "isActive": "Active (visible to guests)",
+      "pricingRules": "Pricing Options",
+      "pricingRulesHint": "Select one or more pricing options. Guests will choose one when booking."
     },
     "errors": {
       "loadFailed": "Failed to load events",
@@ -533,6 +542,17 @@
       "endTimeBeforeStart": "End time must be after start time",
       "datePast": "Event date cannot be in the past",
       "deadlineAfterEvent": "Reservation deadline must be before the event starts"
+    },
+    "embedDialog": {
+      "title": "Embed Token — {{name}}",
+      "createNew": "Create New Token",
+      "label": "Label",
+      "expiresAt": "Expires (optional)",
+      "tokens": "Tokens",
+      "noTokens": "No tokens yet. Create one above.",
+      "expires": "Expires",
+      "copyUrl": "Copy URL",
+      "copyIframe": "Copy iFrame"
     }
   },
   "org": {
