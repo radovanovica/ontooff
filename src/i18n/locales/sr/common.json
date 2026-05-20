@@ -86,6 +86,10 @@
     "readMore": "Pročitaj više →",
     "latestBadge": "Najnovije",
     "minRead": "min čitanja",
+    "upcomingEvents": "Predstojeći događaji",
+    "upcomingEventsSub": "Ne propustite ova predstojeća dešavanja.",
+    "viewAllEvents": "Vidi sve događaje →",
+    "noUpcomingEvents": "Nema predstojećih događaja. Provjerite uskoro!",
     "featured": {
       "title": "Istaknute lokacije",
       "subtitle": "Pažljivo odabrana premium i preporučena mjesta.",
@@ -100,6 +104,12 @@
     "inputPlaceholder": "Pitajte o outdoor aktivnostima…",
     "fabTooltip": "Razgovarajte sa asistentom",
     "inviteMessage": "👋 Kako mogu da vam pomognem?",
+    "inviteSubtitle": "Pitajte me bilo šta o outdoor aktivnostima, događajima i mjestima.",
+    "catCamping": "Kampovanje",
+    "catFishing": "Ribolov",
+    "catEvents": "Doga\u0111aji",
+    "catHiking": "Pje\u0161a\u010denje",
+    "startChat": "Po\u010dni razgovor \u2192",
     "suggestions": [
       "Koje outdoor aktivnosti nudite?",
       "Kako da napravim rezervaciju?",

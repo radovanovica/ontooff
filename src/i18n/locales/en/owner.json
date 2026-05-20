@@ -527,7 +527,12 @@
       "titleRequired": "Title is required",
       "dateRequired": "Event date is required",
       "saveFailed": "Save failed",
-      "deleteFailed": "Delete failed"
+      "deleteFailed": "Delete failed",
+      "startTimeRequired": "Start time is required",
+      "endTimeRequired": "End time is required",
+      "endTimeBeforeStart": "End time must be after start time",
+      "datePast": "Event date cannot be in the past",
+      "deadlineAfterEvent": "Reservation deadline must be before the event starts"
     }
   },
   "org": {

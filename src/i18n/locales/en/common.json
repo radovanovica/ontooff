@@ -86,6 +86,10 @@
     "readMore": "Read more →",
     "latestBadge": "Latest",
     "minRead": "min read",
+    "upcomingEvents": "Upcoming Events",
+    "upcomingEventsSub": "Don't miss out on these upcoming experiences.",
+    "viewAllEvents": "View all events →",
+    "noUpcomingEvents": "No upcoming events at the moment. Check back soon!",
     "featured": {
       "title": "Featured locations",
       "subtitle": "Handpicked premium and recommended places.",
@@ -100,6 +104,12 @@
     "inputPlaceholder": "Ask about outdoor activities…",
     "fabTooltip": "Chat with our assistant",
     "inviteMessage": "👋 How can I help you?",
+    "inviteSubtitle": "Ask me anything about outdoor activities, events, and places.",
+    "catCamping": "Camping",
+    "catFishing": "Fishing",
+    "catEvents": "Events",
+    "catHiking": "Hiking",
+    "startChat": "Start chatting →",
     "suggestions": [
       "What outdoor activities do you offer?",
       "How do I make a reservation?",

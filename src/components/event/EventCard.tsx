@@ -3,6 +3,7 @@
 import { Box, Card, CardContent, CardMedia, Chip, Typography } from '@mui/material';
 import { CalendarMonth, AccessTime, LocationOn, People } from '@mui/icons-material';
 import NextLink from 'next/link';
+import { useCurrency } from '@/lib/currency';
 
 interface SearchEvent {
   id: string;
@@ -19,6 +20,7 @@ interface SearchEvent {
 }
 
 export default function EventCard({ event }: { event: SearchEvent }) {
+  const { formatPrice } = useCurrency();
   const date = new Date(event.eventDate);
   const isFull = event.maxReservations != null && event._count.registrations >= event.maxReservations;
   const spotsLeft = event.maxReservations != null ? event.maxReservations - event._count.registrations : null;
@@ -90,7 +92,7 @@ export default function EventCard({ event }: { event: SearchEvent }) {
 
           {minPrice != null && event.pricingRule && (
             <Typography variant="caption" color="primary" sx={{ fontWeight: 600, mt: 'auto' }}>
-              From {event.pricingRule.currency} {minPrice.toFixed(2)}
+              {formatPrice(minPrice, event.pricingRule.currency)}
             </Typography>
           )}
         </CardContent>

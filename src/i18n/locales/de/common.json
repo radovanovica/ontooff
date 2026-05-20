@@ -86,6 +86,10 @@
     "readMore": "Mehr lesen →",
     "latestBadge": "Neueste",
     "minRead": "Min. Lesezeit",
+    "upcomingEvents": "Bevorstehende Veranstaltungen",
+    "upcomingEventsSub": "Verpassen Sie nicht diese bevorstehenden Erlebnisse.",
+    "viewAllEvents": "Alle Veranstaltungen ansehen →",
+    "noUpcomingEvents": "Derzeit keine bevorstehenden Veranstaltungen. Schauen Sie bald wieder rein!",
     "featured": {
       "title": "Empfohlene Orte",
       "subtitle": "Handverlesene Premium- und empfohlene Orte.",
@@ -100,6 +104,12 @@
     "inputPlaceholder": "Nach Outdoor-Aktivitäten fragen…",
     "fabTooltip": "Mit unserem Assistenten chatten",
     "inviteMessage": "👋 Wie kann ich Ihnen helfen?",
+    "inviteSubtitle": "Fragen Sie mich alles \u00fcber Outdoor-Aktivit\u00e4ten, Veranstaltungen und Orte.",
+    "catCamping": "Camping",
+    "catFishing": "Angeln",
+    "catEvents": "Veranstaltungen",
+    "catHiking": "Wandern",
+    "startChat": "Gespr\u00e4ch starten \u2192",
     "suggestions": [
       "Welche Outdoor-Aktivitäten bieten Sie an?",
       "Wie mache ich eine Reservierung?",

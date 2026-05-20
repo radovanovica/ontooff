@@ -529,7 +529,12 @@
       "titleRequired": "Titel ist erforderlich",
       "dateRequired": "Veranstaltungsdatum ist erforderlich",
       "saveFailed": "Speichern fehlgeschlagen",
-      "deleteFailed": "L\u00f6schen fehlgeschlagen"
+      "deleteFailed": "L\u00f6schen fehlgeschlagen",
+      "startTimeRequired": "Startzeit ist erforderlich",
+      "endTimeRequired": "Endzeit ist erforderlich",
+      "endTimeBeforeStart": "Endzeit muss nach der Startzeit liegen",
+      "datePast": "Veranstaltungsdatum kann nicht in der Vergangenheit liegen",
+      "deadlineAfterEvent": "Reservierungsschluss muss vor Beginn der Veranstaltung liegen"
     }
   },
   "org": {

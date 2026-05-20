@@ -34,45 +34,61 @@ function isRateLimited(ip: string): boolean {
 async function buildContext(): Promise<string> {
   return withCache(CONTEXT_CACHE_KEY, CONTEXT_TTL, async () => {
     // Fetch active places with their activity types and locations
-    const places = await prisma.place.findMany({
-      where: { isActive: true },
-      select: {
-        name: true,
-        slug: true,
-        description: true,
-        city: true,
-        country: true,
-        status: true,
-        activityTypes: {
-          where: { isActive: true },
-          select: {
-            name: true,
-            tags: { include: { tag: { select: { name: true } } } },
+    const [places, posts, freeLocations, upcomingEvents] = await Promise.all([
+      prisma.place.findMany({
+        where: { isActive: true },
+        select: {
+          name: true,
+          slug: true,
+          description: true,
+          city: true,
+          country: true,
+          status: true,
+          activityTypes: {
+            where: { isActive: true },
+            select: {
+              name: true,
+              tags: { include: { tag: { select: { name: true } } } },
+            },
+          },
+          activityLocations: {
+            where: { isActive: true },
+            select: { name: true, maxCapacity: true },
           },
         },
-        activityLocations: {
-          where: { isActive: true },
-          select: { name: true, maxCapacity: true },
+        take: 25,
+        orderBy: [{ status: 'desc' }, { createdAt: 'desc' }],
+      }),
+      prisma.blogPost.findMany({
+        where: { status: 'PUBLISHED' },
+        select: { title: true, slug: true, excerpt: true, category: { select: { name: true } } },
+        take: 8,
+        orderBy: { publishedAt: 'desc' },
+      }),
+      prisma.freeLocation.findMany({
+        where: { isActive: true },
+        select: { name: true, slug: true, city: true, country: true, tags: { include: { tag: { select: { name: true } } } } },
+        take: 10,
+      }),
+      prisma.placeEvent.findMany({
+        where: { isActive: true, eventDate: { gte: new Date() } },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          eventDate: true,
+          startTime: true,
+          endTime: true,
+          maxReservations: true,
+          place: { select: { name: true, city: true, country: true } },
+          pricingRule: { select: { currency: true, pricingTiers: { select: { label: true, pricePerUnit: true }, orderBy: { sortOrder: 'asc' }, take: 1 } } },
+          eventPricingRules: { take: 1, include: { pricingRule: { select: { currency: true, pricingTiers: { select: { label: true, pricePerUnit: true }, orderBy: { sortOrder: 'asc' }, take: 1 } } } } },
+          _count: { select: { registrations: true } },
         },
-      },
-      take: 25,
-      orderBy: [{ status: 'desc' }, { createdAt: 'desc' }],
-    });
-
-    // Fetch published blog posts for outdoor activity tips
-    const posts = await prisma.blogPost.findMany({
-      where: { status: 'PUBLISHED' },
-      select: { title: true, slug: true, excerpt: true, category: { select: { name: true } } },
-      take: 8,
-      orderBy: { publishedAt: 'desc' },
-    });
-
-    // Fetch community free locations
-    const freeLocations = await prisma.freeLocation.findMany({
-      where: { isActive: true },
-      select: { name: true, slug: true, city: true, country: true, tags: { include: { tag: { select: { name: true } } } } },
-      take: 10,
-    });
+        orderBy: { eventDate: 'asc' },
+        take: 10,
+      }),
+    ]);
 
     const placesText = places.map((p) => {
       const activities = p.activityTypes.map((a) => {
@@ -98,7 +114,16 @@ async function buildContext(): Promise<string> {
       `• "${p.title}"${p.category ? ` (${p.category.name})` : ''} — ${APP_URL}/blog/${p.slug}`
     ).join('\n');
 
-    return `PLACES:\n${placesText}\n\nFREE LOCATIONS:\n${freeText}\n\nBLOG:\n${postsText}`;
+    const eventsText = upcomingEvents.map((e) => {
+      const date = new Date(e.eventDate).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      const loc = [e.place.city, e.place.country].filter(Boolean).join(', ');
+      const firstRule = e.eventPricingRules[0]?.pricingRule ?? e.pricingRule;
+      const firstTier = firstRule?.pricingTiers[0];
+      const priceStr = firstTier ? ` | From ${firstRule!.currency} ${Number(firstTier.pricePerUnit).toFixed(2)}` : ' | Free';
+      return `• ${e.title} — ${APP_URL}/events/${e.id}\n  ${e.place.name}, ${loc} | ${date} ${e.startTime}–${e.endTime}${priceStr}`;
+    }).join('\n\n');
+
+    return `PLACES:\n${placesText}\n\nFREE LOCATIONS:\n${freeText}\n\nBLOG:\n${postsText}\n\nUPCOMING EVENTS:\n${eventsText || '(no upcoming events)'}`;
   });
 }
 
@@ -107,13 +132,14 @@ const SYSTEM_PROMPT = `You are an outdoor activity assistant for ontooff — a p
 Your role:
 - Help users find the right place or activity based on their interests, location, or dates
 - Suggest specific places from the platform and link to them using Markdown links
+- Tell users about upcoming events and link directly to them so they can reserve a spot
 - Share relevant blog posts for tips and inspiration
-- Explain how to make a reservation (search → select place → pick dates → fill in guests → confirm)
+- Explain how to make a reservation (search → select place or event → fill in guests → confirm)
 - Answer general questions about outdoor activities (camping, fishing, kayaking, hiking, etc.)
 
 Formatting rules (IMPORTANT):
 - Use only Markdown formatting — never use HTML tags like <br>, <strong>, <p>, <em> etc.
-- When linking to a place or blog post, ALWAYS use Markdown link format: [Place Name](full-url)
+- When linking to a place, event, or blog post, ALWAYS use Markdown link format: [Place Name](full-url)
 - Never output raw URLs or bare paths on their own — always wrap them in a Markdown link with descriptive text
 - Use short paragraphs and bullet lists with - for readability
 - Keep responses concise (3–5 sentences or a short list)

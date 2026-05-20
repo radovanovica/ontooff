@@ -525,7 +525,12 @@
       "titleRequired": "Naziv je obavezan",
       "dateRequired": "Datum doga\u0111aja je obavezan",
       "saveFailed": "\u010cuvanje nije uspelo",
-      "deleteFailed": "Brisanje nije uspelo"
+      "deleteFailed": "Brisanje nije uspelo",
+      "startTimeRequired": "Vreme po\u010detka je obavezno",
+      "endTimeRequired": "Vreme zavr\u0161etka je obavezno",
+      "endTimeBeforeStart": "Vreme zavr\u0161etka mora biti posle vremena po\u010detka",
+      "datePast": "Datum doga\u0111aja ne mo\u017ee biti u pro\u0161losti",
+      "deadlineAfterEvent": "Rok za rezervacije mora biti pre po\u010detka doga\u0111aja"
     }
   },
   "org": {

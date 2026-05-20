@@ -15,6 +15,7 @@ const updateSchema = z.object({
   maxReservations: z.number().int().positive().optional().nullable(),
   reservationDeadline: z.string().datetime({ offset: true }).optional().nullable(),
   pricingRuleId: z.string().optional().nullable(),
+  pricingRuleIds: z.array(z.string()).optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -27,6 +28,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     include: {
       place: { select: { id: true, name: true, slug: true, city: true, country: true, coverUrl: true, logoUrl: true, phone: true, email: true } },
       pricingRule: { include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } } },
+      eventPricingRules: {
+        orderBy: { sortOrder: 'asc' },
+        include: { pricingRule: { include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } } } },
+      },
       _count: { select: { registrations: { where: { status: { notIn: ['CANCELLED'] } } } } },
     },
   });
@@ -60,19 +65,40 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     );
   }
 
-  if (result.data.pricingRuleId) {
-    const rule = await prisma.pricingRule.findFirst({
-      where: { id: result.data.pricingRuleId, isActive: true, activityType: { place: { id: event.placeId } } },
+  if (result.data.pricingRuleId || (result.data.pricingRuleIds?.length ?? 0) > 0) {
+    const allRuleIds = Array.from(new Set([
+      ...(result.data.pricingRuleIds ?? []),
+      ...(result.data.pricingRuleId ? [result.data.pricingRuleId] : []),
+    ]));
+    const validRules = await prisma.pricingRule.findMany({
+      where: { id: { in: allRuleIds }, isActive: true, activityType: { place: { id: event.placeId } } },
+      select: { id: true },
     });
-    if (!rule) return NextResponse.json({ success: false, error: 'Invalid pricing rule' }, { status: 422 });
+    if (validRules.length !== allRuleIds.length) {
+      return NextResponse.json({ success: false, error: 'One or more pricing rules are invalid' }, { status: 422 });
+    }
   }
 
-  const { eventDate, reservationDeadline, ...rest } = result.data;
+  const { eventDate, reservationDeadline, pricingRuleIds, ...rest } = result.data;
+
+  // If pricingRuleIds supplied, rebuild the join table
+  if (pricingRuleIds !== undefined) {
+    await prisma.eventPricingRule.deleteMany({ where: { eventId: id } });
+    if (pricingRuleIds.length > 0) {
+      await prisma.eventPricingRule.createMany({
+        data: pricingRuleIds.map((ruleId, idx) => ({ eventId: id, pricingRuleId: ruleId, sortOrder: idx })),
+      });
+    }
+  }
 
   const updated = await prisma.placeEvent.update({
     where: { id },
     data: {
       ...rest,
+      // keep legacy pricingRuleId in sync: first of the list, or explicit value
+      ...(pricingRuleIds !== undefined
+        ? { pricingRuleId: pricingRuleIds[0] ?? null }
+        : {}),
       ...(eventDate !== undefined ? { eventDate: new Date(eventDate) } : {}),
       ...(reservationDeadline !== undefined
         ? { reservationDeadline: reservationDeadline ? new Date(reservationDeadline) : null }
@@ -80,6 +106,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     },
     include: {
       pricingRule: { include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } } },
+      eventPricingRules: {
+        orderBy: { sortOrder: 'asc' },
+        include: { pricingRule: { include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } } } },
+      },
       _count: { select: { registrations: { where: { status: { notIn: ['CANCELLED'] } } } } },
     },
   });

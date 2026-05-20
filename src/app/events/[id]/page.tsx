@@ -60,6 +60,7 @@ interface PlaceEvent {
   maxReservations: number | null;
   reservationDeadline: string | null;
   pricingRule: PricingRule | null;
+  eventPricingRules: { id: string; pricingRule: PricingRule }[];
   isActive: boolean;
   place: {
     id: string;
@@ -97,6 +98,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [selectedPricingRuleId, setSelectedPricingRuleId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [editToken, setEditToken] = useState<string | null>(null);
@@ -107,7 +109,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       .then((r) => r.json())
       .then((d) => {
         if (!d.success) throw new Error(d.error ?? 'Event not found');
-        setEvent(d.data);
+        const ev = d.data as PlaceEvent;
+        setEvent(ev);
+        // Auto-select first pricing rule
+        const firstRule = ev.eventPricingRules?.[0]?.pricingRule ?? ev.pricingRule;
+        if (firstRule) setSelectedPricingRuleId(firstRule.id);
       })
       .catch((e) => setError(e.message ?? 'Failed to load event'))
       .finally(() => setLoading(false));
@@ -154,12 +160,21 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const canReserve = event.isActive && !isPast && !isFull && !isDeadlinePassed;
   const spotsLeft = event.maxReservations != null ? event.maxReservations - event._count.registrations : null;
 
-  const tiers = event.pricingRule?.pricingTiers ?? [];
+  // Build list of all available pricing rules (multi list takes priority)
+  const availablePricingRules: PricingRule[] = event.eventPricingRules.length > 0
+    ? event.eventPricingRules.map((r) => r.pricingRule)
+    : (event.pricingRule ? [event.pricingRule] : []);
+
+  const selectedPricingRule = availablePricingRules.find((r) => r.id === selectedPricingRuleId)
+    ?? availablePricingRules[0]
+    ?? null;
+
+  const tiers = selectedPricingRule?.pricingTiers ?? [];
 
   // Calculate live estimated price
   const calcTotal = () => {
-    if (!event.pricingRule) return null;
-    const rule = event.pricingRule;
+    if (!selectedPricingRule) return null;
+    const rule = selectedPricingRule;
     let total = 0;
     for (const tier of tiers) {
       let key = tier.ageGroup.toLowerCase() + 's';
@@ -198,6 +213,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
           notes: notes || undefined,
           guestCounts,
           paymentMethod: paymentMethod || undefined,
+          pricingRuleId: selectedPricingRule?.id ?? undefined,
           source: 'web',
         }),
       });
@@ -289,7 +305,27 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               </Box>
             )}
 
-            {event.pricingRule && (
+            {availablePricingRules.length > 1 && (
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+                  Choose Pricing Option
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {availablePricingRules.map((rule) => (
+                    <Chip
+                      key={rule.id}
+                      label={rule.name}
+                      onClick={() => { setSelectedPricingRuleId(rule.id); setGuestCounts({ adults: 1 }); }}
+                      color={selectedPricingRule?.id === rule.id ? 'primary' : 'default'}
+                      variant={selectedPricingRule?.id === rule.id ? 'filled' : 'outlined'}
+                      sx={{ cursor: 'pointer' }}
+                    />
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {selectedPricingRule && (
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
                   Pricing
@@ -298,7 +334,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                   <Box key={tier.id} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
                     <Typography variant="body2">{tier.label}</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {formatPrice(Number(tier.pricePerUnit), event.pricingRule!.currency)}
+                      {formatPrice(Number(tier.pricePerUnit), selectedPricingRule.currency)}
                     </Typography>
                   </Box>
                 ))}
@@ -378,7 +414,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                             <Box>
                               <Typography variant="body2" sx={{ fontWeight: 600 }}>{tier.label}</Typography>
                               <Typography variant="caption" color="text.secondary">
-                                {formatPrice(Number(tier.pricePerUnit), event.pricingRule!.currency)} each
+                                {formatPrice(Number(tier.pricePerUnit), selectedPricingRule!.currency)} each
                               </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -439,7 +475,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                           <Typography variant="body2" sx={{ fontWeight: 700 }}>Estimated Total</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                            {formatPrice(estimatedTotal, event.pricingRule!.currency)}
+                            {formatPrice(estimatedTotal, selectedPricingRule!.currency)}
                           </Typography>
                         </Box>
                       </Box>
@@ -566,7 +602,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                         .filter(([, v]) => v > 0)
                         .map(([k, v]) => [k.replace('custom:', '').replace('adults', 'Adults').replace('children', 'Children').replace('seniors', 'Seniors'), String(v)])),
                       ...(estimatedTotal != null && estimatedTotal > 0
-                        ? [['Total', formatPrice(estimatedTotal, event.pricingRule!.currency)]]
+                        ? [['Total', formatPrice(estimatedTotal, selectedPricingRule!.currency)]]
                         : []),
                     ].map(([label, value]) => (
                       <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.4 }}>

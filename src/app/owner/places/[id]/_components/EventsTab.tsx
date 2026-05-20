@@ -39,6 +39,11 @@ interface PricingRule {
   requiresPayment: boolean;
 }
 
+interface EventPricingRuleItem {
+  id: string;
+  pricingRule: PricingRule;
+}
+
 interface PlaceEvent {
   id: string;
   title: string;
@@ -51,6 +56,7 @@ interface PlaceEvent {
   reservationDeadline: string | null;
   pricingRuleId: string | null;
   pricingRule: PricingRule | null;
+  eventPricingRules: EventPricingRuleItem[];
   isActive: boolean;
   createdAt: string;
   _count: { registrations: number };
@@ -65,7 +71,7 @@ interface EventForm {
   endTime: string;
   maxReservations: string;
   reservationDeadline: string;
-  pricingRuleId: string;
+  pricingRuleIds: string[]; // multiple pricing rules
   isActive: boolean;
 }
 
@@ -78,7 +84,7 @@ const EMPTY_FORM: EventForm = {
   endTime: '17:00',
   maxReservations: '',
   reservationDeadline: '',
-  pricingRuleId: '',
+  pricingRuleIds: [],
   isActive: true,
 };
 
@@ -150,7 +156,9 @@ export default function EventsTab({ placeId }: Props) {
       reservationDeadline: ev.reservationDeadline
         ? new Date(ev.reservationDeadline).toISOString().slice(0, 16)
         : '',
-      pricingRuleId: ev.pricingRuleId ?? '',
+      pricingRuleIds: ev.eventPricingRules.length > 0
+        ? ev.eventPricingRules.map((r) => r.pricingRule.id)
+        : (ev.pricingRuleId ? [ev.pricingRuleId] : []),
       isActive: ev.isActive,
     });
     setFormError(null);
@@ -165,6 +173,36 @@ export default function EventsTab({ placeId }: Props) {
     if (!form.eventDate) {
       setFormError(t('events.errors.dateRequired', 'Event date is required'));
       return;
+    }
+    if (!form.startTime) {
+      setFormError(t('events.errors.startTimeRequired', 'Start time is required'));
+      return;
+    }
+    if (!form.endTime) {
+      setFormError(t('events.errors.endTimeRequired', 'End time is required'));
+      return;
+    }
+    if (form.endTime <= form.startTime) {
+      setFormError(t('events.errors.endTimeBeforeStart', 'End time must be after start time'));
+      return;
+    }
+    // Warn if date is in the past (only for new events)
+    if (!editing) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (new Date(form.eventDate) < today) {
+        setFormError(t('events.errors.datePast', 'Event date cannot be in the past'));
+        return;
+      }
+    }
+    // Reservation deadline must be before the event starts
+    if (form.reservationDeadline && form.eventDate && form.startTime) {
+      const deadline = new Date(form.reservationDeadline);
+      const eventStart = new Date(`${form.eventDate}T${form.startTime}`);
+      if (deadline >= eventStart) {
+        setFormError(t('events.errors.deadlineAfterEvent', 'Reservation deadline must be before the event starts'));
+        return;
+      }
     }
 
     setSaving(true);
@@ -182,7 +220,8 @@ export default function EventsTab({ placeId }: Props) {
       reservationDeadline: form.reservationDeadline
         ? new Date(form.reservationDeadline).toISOString()
         : null,
-      pricingRuleId: form.pricingRuleId || null,
+      pricingRuleIds: form.pricingRuleIds,
+      pricingRuleId: form.pricingRuleIds[0] ?? null, // legacy compat
       isActive: form.isActive,
     };
 
@@ -339,7 +378,18 @@ export default function EventsTab({ placeId }: Props) {
                     </Box>
                   </TableCell>
                   <TableCell>
-                    {ev.pricingRule ? (
+                    {ev.eventPricingRules.length > 0 ? (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {ev.eventPricingRules.map((r) => (
+                          <Chip
+                            key={r.id}
+                            label={`${r.pricingRule.name} (${r.pricingRule.currency})`}
+                            size="small"
+                            sx={{ height: 18, fontSize: '0.68rem' }}
+                          />
+                        ))}
+                      </Box>
+                    ) : ev.pricingRule ? (
                       <Typography variant="caption" color="text.secondary">
                         {ev.pricingRule.name} ({ev.pricingRule.currency})
                       </Typography>
@@ -508,21 +558,42 @@ export default function EventsTab({ placeId }: Props) {
 
             {pricingRules.length > 0 && (
               <Grid size={{ xs: 12 }}>
-                <TextField
-                  label={t('events.form.pricingRule', 'Pricing Rule')}
-                  select
-                  value={form.pricingRuleId}
-                  onChange={(e) => setForm((f) => ({ ...f, pricingRuleId: e.target.value }))}
-                  fullWidth
-                  helperText={t('events.form.pricingRuleHint', 'Select an existing pricing rule or leave blank for free events')}
-                >
-                  <MenuItem value="">{t('events.form.noPrice', '— Free (no pricing) —')}</MenuItem>
-                  {pricingRules.map((rule) => (
-                    <MenuItem key={rule.id} value={rule.id}>
-                      {rule.name} ({rule.currency})
-                    </MenuItem>
-                  ))}
-                </TextField>
+                <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                  {t('events.form.pricingRules', 'Pricing Options')}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                  {t('events.form.pricingRulesHint', 'Select one or more pricing options. Guests will choose one when booking.')}
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {pricingRules.map((rule) => {
+                    const selected = form.pricingRuleIds.includes(rule.id);
+                    return (
+                      <Chip
+                        key={rule.id}
+                        label={`${rule.name} (${rule.currency})`}
+                        onClick={() =>
+                          setForm((f) => ({
+                            ...f,
+                            pricingRuleIds: selected
+                              ? f.pricingRuleIds.filter((id) => id !== rule.id)
+                              : [...f.pricingRuleIds, rule.id],
+                          }))
+                        }
+                        onDelete={selected ? () =>
+                          setForm((f) => ({ ...f, pricingRuleIds: f.pricingRuleIds.filter((id) => id !== rule.id) }))
+                          : undefined}
+                        color={selected ? 'primary' : 'default'}
+                        variant={selected ? 'filled' : 'outlined'}
+                        sx={{ cursor: 'pointer' }}
+                      />
+                    );
+                  })}
+                </Box>
+                {form.pricingRuleIds.length === 0 && (
+                  <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 0.5 }}>
+                    {t('events.form.noPrice', 'No pricing selected — event will be free')}
+                  </Typography>
+                )}
               </Grid>
             )}
 

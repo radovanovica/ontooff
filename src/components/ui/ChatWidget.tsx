@@ -11,6 +11,7 @@ import {
   CircularProgress,
   Tooltip,
   Chip,
+  Button,
 } from '@mui/material';
 import {
   Chat as ChatIcon,
@@ -18,6 +19,10 @@ import {
   Send,
   Nature,
   SmartToy,
+  Forest,
+  Pool,
+  Event as EventIcon,
+  DirectionsWalk,
 } from '@mui/icons-material';
 import { useTranslation } from '@/i18n/client';
 
@@ -527,76 +532,111 @@ export default function ChatWidget() {
       {/* Invite bubble — shown once on first visit */}
       {showInvite && !open && (
         <Paper
-          elevation={6}
+          elevation={8}
           sx={{
             position: 'fixed',
             bottom: { xs: 80, sm: 96 },
             right: { xs: 12, sm: 24 },
-            width: { xs: 'calc(100vw - 24px)', sm: 300 },
-            maxWidth: 320,
+            width: { xs: 'calc(100vw - 24px)', sm: 320 },
+            maxWidth: 340,
             zIndex: 1299,
             borderRadius: 3,
             overflow: 'hidden',
             border: '1px solid',
             borderColor: 'divider',
-            animation: 'slideUp 0.3s ease',
+            animation: 'slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1)',
             '@keyframes slideUp': {
-              from: { opacity: 0, transform: 'translateY(12px)' },
-              to: { opacity: 1, transform: 'translateY(0)' },
+              from: { opacity: 0, transform: 'translateY(20px) scale(0.95)' },
+              to: { opacity: 1, transform: 'translateY(0) scale(1)' },
             },
           }}
         >
           {/* Invite header */}
           <Box
             sx={{
-              bgcolor: '#2d5a27',
+              background: 'linear-gradient(135deg, #2d5a27 0%, #3d7a35 100%)',
               color: 'white',
               px: 2,
-              py: 1.25,
+              py: 1.5,
               display: 'flex',
               alignItems: 'center',
               gap: 1,
             }}
           >
-            <SmartToy sx={{ fontSize: 18 }} />
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, flex: 1, fontSize: '0.85rem' }}>
-              {t('chat.title', 'Outdoor Assistant')}
-            </Typography>
+            <Box sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <SmartToy sx={{ fontSize: 18 }} />
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: '0.88rem', lineHeight: 1 }}>
+                {t('chat.title', 'Outdoor Assistant')}
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.8, fontSize: '0.65rem' }}>
+                {t('chat.subtitle', 'Find places · Get tips · Plan your trip')}
+              </Typography>
+            </Box>
             <IconButton size="small" onClick={dismissInvite} sx={{ color: 'white', p: 0.25 }}>
               <Close sx={{ fontSize: 16 }} />
             </IconButton>
           </Box>
 
           {/* Invite body */}
-          <Box
-            sx={{ px: 2, py: 1.5, bgcolor: 'background.paper', cursor: 'pointer' }}
-            onClick={() => openChat()}
-          >
-            <Typography variant="body2" sx={{ fontSize: '0.88rem', mb: 1.25, lineHeight: 1.5 }}>
+          <Box sx={{ px: 2, pt: 2, pb: 1.5, bgcolor: 'background.paper' }}>
+            {/* Greeting */}
+            <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.95rem', mb: 0.5 }}>
               {t('chat.inviteMessage', '👋 How can I help you?')}
             </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5, lineHeight: 1.5 }}>
+              {t('chat.inviteSubtitle', 'Ask me anything about outdoor activities, events, and places.')}
+            </Typography>
 
-            {/* First 2 suggestions as chips */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-              {suggestions.slice(0, 2).map((s) => (
-                <Chip
-                  key={s}
-                  label={s}
-                  size="small"
-                  onClick={(e) => { e.stopPropagation(); openChat(s); }}
+            {/* Category quick-links */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.75, mb: 1.5 }}>
+              {[
+                { icon: <Forest sx={{ fontSize: 18 }} />, label: t('chat.catCamping', 'Camping'), msg: suggestions[2] ?? 'Find me a camping place' },
+                { icon: <Pool sx={{ fontSize: 18 }} />, label: t('chat.catFishing', 'Fishing'), msg: suggestions[3] ?? 'Best fishing spots' },
+                { icon: <EventIcon sx={{ fontSize: 18 }} />, label: t('chat.catEvents', 'Events'), msg: 'What events are coming up?' },
+                { icon: <DirectionsWalk sx={{ fontSize: 18 }} />, label: t('chat.catHiking', 'Hiking'), msg: 'Find hiking trails near me' },
+              ].map(({ icon, label, msg }) => (
+                <Box
+                  key={label}
+                  onClick={() => openChat(msg)}
                   sx={{
-                    fontSize: '0.75rem',
-                    cursor: 'pointer',
-                    bgcolor: 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.75,
+                    p: 0.75,
+                    borderRadius: 1.5,
                     border: '1px solid',
-                    borderColor: '#2d5a27',
-                    color: '#2d5a27',
-                    justifyContent: 'flex-start',
-                    '&:hover': { bgcolor: '#f0f7ef' },
+                    borderColor: 'divider',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                    '&:hover': { bgcolor: '#f0f7ef', borderColor: '#2d5a27', color: '#2d5a27' },
                   }}
-                />
+                >
+                  <Box sx={{ color: '#2d5a27', display: 'flex' }}>{icon}</Box>
+                  <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.78rem' }}>{label}</Typography>
+                </Box>
               ))}
             </Box>
+
+            {/* CTA */}
+            <Button
+              fullWidth
+              variant="contained"
+              size="small"
+              onClick={() => openChat()}
+              sx={{
+                bgcolor: '#2d5a27',
+                '&:hover': { bgcolor: '#245120' },
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.82rem',
+                py: 0.75,
+              }}
+            >
+              {t('chat.startChat', 'Start chatting →')}
+            </Button>
           </Box>
         </Paper>
       )}

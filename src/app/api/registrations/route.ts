@@ -150,6 +150,10 @@ export async function POST(req: NextRequest) {
         include: {
           place: { select: { name: true, id: true, owner: { select: { email: true, name: true } } } },
           pricingRule: { include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } } },
+          eventPricingRules: {
+            orderBy: { sortOrder: 'asc' },
+            include: { pricingRule: { include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } } } },
+          },
           _count: { select: { registrations: { where: { status: { notIn: ['CANCELLED'] } } } } },
         },
       });
@@ -171,6 +175,27 @@ export async function POST(req: NextRequest) {
       const numberOfDays = 1;
       const totalGuests = getTotalGuests(data.guestCounts as GuestCounts);
 
+      // Resolve which pricing rule to use:
+      // 1. Guest explicitly chose one (data.pricingRuleId) — validate it belongs to the event
+      // 2. Event has a single legacy pricingRule — use that
+      // 3. No pricing — free event
+      const availableRules = event.eventPricingRules.length > 0
+        ? event.eventPricingRules.map((r) => r.pricingRule)
+        : (event.pricingRule ? [event.pricingRule] : []);
+
+      let resolvedPricingRule = availableRules[0] ?? null;
+
+      if (data.pricingRuleId) {
+        const chosen = availableRules.find((r) => r.id === data.pricingRuleId);
+        if (!chosen) {
+          return NextResponse.json(
+            { success: false, error: 'Selected pricing option is not available for this event' },
+            { status: 422 }
+          );
+        }
+        resolvedPricingRule = chosen;
+      }
+
       let pricingData: {
         totalAmount?: number;
         pricingRuleId?: string;
@@ -184,38 +209,38 @@ export async function POST(req: NextRequest) {
         }>;
       } = {};
 
-      if (event.pricingRule) {
-        if (event.pricingRule.minPeople != null && totalGuests < event.pricingRule.minPeople) {
+      if (resolvedPricingRule) {
+        if (resolvedPricingRule.minPeople != null && totalGuests < resolvedPricingRule.minPeople) {
           return NextResponse.json(
-            { success: false, error: `Minimum guests for this event is ${event.pricingRule.minPeople}` },
+            { success: false, error: `Minimum guests for this event is ${resolvedPricingRule.minPeople}` },
             { status: 422 }
           );
         }
-        if (event.pricingRule.maxPeople != null && totalGuests > event.pricingRule.maxPeople) {
+        if (resolvedPricingRule.maxPeople != null && totalGuests > resolvedPricingRule.maxPeople) {
           return NextResponse.json(
-            { success: false, error: `Maximum guests for this event is ${event.pricingRule.maxPeople}` },
+            { success: false, error: `Maximum guests for this event is ${resolvedPricingRule.maxPeople}` },
             { status: 422 }
           );
         }
-        if (event.pricingRule.requiresPayment && !data.paymentMethod) {
+        if (resolvedPricingRule.requiresPayment && !data.paymentMethod) {
           return NextResponse.json(
             { success: false, error: 'Payment method is required for this event' },
             { status: 422 }
           );
         }
 
-        const tiersMapped = event.pricingRule.pricingTiers.map((t: PricingTier) => ({
+        const tiersMapped = resolvedPricingRule.pricingTiers.map((t: PricingTier) => ({
           ...t,
           pricePerUnit: Number(t.pricePerUnit),
         }));
         const calc = calculatePricing(
-          { ...event.pricingRule, pricingTiers: tiersMapped },
+          { ...resolvedPricingRule, pricingTiers: tiersMapped },
           data.guestCounts as GuestCounts,
           numberOfDays
         );
         pricingData = {
           totalAmount: calc.totalAmount,
-          pricingRuleId: event.pricingRule.id,
+          pricingRuleId: resolvedPricingRule.id,
           paymentBreakdown: calc.breakdown.map((item, idx) => ({
             label: item.label,
             ageGroup: item.ageGroup,
@@ -272,11 +297,11 @@ export async function POST(req: NextRequest) {
           spotNames: [],
           guestSummary: formatGuestSummary(data.guestCounts as GuestCounts),
           totalAmount: pricingData.totalAmount,
-          currency: event.pricingRule?.currency ?? 'EUR',
+          currency: resolvedPricingRule?.currency ?? 'EUR',
           paymentMethod: data.paymentMethod
             ? ({ CASH: 'Cash', CARD: 'Card', BOTH: 'Cash or Card' })[data.paymentMethod]
             : undefined,
-          requiresPayment: event.pricingRule?.requiresPayment ?? false,
+          requiresPayment: resolvedPricingRule?.requiresPayment ?? false,
           paymentBreakdown: registration.paymentBreakdown.map(
             (item: { label: string; totalPrice: unknown }) => ({
               label: item.label,
@@ -305,8 +330,8 @@ export async function POST(req: NextRequest) {
           spotNames: [],
           guestSummary: formatGuestSummary(data.guestCounts as GuestCounts),
           totalAmount: pricingData.totalAmount,
-          currency: event.pricingRule?.currency ?? 'EUR',
-          requiresPayment: event.pricingRule?.requiresPayment ?? false,
+          currency: resolvedPricingRule?.currency ?? 'EUR',
+          requiresPayment: resolvedPricingRule?.requiresPayment ?? false,
           editToken: registration.editToken,
         }).catch(console.error);
       }

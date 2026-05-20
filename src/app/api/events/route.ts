@@ -21,7 +21,8 @@ const createSchema = z.object({
   endTime: z.string().regex(/^\d{2}:\d{2}$/),
   maxReservations: z.number().int().positive().optional().nullable(),
   reservationDeadline: z.string().datetime({ offset: true }).optional().nullable(),
-  pricingRuleId: z.string().optional().nullable(),
+  pricingRuleId: z.string().optional().nullable(),   // legacy single-rule
+  pricingRuleIds: z.array(z.string()).optional(),     // multiple rules
   isActive: z.boolean().default(true),
 });
 
@@ -59,6 +60,10 @@ export async function GET(req: NextRequest) {
         include: {
           place: { select: { id: true, name: true, slug: true, city: true, country: true, coverUrl: true, logoUrl: true } },
           pricingRule: { select: { id: true, name: true, currency: true, requiresPayment: true, paymentMethod: true, pricingTiers: true } },
+          eventPricingRules: {
+            orderBy: { sortOrder: 'asc' },
+            include: { pricingRule: { include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } } } },
+          },
           _count: { select: { registrations: { where: { status: { notIn: ['CANCELLED'] } } } } },
         },
         orderBy: { eventDate: 'asc' },
@@ -88,6 +93,10 @@ export async function GET(req: NextRequest) {
       where: { placeId },
       include: {
         pricingRule: { select: { id: true, name: true, currency: true, requiresPayment: true, pricingTiers: true } },
+        eventPricingRules: {
+          orderBy: { sortOrder: 'asc' },
+          include: { pricingRule: { include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } } } },
+        },
         _count: { select: { registrations: { where: { status: { notIn: ['CANCELLED'] } } } } },
       },
       orderBy: { eventDate: 'asc' },
@@ -112,17 +121,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { placeId, title, description, imageUrl, eventDate, startTime, endTime, maxReservations, reservationDeadline, pricingRuleId, isActive } = result.data;
+  const { placeId, title, description, imageUrl, eventDate, startTime, endTime, maxReservations, reservationDeadline, pricingRuleId, pricingRuleIds, isActive } = result.data;
 
   if (!(await canManagePlace(placeId, session.user.id, session.user.role as UserRole))) {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
 
-  if (pricingRuleId) {
-    const rule = await prisma.pricingRule.findFirst({
-      where: { id: pricingRuleId, isActive: true, activityType: { place: { id: placeId } } },
+  // Collect all rule IDs to validate (legacy single + multi list)
+  const allRuleIds = Array.from(new Set([
+    ...(pricingRuleIds ?? []),
+    ...(pricingRuleId ? [pricingRuleId] : []),
+  ]));
+
+  if (allRuleIds.length > 0) {
+    const validRules = await prisma.pricingRule.findMany({
+      where: { id: { in: allRuleIds }, isActive: true, activityType: { place: { id: placeId } } },
+      select: { id: true },
     });
-    if (!rule) return NextResponse.json({ success: false, error: 'Invalid pricing rule' }, { status: 422 });
+    if (validRules.length !== allRuleIds.length) {
+      return NextResponse.json({ success: false, error: 'One or more pricing rules are invalid' }, { status: 422 });
+    }
   }
 
   const event = await prisma.placeEvent.create({
@@ -136,11 +154,20 @@ export async function POST(req: NextRequest) {
       endTime,
       maxReservations: maxReservations ?? null,
       reservationDeadline: reservationDeadline ? new Date(reservationDeadline) : null,
-      pricingRuleId: pricingRuleId ?? null,
+      pricingRuleId: pricingRuleId ?? (pricingRuleIds?.[0] ?? null),
       isActive,
+      eventPricingRules: pricingRuleIds && pricingRuleIds.length > 0
+        ? {
+            create: pricingRuleIds.map((id, idx) => ({ pricingRuleId: id, sortOrder: idx })),
+          }
+        : undefined,
     },
     include: {
       pricingRule: { select: { id: true, name: true, currency: true, requiresPayment: true, pricingTiers: true } },
+      eventPricingRules: {
+        orderBy: { sortOrder: 'asc' },
+        include: { pricingRule: { include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } } } },
+      },
       _count: { select: { registrations: true } },
     },
   });

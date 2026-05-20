@@ -529,7 +529,12 @@
       "titleRequired": "El t\u00edtulo es obligatorio",
       "dateRequired": "La fecha del evento es obligatoria",
       "saveFailed": "Error al guardar",
-      "deleteFailed": "Error al eliminar"
+      "deleteFailed": "Error al eliminar",
+      "startTimeRequired": "La hora de inicio es obligatoria",
+      "endTimeRequired": "La hora de fin es obligatoria",
+      "endTimeBeforeStart": "La hora de fin debe ser posterior a la hora de inicio",
+      "datePast": "La fecha del evento no puede ser en el pasado",
+      "deadlineAfterEvent": "La fecha l\u00edmite de reserva debe ser antes del inicio del evento"
     }
   },
   "org": {
