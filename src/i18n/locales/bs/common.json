@@ -402,6 +402,9 @@
     "deadlinePassedChip": "Rok istekao",
     "notAvailableChip": "Nije dostupno",
     "backToSearch": "Nazad na pretragu",
-    "eventNotFound": "Događaj nije pronađen"
+    "eventNotFound": "Događaj nije pronađen",
+    "stepGuests": "Gosti",
+    "stepDetails": "Detalji",
+    "stepConfirm": "Potvrda"
   }
 }

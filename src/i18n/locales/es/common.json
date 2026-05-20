@@ -402,6 +402,9 @@
     "deadlinePassedChip": "Plazo agotado",
     "notAvailableChip": "No disponible",
     "backToSearch": "Volver a la búsqueda",
-    "eventNotFound": "Evento no encontrado"
+    "eventNotFound": "Evento no encontrado",
+    "stepGuests": "Invitados",
+    "stepDetails": "Detalles",
+    "stepConfirm": "Confirmar"
   }
 }

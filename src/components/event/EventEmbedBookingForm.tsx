@@ -12,8 +12,11 @@ import {
   MenuItem,
   Stack,
   Chip,
+  Stepper,
+  Step,
+  StepLabel,
 } from '@mui/material';
-import { CalendarMonth, AccessTime, LocationOn, CheckCircle, EventAvailable } from '@mui/icons-material';
+import { CalendarMonth, AccessTime, LocationOn, CheckCircle, EventAvailable, Group, Person, TaskAlt } from '@mui/icons-material';
 import { useState } from 'react';
 import { useCurrency } from '@/lib/currency';
 import { useTranslation } from '@/i18n/client';
@@ -229,9 +232,24 @@ export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
     );
   }
 
+  const stepIndex = step === 'guests' ? 0 : step === 'contact' ? 1 : 2;
+  const STEP_LABELS = [
+    { label: t('event.stepGuests', 'Guests'), icon: <Group /> },
+    { label: t('event.stepDetails', 'Details'), icon: <Person /> },
+    { label: t('event.stepConfirm', 'Confirm'), icon: <TaskAlt /> },
+  ];
+
   return (
     <Box>
       <EventHeader />
+
+      <Stepper activeStep={stepIndex} alternativeLabel sx={{ mb: 3 }}>
+        {STEP_LABELS.map((s, i) => (
+          <Step key={s.label} completed={stepIndex > i}>
+            <StepLabel>{s.label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
 
       {submitError && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setSubmitError(null)}>

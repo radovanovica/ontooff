@@ -14,6 +14,9 @@ import {
   CircularProgress,
   Stack,
   MenuItem,
+  Stepper,
+  Step,
+  StepLabel,
 } from '@mui/material';
 import {
   CalendarMonth,
@@ -23,6 +26,9 @@ import {
   ArrowBack,
   CheckCircle,
   EventAvailable,
+  Group,
+  Person,
+  TaskAlt,
 } from '@mui/icons-material';
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
@@ -390,6 +396,24 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
                   {t('event.reserveYourSpot', 'Reserve Your Spot')}
                 </Typography>
+
+                {(() => {
+                  const stepIndex = step === 'guests' ? 0 : step === 'contact' ? 1 : 2;
+                  const STEP_LABELS = [
+                    { label: t('event.stepGuests', 'Guests') },
+                    { label: t('event.stepDetails', 'Details') },
+                    { label: t('event.stepConfirm', 'Confirm') },
+                  ];
+                  return (
+                    <Stepper activeStep={stepIndex} alternativeLabel sx={{ mb: 3 }}>
+                      {STEP_LABELS.map((s, i) => (
+                        <Step key={s.label} completed={stepIndex > i}>
+                          <StepLabel>{s.label}</StepLabel>
+                        </Step>
+                      ))}
+                    </Stepper>
+                  );
+                })()}
 
                 {submitError && (
                   <Alert severity="error" sx={{ mb: 2 }} onClose={() => setSubmitError(null)}>

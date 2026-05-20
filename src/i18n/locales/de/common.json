@@ -402,6 +402,9 @@
     "deadlinePassedChip": "Frist abgelaufen",
     "notAvailableChip": "Nicht verfügbar",
     "backToSearch": "Zurück zur Suche",
-    "eventNotFound": "Veranstaltung nicht gefunden"
+    "eventNotFound": "Veranstaltung nicht gefunden",
+    "stepGuests": "Gäste",
+    "stepDetails": "Details",
+    "stepConfirm": "Bestätigen"
   }
 }
