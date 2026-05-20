@@ -144,9 +144,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       <Box sx={{ minHeight: '100vh' }}>
         <Navbar />
         <Container maxWidth="md" sx={{ py: 6 }}>
-          <Alert severity="error">{error ?? 'Event not found'}</Alert>
+          <Alert severity="error">{error ?? t('event.eventNotFound', 'Event not found')}</Alert>
           <Button component={Link} href="/search" startIcon={<ArrowBack />} sx={{ mt: 2 }}>
-            Back to search
+            {t('event.backToSearch', 'Back to search')}
           </Button>
         </Container>
       </Box>
@@ -254,11 +254,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
           {/* Left: Event info */}
           <Grid size={{ xs: 12, md: 7 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              {!event.isActive && <Chip label="Inactive" size="small" color="default" />}
-              {isPast && <Chip label="Past event" size="small" color="default" />}
-              {isFull && <Chip label="Fully booked" size="small" color="warning" />}
+              {!event.isActive && <Chip label={t('event.inactive', 'Inactive')} size="small" color="default" />}
+              {isPast && <Chip label={t('event.pastEvent', 'Past Event')} size="small" color="default" />}
+              {isFull && <Chip label={t('event.fullyBooked', 'Fully Booked')} size="small" color="warning" />}
               {canReserve && spotsLeft != null && spotsLeft <= 5 && (
-                <Chip label={`${spotsLeft} spots left`} size="small" color="error" />
+                <Chip label={t('event.spotsLeft', '{{count}} spots left', { count: spotsLeft })} size="small" color="error" />
               )}
             </Box>
 
@@ -300,7 +300,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
                 <People fontSize="small" color="action" />
                 <Typography variant="body2" color="text.secondary">
-                  {event._count.registrations} / {event.maxReservations} reserved
+                  {event._count.registrations} / {event.maxReservations} {t('event.reserved', 'reserved')}
                 </Typography>
               </Box>
             )}
@@ -308,7 +308,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             {availablePricingRules.length > 1 && (
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                  Choose Pricing Option
+                  {t('event.choosePricingOption', 'Choose Pricing Option')}
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {availablePricingRules.map((rule) => (
@@ -328,7 +328,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             {selectedPricingRule && (
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                  Pricing
+                  {t('event.pricing', 'Pricing')}
                 </Typography>
                 {tiers.map((tier) => (
                   <Box key={tier.id} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
@@ -348,13 +348,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               <Paper sx={{ p: 3, borderRadius: 2, textAlign: 'center', border: '2px solid', borderColor: 'success.main' }}>
                 <CheckCircle sx={{ fontSize: 56, color: 'success.main', mb: 1 }} />
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                  Reservation Confirmed!
+                  {t('event.reservationConfirmed', 'Reservation Confirmed!')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  Booking #{regNumber}
+                  {t('event.bookingPrefix', 'Booking #')}{regNumber}
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 2 }}>
-                  A confirmation email has been sent to <strong>{email}</strong>.
+                  {t('event.confirmationEmailSent', 'A confirmation email has been sent to')} <strong>{email}</strong>.
                 </Typography>
                 {editToken && (
                   <Button
@@ -363,11 +363,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     href={`/registration/edit/${editToken}`}
                     sx={{ mb: 1 }}
                   >
-                    View My Reservation
+                    {t('event.viewMyReservation', 'View My Reservation')}
                   </Button>
                 )}
                 <Button variant="text" href="/search?tab=events" fullWidth>
-                  Browse More Events
+                  {t('event.browseMoreEvents', 'Browse More Events')}
                 </Button>
               </Paper>
             ) : !canReserve ? (
@@ -375,18 +375,18 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 <EventAvailable sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
                 <Typography variant="body1" color="text.secondary">
                   {isPast
-                    ? 'This event has already taken place.'
+                    ? t('event.alreadyTookPlace', 'This event has already taken place.')
                     : isFull
-                    ? 'This event is fully booked.'
+                    ? t('event.fullyBookedMsg', 'This event is fully booked.')
                     : isDeadlinePassed
-                    ? 'Reservation deadline has passed.'
-                    : 'Reservations are not available for this event.'}
+                    ? t('event.deadlinePassed', 'Reservation deadline has passed.')
+                    : t('event.notAvailable', 'Reservations are not available for this event.')}
                 </Typography>
               </Paper>
             ) : (
               <Paper sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                  Reserve Your Spot
+                  {t('event.reserveYourSpot', 'Reserve Your Spot')}
                 </Typography>
 
                 {submitError && (
@@ -414,7 +414,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                             <Box>
                               <Typography variant="body2" sx={{ fontWeight: 600 }}>{tier.label}</Typography>
                               <Typography variant="caption" color="text.secondary">
-                                {formatPrice(Number(tier.pricePerUnit), selectedPricingRule!.currency)} each
+                                {formatPrice(Number(tier.pricePerUnit), selectedPricingRule!.currency)} {t('event.each', 'each')}
                               </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -447,7 +447,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                       })
                     ) : (
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>Guests</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{t('event.guests', 'Guests')}</Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Button
                             size="small"
@@ -473,7 +473,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     {estimatedTotal != null && estimatedTotal > 0 && (
                       <Box sx={{ mt: 2, p: 1.5, bgcolor: 'grey.50', borderRadius: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" sx={{ fontWeight: 700 }}>Estimated Total</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 700 }}>{t('event.estimatedTotal', 'Estimated Total')}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 700 }}>
                             {formatPrice(estimatedTotal, selectedPricingRule!.currency)}
                           </Typography>
@@ -488,7 +488,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                       onClick={() => setStep('contact')}
                       disabled={Object.values(guestCounts).every((v) => v === 0)}
                     >
-                      Continue
+                      {t('event.continue', 'Continue')}
                     </Button>
                   </Box>
                 )}
@@ -499,7 +499,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     <Grid container spacing={1.5}>
                       <Grid size={{ xs: 6 }}>
                         <TextField
-                          label="First Name"
+                          label={t('event.firstName', 'First Name')}
                           value={firstName}
                           onChange={(e) => setFirstName(e.target.value)}
                           fullWidth
@@ -509,7 +509,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                       </Grid>
                       <Grid size={{ xs: 6 }}>
                         <TextField
-                          label="Last Name"
+                          label={t('event.lastName', 'Last Name')}
                           value={lastName}
                           onChange={(e) => setLastName(e.target.value)}
                           fullWidth
@@ -519,7 +519,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                       </Grid>
                       <Grid size={{ xs: 12 }}>
                         <TextField
-                          label="Email"
+                          label={t('common.email', 'Email')}
                           type="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
@@ -530,7 +530,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                       </Grid>
                       <Grid size={{ xs: 12 }}>
                         <TextField
-                          label="Phone (optional)"
+                          label={t('event.phone', 'Phone (optional)')}
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           fullWidth
@@ -540,7 +540,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                       {event.pricingRule?.requiresPayment && (
                         <Grid size={{ xs: 12 }}>
                           <TextField
-                            label="Payment Method"
+                            label={t('event.paymentMethod', 'Payment Method')}
                             select
                             value={paymentMethod}
                             onChange={(e) => setPaymentMethod(e.target.value)}
@@ -548,18 +548,18 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                             size="small"
                             required
                           >
-                            {(event.pricingRule.paymentMethod === 'BOTH' || event.pricingRule.paymentMethod === 'CASH') && (
-                              <MenuItem value="CASH">Cash</MenuItem>
+                            {(event.pricingRule?.paymentMethod === 'BOTH' || event.pricingRule?.paymentMethod === 'CASH') && (
+                              <MenuItem value="CASH">{t('event.cash', 'Cash')}</MenuItem>
                             )}
-                            {(event.pricingRule.paymentMethod === 'BOTH' || event.pricingRule.paymentMethod === 'CARD') && (
-                              <MenuItem value="CARD">Card</MenuItem>
+                            {(event.pricingRule?.paymentMethod === 'BOTH' || event.pricingRule?.paymentMethod === 'CARD') && (
+                              <MenuItem value="CARD">{t('event.card', 'Card')}</MenuItem>
                             )}
                           </TextField>
                         </Grid>
                       )}
                       <Grid size={{ xs: 12 }}>
                         <TextField
-                          label="Notes (optional)"
+                          label={t('event.notes', 'Notes (optional)')}
                           value={notes}
                           onChange={(e) => setNotes(e.target.value)}
                           fullWidth
@@ -571,7 +571,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     </Grid>
                     <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
                       <Button variant="outlined" onClick={() => setStep('guests')} sx={{ flex: 1 }}>
-                        Back
+                        {t('common.back', 'Back')}
                       </Button>
                       <Button
                         variant="contained"
@@ -579,7 +579,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                         disabled={!firstName || !lastName || !email}
                         sx={{ flex: 2 }}
                       >
-                        Review
+                        {t('event.review', 'Review')}
                       </Button>
                     </Box>
                   </Box>
@@ -589,20 +589,26 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 {step === 'confirm' && (
                   <Box>
                     <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                      Review your reservation
+                      {t('event.reviewYourReservation', 'Review your reservation')}
                     </Typography>
                     <Divider sx={{ mb: 1.5 }} />
                     {[
-                      ['Event', event.title],
-                      ['Date', `${eventDate.toLocaleDateString()} · ${event.startTime}–${event.endTime}`],
-                      ['Name', `${firstName} ${lastName}`],
-                      ['Email', email],
-                      ...(phone ? [['Phone', phone]] : []),
+                      [t('event.eventLabel', 'Event'), event.title],
+                      [t('common.date', 'Date'), `${eventDate.toLocaleDateString()} · ${event.startTime}–${event.endTime}`],
+                      [t('common.name', 'Name'), `${firstName} ${lastName}`],
+                      [t('common.email', 'Email'), email],
+                      ...(phone ? [[t('common.phone', 'Phone'), phone]] : []),
                       ...(Object.entries(guestCounts)
                         .filter(([, v]) => v > 0)
-                        .map(([k, v]) => [k.replace('custom:', '').replace('adults', 'Adults').replace('children', 'Children').replace('seniors', 'Seniors'), String(v)])),
+                        .map(([k, v]) => {
+                          const tierLabel = tiers.find((tier) => {
+                            const tk = tier.ageGroup === 'ADULT' ? 'adults' : tier.ageGroup === 'CHILD' ? 'children' : tier.ageGroup === 'SENIOR' ? 'seniors' : tier.ageGroup === 'INFANT' ? 'infants' : tier.ageGroup === 'FAMILY' ? 'families' : tier.ageGroup === 'GROUP' ? 'groups' : `custom:${tier.id}`;
+                            return tk === k;
+                          })?.label;
+                          return [tierLabel ?? k.replace('custom:', ''), String(v)];
+                        })),
                       ...(estimatedTotal != null && estimatedTotal > 0
-                        ? [['Total', formatPrice(estimatedTotal, selectedPricingRule!.currency)]]
+                        ? [[t('common.total', 'Total'), formatPrice(estimatedTotal, selectedPricingRule!.currency)]]
                         : []),
                     ].map(([label, value]) => (
                       <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.4 }}>
@@ -615,7 +621,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
                     <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
                       <Button variant="outlined" onClick={() => setStep('contact')} sx={{ flex: 1 }}>
-                        Back
+                        {t('common.back', 'Back')}
                       </Button>
                       <Button
                         variant="contained"
@@ -625,7 +631,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                         startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : undefined}
                         sx={{ flex: 2 }}
                       >
-                        {submitting ? 'Confirming…' : 'Confirm Reservation'}
+                        {submitting ? t('event.confirming', 'Confirming…') : t('event.confirmReservation', 'Confirm Reservation')}
                       </Button>
                     </Box>
                   </Box>

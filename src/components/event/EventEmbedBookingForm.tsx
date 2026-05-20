@@ -16,6 +16,7 @@ import {
 import { CalendarMonth, AccessTime, LocationOn, CheckCircle, EventAvailable } from '@mui/icons-material';
 import { useState } from 'react';
 import { useCurrency } from '@/lib/currency';
+import { useTranslation } from '@/i18n/client';
 
 interface PricingTier {
   id: string;
@@ -62,6 +63,7 @@ type Step = 'guests' | 'contact' | 'confirm' | 'done';
 
 export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
   const { formatPrice } = useCurrency();
+  const { t } = useTranslation('common');
 
   const [step, setStep] = useState<Step>('guests');
   const [guestCounts, setGuestCounts] = useState<Record<string, number>>({});
@@ -177,12 +179,12 @@ export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
       <Box sx={{ textAlign: 'center', py: 2 }}>
         <EventHeader />
         <CheckCircle sx={{ fontSize: 56, color: 'success.main', mb: 1 }} />
-        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>Reservation Confirmed!</Typography>
+        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>{t('event.reservationConfirmed', 'Reservation Confirmed!')}</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-          Booking #{regNumber}
+          {t('event.bookingPrefix', 'Booking #')}{regNumber}
         </Typography>
         <Typography variant="body2" sx={{ mb: 2 }}>
-          Confirmation sent to <strong>{email}</strong>.
+          {t('event.confirmationSentTo', 'Confirmation sent to')} <strong>{email}</strong>.
         </Typography>
         {editToken && (
           <Button
@@ -193,7 +195,7 @@ export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
             rel="noopener noreferrer"
             sx={{ mb: 1 }}
           >
-            View My Reservation
+            {t('event.viewMyReservation', 'View My Reservation')}
           </Button>
         )}
       </Box>
@@ -208,19 +210,19 @@ export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
           <EventAvailable sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
           <Chip
             label={
-              isPast ? 'Past Event'
-              : isFull ? 'Fully Booked'
-              : isDeadlinePassed ? 'Deadline Passed'
-              : 'Not Available'
+              isPast ? t('event.pastEvent', 'Past Event')
+              : isFull ? t('event.fullyBooked', 'Fully Booked')
+              : isDeadlinePassed ? t('event.deadlinePassedChip', 'Deadline Passed')
+              : t('event.notAvailableChip', 'Not Available')
             }
             color="default"
             sx={{ mb: 1 }}
           />
           <Typography variant="body2" color="text.secondary">
-            {isPast ? 'This event has already taken place.'
-             : isFull ? 'This event is fully booked.'
-             : isDeadlinePassed ? 'The reservation deadline has passed.'
-             : 'Reservations are not currently available.'}
+            {isPast ? t('event.alreadyTookPlace', 'This event has already taken place.')
+             : isFull ? t('event.fullyBookedMsg', 'This event is fully booked.')
+             : isDeadlinePassed ? t('event.deadlinePassedMsg', 'The reservation deadline has passed.')
+             : t('event.notAvailableMsg', 'Reservations are not currently available.')}
           </Typography>
         </Box>
       </Box>
@@ -240,7 +242,7 @@ export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
       {/* Step: Guests */}
       {step === 'guests' && (
         <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>Select Guests</Typography>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>{t('event.selectGuests', 'Select Guests')}</Typography>
           {tiers.length > 0 ? (
             tiers.map((tier) => {
               const key = tierKey(tier);
@@ -249,7 +251,7 @@ export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>{tier.label}</Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {formatPrice(tier.pricePerUnit, currency)} each
+                      {formatPrice(tier.pricePerUnit, currency)} {t('event.each', 'each')}
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -272,7 +274,7 @@ export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
             })
           ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>Guests</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>{t('event.guests', 'Guests')}</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Button
                   size="small"
@@ -294,7 +296,7 @@ export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
           {estimatedTotal != null && estimatedTotal > 0 && (
             <Box sx={{ mt: 1.5, p: 1.5, bgcolor: 'grey.50', borderRadius: 1 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2" sx={{ fontWeight: 700 }}>Estimated Total</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700 }}>{t('event.estimatedTotal', 'Estimated Total')}</Typography>
                 <Typography variant="body2" sx={{ fontWeight: 700 }}>
                   {formatPrice(estimatedTotal, currency)}
                 </Typography>
@@ -309,7 +311,7 @@ export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
             onClick={() => setStep('contact')}
             disabled={tiers.length > 0 ? !hasGuests : (guestCounts.adults ?? 1) < 1}
           >
-            Continue
+            {t('event.continue', 'Continue')}
           </Button>
         </Box>
       )}
@@ -317,45 +319,45 @@ export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
       {/* Step: Contact */}
       {step === 'contact' && (
         <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>Your Details</Typography>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>{t('event.yourDetails', 'Your Details')}</Typography>
           <Grid container spacing={1.5}>
             <Grid size={{ xs: 6 }}>
-              <TextField size="small" label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} fullWidth required />
+              <TextField size="small" label={t('event.firstName', 'First Name')} value={firstName} onChange={(e) => setFirstName(e.target.value)} fullWidth required />
             </Grid>
             <Grid size={{ xs: 6 }}>
-              <TextField size="small" label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} fullWidth required />
+              <TextField size="small" label={t('event.lastName', 'Last Name')} value={lastName} onChange={(e) => setLastName(e.target.value)} fullWidth required />
             </Grid>
             <Grid size={{ xs: 12 }}>
-              <TextField size="small" label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} fullWidth required />
+              <TextField size="small" label={t('common.email', 'Email')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} fullWidth required />
             </Grid>
             <Grid size={{ xs: 12 }}>
-              <TextField size="small" label="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} fullWidth />
+              <TextField size="small" label={t('event.phone', 'Phone (optional)')} value={phone} onChange={(e) => setPhone(e.target.value)} fullWidth />
             </Grid>
             {event.pricingRule?.requiresPayment && (
               <Grid size={{ xs: 12 }}>
-                <TextField select size="small" label="Payment Method" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} fullWidth required>
+                <TextField select size="small" label={t('event.paymentMethod', 'Payment Method')} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} fullWidth required>
                   {(event.pricingRule.paymentMethod === 'BOTH' || event.pricingRule.paymentMethod === 'CASH') && (
-                    <MenuItem value="CASH">Cash</MenuItem>
+                    <MenuItem value="CASH">{t('event.cash', 'Cash')}</MenuItem>
                   )}
                   {(event.pricingRule.paymentMethod === 'BOTH' || event.pricingRule.paymentMethod === 'CARD') && (
-                    <MenuItem value="CARD">Card</MenuItem>
+                    <MenuItem value="CARD">{t('event.card', 'Card')}</MenuItem>
                   )}
                 </TextField>
               </Grid>
             )}
             <Grid size={{ xs: 12 }}>
-              <TextField size="small" label="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} fullWidth multiline rows={2} />
+              <TextField size="small" label={t('event.notes', 'Notes (optional)')} value={notes} onChange={(e) => setNotes(e.target.value)} fullWidth multiline rows={2} />
             </Grid>
           </Grid>
           <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-            <Button variant="outlined" onClick={() => setStep('guests')} sx={{ flex: 1 }}>Back</Button>
+            <Button variant="outlined" onClick={() => setStep('guests')} sx={{ flex: 1 }}>{t('common.back', 'Back')}</Button>
             <Button
               variant="contained"
               onClick={() => setStep('confirm')}
               disabled={!firstName || !lastName || !email}
               sx={{ flex: 2 }}
             >
-              Review
+              {t('event.review', 'Review')}
             </Button>
           </Box>
         </Box>
@@ -364,7 +366,7 @@ export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
       {/* Step: Confirm */}
       {step === 'confirm' && (
         <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>Review Reservation</Typography>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{t('event.reviewReservation', 'Review Reservation')}</Typography>
           <Divider sx={{ mb: 1.5 }} />
           {[
             ['Name', `${firstName} ${lastName}`],
@@ -386,7 +388,7 @@ export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
             </Box>
           ))}
           <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-            <Button variant="outlined" onClick={() => setStep('contact')} sx={{ flex: 1 }}>Back</Button>
+            <Button variant="outlined" onClick={() => setStep('contact')} sx={{ flex: 1 }}>{t('common.back', 'Back')}</Button>
             <Button
               variant="contained"
               color="success"
@@ -395,7 +397,7 @@ export default function EventEmbedBookingForm({ event, embedTokenId }: Props) {
               startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : undefined}
               sx={{ flex: 2 }}
             >
-              {submitting ? 'Confirming…' : 'Confirm'}
+              {submitting ? t('event.confirming', 'Confirming…') : t('event.confirm', 'Confirm')}
             </Button>
           </Box>
         </Box>
