@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { CookieOutlined } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { useTranslation } from '@/i18n/client';
 
 const CONSENT_KEY = 'ontooff_cookie_consent';
@@ -51,6 +52,7 @@ function writeConsent(analytics: boolean, marketing: boolean) {
 
 export default function CookieConsent() {
   const { t } = useTranslation('common');
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   const [analytics, setAnalytics] = useState(true);
@@ -82,6 +84,7 @@ export default function CookieConsent() {
   };
 
   if (!visible) return null;
+  if (pathname?.startsWith('/embed')) return null;
 
   return (
     <Box

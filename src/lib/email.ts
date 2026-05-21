@@ -40,9 +40,11 @@ export interface PlaceBranding {
 /** Build the From header with an optional place name override */
 function buildFrom(place?: PlaceBranding): string {
   if (!place?.name) return FROM;
-  const domain = FROM.match(/<[^@>]+@([^>]+)>/)?.[1] ?? 'localhost';
+  // Keep the exact email address from FROM — only replace the display name.
+  // This avoids sender-verification failures for non-existent addresses.
+  const email = FROM.match(/<([^>]+)>/)?.[1] ?? FROM;
   const safe = place.name.replace(/[",]/g, '').trim();
-  return `${safe} <no-reply@${domain}>`;
+  return `${safe} <${email}>`;
 }
 
 function baseTemplate(content: string, preheader = ''): string {
