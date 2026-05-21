@@ -64,7 +64,7 @@ export default function LocationsTab({ placeId }: { placeId: string }) {
   const [embedError, setEmbedError] = useState<string | null>(null);
   const [embedCopied, setEmbedCopied] = useState<string | null>(null);
 
-  const APP_URL = typeof window !== 'undefined' ? window.location.origin : '';
+  const APP_URL = 'https://www.ontooff.app';
 
   useEffect(() => {
     fetch(`/api/activity-locations?placeId=${placeId}`)

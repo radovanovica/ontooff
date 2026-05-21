@@ -24,7 +24,7 @@ import {
   Snackbar,
   MenuItem,
 } from '@mui/material';
-import { Add, ContentCopy, Delete } from '@mui/icons-material';
+import { Add, Check, Code, ContentCopy, Delete } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
@@ -52,7 +52,7 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [activityTypes, setActivityTypes] = useState<ActivityTypeOption[]>([]);
   const { register, handleSubmit, reset } = useForm<{ label: string; expiresAt?: string; activityTypeId?: string }>();
 
@@ -103,10 +103,14 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
     fetch_();
   };
 
-  const copyToClipboard = (token: string) => {
-    const url = `${window.location.origin}/embed/${token}`;
-    navigator.clipboard.writeText(url);
-    setCopied(true);
+  const copyToClipboard = (token: string, type: 'url' | 'iframe') => {
+    const url = `https://www.ontooff.app/embed/${token}`;
+    const text = type === 'iframe'
+      ? `<iframe src="${url}" width="100%" height="700" frameborder="0" allow="payment"></iframe>`
+      : url;
+    navigator.clipboard.writeText(text).catch(() => {});
+    setCopiedToken(token + type);
+    setTimeout(() => setCopiedToken(null), 2000);
   };
 
   if (loading) return <CircularProgress />;
@@ -163,10 +167,15 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
                   <TableCell>
                     {token.expiresAt ? format(new Date(token.expiresAt), 'dd.MM.yyyy') : '—'}
                   </TableCell>
-                  <TableCell>
-                    <Tooltip title={t('embedTokens.copy')}>
-                      <IconButton size="small" onClick={() => copyToClipboard(token.token)}>
-                        <ContentCopy fontSize="small" />
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                    <Tooltip title={copiedToken === token.token + 'url' ? t('embedTokens.copied') : t('embedTokens.copy')}>
+                      <IconButton size="small" color={copiedToken === token.token + 'url' ? 'success' : 'default'} onClick={() => copyToClipboard(token.token, 'url')}>
+                        {copiedToken === token.token + 'url' ? <Check fontSize="small" /> : <ContentCopy fontSize="small" />}
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={copiedToken === token.token + 'iframe' ? t('embedTokens.copied') : t('embedTokens.embedCode', 'Copy iFrame')}>
+                      <IconButton size="small" color={copiedToken === token.token + 'iframe' ? 'success' : 'default'} onClick={() => copyToClipboard(token.token, 'iframe')}>
+                        {copiedToken === token.token + 'iframe' ? <Check fontSize="small" /> : <Code fontSize="small" />}
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={t('common.delete')}>
@@ -227,7 +236,7 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
         </Box>
       </Dialog>
 
-      <Snackbar open={copied} autoHideDuration={2000} onClose={() => setCopied(false)} message={t('embedTokens.copied')} />
+      <Snackbar open={!!copiedToken} autoHideDuration={2000} onClose={() => setCopiedToken(null)} message={t('embedTokens.copied')} />
     </Box>
   );
 }
