@@ -54,7 +54,7 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [activityTypes, setActivityTypes] = useState<ActivityTypeOption[]>([]);
-  const { register, handleSubmit, reset } = useForm<{ label: string; expiresAt?: string; activityTypeId?: string }>();
+  const { register, handleSubmit, reset } = useForm<{ label: string; expiresAt?: string; activityTypeId?: string; allowedOrigins?: string }>();
 
   const fetch_ = () => {
     fetch(`/api/embed-tokens?placeId=${placeId}`)
@@ -72,7 +72,7 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
       .catch(() => {/* non-critical */});
   }, [placeId]);
 
-  const onCreate = async (data: { label: string; expiresAt?: string; activityTypeId?: string }) => {
+  const onCreate = async (data: { label: string; expiresAt?: string; activityTypeId?: string; allowedOrigins?: string }) => {
     const res = await fetch('/api/embed-tokens', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -81,6 +81,7 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
         label: data.label,
         activityTypeId: data.activityTypeId || undefined,
         expiresAt: data.expiresAt ? new Date(`${data.expiresAt}T00:00:00.000Z`).toISOString() : undefined,
+        allowedOrigins: data.allowedOrigins ? data.allowedOrigins.split(',').map((s) => s.trim()).filter(Boolean) : [],
       }),
     });
     const json = await res.json().catch(() => ({}));
@@ -227,6 +228,13 @@ export default function EmbedTokensTab({ placeId }: { placeId: string }) {
               type="date"
               fullWidth
               slotProps={{ inputLabel: { shrink: true } }}
+            />
+            <TextField
+              {...register('allowedOrigins')}
+              label={t('embedTokens.form.allowedOrigins', 'Allowed origins (optional)')}
+              fullWidth
+              placeholder="mysite.com, shop.example.com"
+              helperText={t('embedTokens.form.originsHint', 'Comma-separated domains. Leave empty to allow all sites.')}
             />
           </DialogContent>
           <DialogActions>

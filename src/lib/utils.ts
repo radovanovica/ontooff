@@ -150,6 +150,7 @@ export async function validateEmbedToken(token: string) {
       activityTypeId: true,
       isActive: true,
       expiresAt: true,
+      allowedOrigins: true,
       place: { select: { id: true, name: true, isActive: true, logoUrl: true, slug: true } },
       activityLocation: {
         select: {

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
-import { Box, Container, Paper } from '@mui/material';
+import { headers } from 'next/headers';
+import { Box, Container, Paper, Typography } from '@mui/material';
 import { validateEmbedToken } from '@/lib/utils';
 import { prisma } from '@/lib/prisma';
 import RegistrationStepper from '@/components/registration/RegistrationStepper';
@@ -23,6 +24,25 @@ export default async function EmbedPage({ params }: Props) {
   const { token } = await params;
   const embedToken = await validateEmbedToken(token);
   if (!embedToken) notFound();
+
+  // Check allowed origins against Referer header
+  const reqHeaders = await headers();
+  const referer = reqHeaders.get('referer') ?? '';
+  if (embedToken.allowedOrigins.length > 0 && referer) {
+    let refHost = '';
+    try { refHost = new URL(referer).hostname; } catch { /* invalid referer */ }
+    const allowed = embedToken.allowedOrigins.some((o) => {
+      const clean = o.trim().replace(/^https?:\/\//, '').split('/')[0].split(':')[0];
+      return clean && (refHost === clean || refHost.endsWith(`.${clean}`));
+    });
+    if (!allowed) {
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', p: 4 }}>
+          <Typography color="text.secondary">This embed is not authorized for this domain.</Typography>
+        </Box>
+      );
+    }
+  }
 
   // Fetch place info for header (logo + name)
   const place = await prisma.place.findUnique({

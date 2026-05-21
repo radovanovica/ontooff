@@ -134,6 +134,7 @@ export default function EventsTab({ placeId }: Props) {
   const [embedCreating, setEmbedCreating] = useState(false);
   const [embedError, setEmbedError] = useState<string | null>(null);
   const [embedCopied, setEmbedCopied] = useState<string | null>(null);
+  const [embedCreateOrigins, setEmbedCreateOrigins] = useState('');
 
   const APP_URL = 'https://www.ontooff.app';
 
@@ -298,6 +299,7 @@ export default function EventsTab({ placeId }: Props) {
     setEmbedError(null);
     setEmbedCreateLabel('');
     setEmbedCreateExpiry('');
+    setEmbedCreateOrigins('');
     setEmbedTokens([]);
     setEmbedTokensLoading(true);
     fetch(`/api/embed-tokens?placeId=${placeId}&eventId=${ev.id}`)
@@ -320,6 +322,7 @@ export default function EventsTab({ placeId }: Props) {
           eventId: embedDialogEvent.id,
           label: embedCreateLabel.trim(),
           expiresAt: embedCreateExpiry ? new Date(`${embedCreateExpiry}T00:00:00.000Z`).toISOString() : undefined,
+          allowedOrigins: embedCreateOrigins.split(',').map((s) => s.trim()).filter(Boolean),
         }),
       });
       const json = await res.json();
@@ -327,6 +330,7 @@ export default function EventsTab({ placeId }: Props) {
       setEmbedTokens((prev) => [json.data, ...prev]);
       setEmbedCreateLabel('');
       setEmbedCreateExpiry('');
+      setEmbedCreateOrigins('');
     } catch (err) {
       setEmbedError(err instanceof Error ? err.message : 'Failed to create token');
     } finally {
@@ -766,6 +770,14 @@ export default function EventsTab({ placeId }: Props) {
               onChange={(e) => setEmbedCreateExpiry(e.target.value)}
               slotProps={{ inputLabel: { shrink: true } }}
               sx={{ flex: '1 1 150px' }}
+            />
+            <TextField
+              size="small"
+              label={t('embedTokens.form.allowedOrigins', 'Allowed origins')}
+              value={embedCreateOrigins}
+              onChange={(e) => setEmbedCreateOrigins(e.target.value)}
+              placeholder="mysite.com, shop.example.com"
+              sx={{ flex: '1 1 100%' }}
             />
             <Button
               variant="contained"
