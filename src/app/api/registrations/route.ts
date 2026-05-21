@@ -114,6 +114,7 @@ export async function GET(req: NextRequest) {
         },
         registrationSpots: { include: { spot: { select: { id: true, name: true, code: true } } } },
         paymentBreakdown: { orderBy: { sortOrder: 'asc' } },
+        pricingRule: { select: { currency: true } },
       },
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -122,9 +123,14 @@ export async function GET(req: NextRequest) {
     prisma.registration.count({ where }),
   ]);
 
+  const items = registrations.map((reg) => ({
+    ...reg,
+    currency: reg.pricingRule?.currency ?? null,
+  }));
+
   return NextResponse.json({
     success: true,
-    data: { items: registrations, total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+    data: { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
   });
 }
 
@@ -379,7 +385,7 @@ export async function POST(req: NextRequest) {
       where: { id: data.activityLocationId!, isActive: true },
       include: {
         activityTypes: { include: { activityType: true } },
-        place: { select: { name: true, id: true, owner: { select: { email: true, name: true } } } },
+        place: { select: { name: true, id: true, logoUrl: true, phone: true, website: true, facebookUrl: true, instagramUrl: true, twitterUrl: true, tiktokUrl: true, youtubeUrl: true, linkedinUrl: true, owner: { select: { email: true, name: true } } } },
       },
     });
 
@@ -651,6 +657,7 @@ export async function POST(req: NextRequest) {
         ),
         editToken: registration.editToken,
         status: registration.status,
+        place: { name: location.place.name, logoUrl: location.place.logoUrl, phone: location.place.phone, website: location.place.website, facebookUrl: location.place.facebookUrl, instagramUrl: location.place.instagramUrl, twitterUrl: location.place.twitterUrl, tiktokUrl: location.place.tiktokUrl, youtubeUrl: location.place.youtubeUrl, linkedinUrl: location.place.linkedinUrl },
       }).catch(console.error);
     }
 

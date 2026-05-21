@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Button, TextField, Grid, CircularProgress, Alert, Snackbar, Typography, Paper, IconButton, Tooltip, Avatar, Divider, Stack } from '@mui/material';
-import { CloudUpload, DeleteOutlined, Map as MapIcon, AccountCircle, Image as ImageIcon, Business } from '@mui/icons-material';
+import { CloudUpload, DeleteOutlined, Map as MapIcon, AccountCircle, Image as ImageIcon, Business, Share } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -19,6 +19,12 @@ const schema = z.object({
   phone: z.string().optional(),
   email: z.string().email().optional().or(z.literal('')),
   website: z.string().url().optional().or(z.literal('')),
+  facebookUrl: z.string().url().optional().or(z.literal('')),
+  instagramUrl: z.string().url().optional().or(z.literal('')),
+  twitterUrl: z.string().url().optional().or(z.literal('')),
+  tiktokUrl: z.string().url().optional().or(z.literal('')),
+  youtubeUrl: z.string().url().optional().or(z.literal('')),
+  linkedinUrl: z.string().url().optional().or(z.literal('')),
   timezone: z.string().optional(),
 });
 
@@ -73,6 +79,12 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
           phone: p.phone ?? '',
           email: p.email ?? '',
           website: p.website ?? '',
+          facebookUrl: p.facebookUrl ?? '',
+          instagramUrl: p.instagramUrl ?? '',
+          twitterUrl: p.twitterUrl ?? '',
+          tiktokUrl: p.tiktokUrl ?? '',
+          youtubeUrl: p.youtubeUrl ?? '',
+          linkedinUrl: p.linkedinUrl ?? '',
           timezone: p.timezone ?? 'Europe/Belgrade',
         });
         setMapImageUrl(p.mapImageUrl ?? null);
@@ -471,12 +483,50 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
         </Box>
       </Paper>
 
+      {/* ── Section 3: Social Media ──────────────────────────────────── */}
+      <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+        <Box sx={{ px: 3, py: 1.5, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Share sx={{ fontSize: 20, color: 'text.secondary' }} />
+          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t('places.sectionSocialMedia', 'Social Media')}</Typography>
+        </Box>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ p: 3 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {t('places.socialMediaHint', 'Add your social media links. They will be displayed on your public place page.')}
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField {...register('facebookUrl')} label="Facebook" placeholder="https://facebook.com/yourplace" fullWidth error={!!errors.facebookUrl} helperText={errors.facebookUrl?.message} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField {...register('instagramUrl')} label="Instagram" placeholder="https://instagram.com/yourplace" fullWidth error={!!errors.instagramUrl} helperText={errors.instagramUrl?.message} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField {...register('twitterUrl')} label="X (Twitter)" placeholder="https://x.com/yourplace" fullWidth error={!!errors.twitterUrl} helperText={errors.twitterUrl?.message} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField {...register('tiktokUrl')} label="TikTok" placeholder="https://tiktok.com/@yourplace" fullWidth error={!!errors.tiktokUrl} helperText={errors.tiktokUrl?.message} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField {...register('youtubeUrl')} label="YouTube" placeholder="https://youtube.com/@yourplace" fullWidth error={!!errors.youtubeUrl} helperText={errors.youtubeUrl?.message} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField {...register('linkedinUrl')} label="LinkedIn" placeholder="https://linkedin.com/company/yourplace" fullWidth error={!!errors.linkedinUrl} helperText={errors.linkedinUrl?.message} />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <Button type="submit" variant="contained" disabled={saving}>
+                {saving ? t('common.saving') : t('places.saveSocialMedia', 'Save Social Media')}
+              </Button>
+            </Grid>
+          </Grid>
+        </Box>
+      </Paper>
+
       {/* Hidden file inputs */}
-      <input ref={mapFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleMapFileChange} />
       <input ref={profileFileRef} type="file" accept="image/*" style={{ display: 'none' }}
         onChange={makeFileHandler(setProfileImageUrl, setProfileUploading, setProfileError, 'images/profile')} />
       <input ref={coverFileRef} type="file" accept="image/*" style={{ display: 'none' }}
         onChange={makeFileHandler(setCoverImageUrl, setCoverUploading, setCoverError, 'images/cover')} />
+      <input ref={mapFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleMapFileChange} />
 
       {/* Snackbars */}
       <Snackbar open={success} autoHideDuration={3000} onClose={() => setSuccess(false)} message={t('places.updated')} />

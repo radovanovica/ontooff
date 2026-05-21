@@ -103,7 +103,10 @@
     "saveInformation": "Save Information",
     "saveLogo": "Save Logo",
     "saveCover": "Save Cover Photo",
-    "saveMap": "Save Map Image"
+    "saveMap": "Save Map Image",
+    "sectionSocialMedia": "Social Media",
+    "socialMediaHint": "Add your social media links. They will be displayed on your public place page.",
+    "saveSocialMedia": "Save Social Media"
   },
   "activityTypes": {
     "title": "Activity Types",
@@ -220,7 +223,13 @@
     },
     "mapZoneHint": "Existing location zones are shown. Click \"Pick on map\" then click where this new location sits.",
     "noMapHint": "Set a place map background first to enable zone placement.",
-    "nameRequired": "Name is required"
+    "nameRequired": "Name is required",
+    "embedDialog": {
+      "title": "Embed — {{name}}",
+      "createNew": "Create New Token",
+      "tokens": "Tokens",
+      "noTokens": "No tokens yet. Create one above."
+    }
   },
   "spots": {
     "title": "Spots",

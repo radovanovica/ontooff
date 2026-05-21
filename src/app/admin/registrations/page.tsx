@@ -36,6 +36,7 @@ interface RegistrationRow {
   status: string;
   paymentStatus: string;
   totalAmount: number | null;
+  currency: string | null;
   startDate: string;
   endDate: string;
   createdAt: string;
@@ -165,7 +166,7 @@ export default function AdminRegistrationsPage() {
                   <TableCell>
                     {reg.totalAmount != null ? (
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        €{Number(reg.totalAmount).toFixed(2)}
+                        {reg.currency ?? 'EUR'} {Number(reg.totalAmount).toFixed(2)}
                       </Typography>
                     ) : (
                       <Typography variant="caption" color="text.secondary">—</Typography>

@@ -40,6 +40,7 @@ interface BookingRow {
   email: string;
   status: RegistrationStatus;
   totalAmount: number | null;
+  currency: string | null;
   startDate: string;
   endDate: string;
   createdAt: string;
@@ -261,7 +262,7 @@ export default function OwnerBookingsPage() {
                     </TableCell>
                     <TableCell>
                       {booking.totalAmount != null
-                        ? `${t('bookings.table.currency')} ${Number(booking.totalAmount).toFixed(2)}`
+                        ? `${booking.currency ?? 'RSD'} ${Number(booking.totalAmount).toFixed(2)}`
                         : t('bookings.table.empty')}
                     </TableCell>
                     <TableCell>

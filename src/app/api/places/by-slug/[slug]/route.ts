@@ -20,6 +20,12 @@ export async function GET(
       phone: true,
       email: true,
       website: true,
+      facebookUrl: true,
+      instagramUrl: true,
+      twitterUrl: true,
+      tiktokUrl: true,
+      youtubeUrl: true,
+      linkedinUrl: true,
       logoUrl: true,
       coverUrl: true,
       activityTypes: {

@@ -103,7 +103,10 @@
     "saveInformation": "Guardar información",
     "saveLogo": "Guardar logo",
     "saveCover": "Guardar foto de portada",
-    "saveMap": "Guardar imagen del mapa"
+    "saveMap": "Guardar imagen del mapa",
+    "sectionSocialMedia": "Redes sociales",
+    "socialMediaHint": "Añade tus enlaces de redes sociales. Se mostrarán en tu página pública del lugar.",
+    "saveSocialMedia": "Guardar redes sociales"
   },
   "activityTypes": {
     "title": "Tipos de Actividad",
@@ -219,6 +222,12 @@
       "activityTypeRequired": "Se requiere al menos un tipo de actividad"
     },
     "nameRequired": "El nombre es obligatorio",
+    "embedDialog": {
+      "title": "Embed — {{name}}",
+      "createNew": "Crear nuevo token",
+      "tokens": "Tokens",
+      "noTokens": "Sin tokens todavía. Crea uno arriba."
+    },
     "mapZoneHint": "Se muestran las zonas de ubicación existentes. Haga clic en \"Marcar en el mapa\" y luego haga clic donde se encuentra esta nueva ubicación.",
     "noMapHint": "Primero configura una imagen de fondo del mapa para habilitar la colocación de zonas."
   },

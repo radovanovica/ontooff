@@ -103,7 +103,10 @@
     "saveInformation": "Sačuvajte informacije",
     "saveLogo": "Sačuvajte logo",
     "saveCover": "Sačuvajte naslovnu sliku",
-    "saveMap": "Sačuvajte sliku mape"
+    "saveMap": "Sačuvajte sliku mape",
+    "sectionSocialMedia": "Društvene mreže",
+    "socialMediaHint": "Dodajte linkove na društvene mreže. Bit će prikazani na javnoj stranici mjesta.",
+    "saveSocialMedia": "Sačuvajte društvene mreže"
   },
   "activityTypes": {
     "title": "Vrste aktivnosti",
@@ -219,6 +222,12 @@
       "activityTypeRequired": "Potrebna je najmanje jedna vrsta aktivnosti"
     },
     "nameRequired": "Naziv je obavezan",
+    "embedDialog": {
+      "title": "Embed — {{name}}",
+      "createNew": "Kreirajte novi token",
+      "tokens": "Tokeni",
+      "noTokens": "Nema tokena. Kreirajte jedan gore."
+    },
     "mapZoneHint": "Prikazane su postojeće zone lokacija. Kliknite \"Označite na karti\" pa kliknite gdje se nalazi ova nova lokacija.",
     "noMapHint": "Prvo postavite pozadinsku sliku karte kako biste omogućili postavljanje zona."
   },

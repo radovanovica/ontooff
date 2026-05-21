@@ -47,6 +47,7 @@ interface BookingRow {
   email: string;
   status: string;
   totalAmount: number | null;
+  currency: string | null;
   startDate: string;
   endDate: string;
   activityLocation?: { name: string };
@@ -322,7 +323,7 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
                   <TableCell>
                     {reg.totalAmount != null ? (
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {t('bookings.table.currency')} {Number(reg.totalAmount).toFixed(2)}
+                        {reg.currency ?? 'RSD'} {Number(reg.totalAmount).toFixed(2)}
                       </Typography>
                     ) : t('bookings.table.empty')}
                   </TableCell>

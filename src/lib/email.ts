@@ -22,6 +22,29 @@ const FROM = process.env.EMAIL_FROM ?? 'ontooff <no-reply@localhost>';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? 'ontooff';
 
+/** Optional place branding passed through to guest-facing emails */
+export interface PlaceBranding {
+  name: string;
+  logoUrl?: string | null;
+  color?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  facebookUrl?: string | null;
+  instagramUrl?: string | null;
+  twitterUrl?: string | null;
+  tiktokUrl?: string | null;
+  youtubeUrl?: string | null;
+  linkedinUrl?: string | null;
+}
+
+/** Build the From header with an optional place name override */
+function buildFrom(place?: PlaceBranding): string {
+  if (!place?.name) return FROM;
+  const domain = FROM.match(/<[^@>]+@([^>]+)>/)?.[1] ?? 'localhost';
+  const safe = place.name.replace(/[",]/g, '').trim();
+  return `${safe} <no-reply@${domain}>`;
+}
+
 function baseTemplate(content: string, preheader = ''): string {
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -83,11 +106,117 @@ function baseTemplate(content: string, preheader = ''): string {
 </html>`;
 }
 
+/** Renders a contact-info + social-links block for use inside the place-branded email template. Returns empty string when nothing to show. */
+function placeContactBlock(place: PlaceBranding): string {
+  const contactParts: string[] = [];
+  if (place.phone) {
+    contactParts.push(`<a href="tel:${place.phone}" style="color:#555048;text-decoration:none;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;">&#9990;&nbsp;${place.phone}</a>`);
+  }
+  if (place.website) {
+    const display = place.website.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    contactParts.push(`<a href="${place.website}" target="_blank" style="color:#4a7c59;text-decoration:none;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;">&#127760;&nbsp;${display}</a>`);
+  }
+
+  const socials = [
+    { url: place.facebookUrl, label: 'Facebook', color: '#1877F2' },
+    { url: place.instagramUrl, label: 'Instagram', color: '#E4405F' },
+    { url: place.twitterUrl, label: 'X / Twitter', color: '#000000' },
+    { url: place.tiktokUrl, label: 'TikTok', color: '#EE1D52' },
+    { url: place.youtubeUrl, label: 'YouTube', color: '#FF0000' },
+    { url: place.linkedinUrl, label: 'LinkedIn', color: '#0A66C2' },
+  ].filter((s): s is { url: string; label: string; color: string } => !!s.url);
+
+  if (contactParts.length === 0 && socials.length === 0) return '';
+
+  const contactHtml = contactParts.length > 0
+    ? `<p style="margin:0 0 ${socials.length > 0 ? '14px' : '0'};line-height:2;">${contactParts.join('&nbsp;&nbsp;&bull;&nbsp;&nbsp;')}</p>`
+    : '';
+
+  const socialHtml = socials.length > 0
+    ? `<p style="margin:0 0 8px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;color:#9e8e7e;text-transform:uppercase;letter-spacing:1px;">Follow us</p>
+       <p style="margin:0;">${socials.map(s => `<a href="${s.url}" target="_blank" style="display:inline-block;margin:3px 4px;padding:5px 13px;border-radius:14px;background:${s.color};color:#ffffff;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;text-decoration:none;">${s.label}</a>`).join('')}</p>`
+    : '';
+
+  return `
+          <!-- Place contact & social -->
+          <tr>
+            <td style="background-color:#f0ece7;border-top:1px solid #e0d8d0;padding:22px 48px;text-align:center;">
+              ${contactHtml}${socialHtml}
+            </td>
+          </tr>`;
+}
+
+/**
+ * Place-branded template for guest-facing emails (booking confirmations, reminders, etc.)
+ * Shows the place logo + name in the header and only a small "Powered by ontooff" footer.
+ * Falls back to baseTemplate when no place branding is provided.
+ */
+function placeTemplate(content: string, preheader = '', place?: PlaceBranding): string {
+  if (!place) return baseTemplate(content, preheader);
+  const accent = place.color ?? '#2d5a27';
+  return `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>${place.name}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f2ede8;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${preheader}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>` : ''}
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f2ede8;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+        <!--[if mso]><table role="presentation" width="600"><tr><td><![endif]-->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e0d8d0;">
+
+          <!-- Place-branded header -->
+          <tr>
+            <td style="background-color:${accent};padding:32px 48px;text-align:center;">
+              ${place.logoUrl
+                ? `<img src="${place.logoUrl}" alt="${place.name}" width="64" height="64" style="display:block;margin:0 auto 14px;border-radius:8px;border:3px solid rgba(255,255,255,0.4);object-fit:cover;background:#fff;" />`
+                : ''
+              }
+              <h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:700;letter-spacing:0.5px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">${place.name}</h1>
+            </td>
+          </tr>
+
+          <!-- Divider line -->
+          <tr>
+            <td style="background-color:${accent};opacity:0.7;height:3px;font-size:0;line-height:0;">&nbsp;</td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:48px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+              ${content}
+            </td>
+          </tr>
+          ${placeContactBlock(place)}
+
+          <!-- Footer: only "Powered by ontooff" -->
+          <tr>
+            <td style="background-color:#f7f4f1;border-top:1px solid #e0d8d0;padding:20px 48px;text-align:center;">
+              <p style="color:#b8a898;font-size:11px;margin:0;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+                Powered by <a href="${APP_URL}" style="color:#4a7c59;text-decoration:none;font-weight:600;">${APP_NAME}</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!--[if mso]></td></tr></table><![endif]-->
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 /** Primary CTA button */
 function btn(label: string, url: string, bg = '#2d5a27'): string {
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:28px auto 0;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:16px auto 0;">
     <tr>
-      <td style="border-radius:6px;background-color:${bg};">
+      <td style="border-radius:6px;background:${bg};">
         <a href="${url}" target="_blank" style="display:inline-block;padding:14px 36px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:6px;letter-spacing:0.3px;">${label}</a>
       </td>
     </tr>
@@ -209,6 +338,8 @@ export interface RegistrationEmailData {
   editToken: string;
   /** Actual registration status — affects subject and heading copy */
   status?: string;
+  /** Optional place branding for the email header */
+  place?: PlaceBranding;
 }
 
 export async function sendRegistrationConfirmation(
@@ -241,7 +372,7 @@ export async function sendRegistrationConfirmation(
     ? `Hi <strong>${data.firstName}</strong>, your reservation has been confirmed. Please keep this email for your records.`
     : `Hi <strong>${data.firstName}</strong>, your reservation has been received and is <strong>pending confirmation</strong> from the organiser. You will receive another email once it has been reviewed.`;
 
-  const html = baseTemplate(`
+  const html = placeTemplate(`
     <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:${headingColor};margin:0 0 6px;">${heading}</h2>
     <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;color:#9e8e7e;letter-spacing:0.5px;text-transform:uppercase;margin:0 0 28px;">Reservation #${data.registrationNumber}</p>
 
@@ -258,7 +389,7 @@ export async function sendRegistrationConfirmation(
     ${paymentHtml}
 
     <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:28px 0 0;">You can view or manage your reservation at any time using the secure link below.</p>
-    ${btn('View My Reservation', editUrl)}
+    ${btn('View My Reservation', editUrl, data.place?.color ?? '#2d5a27')}
     <hr style="border:none;border-top:1px solid #e0d8d0;margin:32px 0 0;" />
     <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:#b8a898;margin:16px 0 0;">
       If the button doesn&rsquo;t work, copy and paste this link into your browser:<br/>
@@ -267,10 +398,10 @@ export async function sendRegistrationConfirmation(
     <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;color:#c0b0a0;margin:8px 0 0;">
       This link is personal &mdash; please do not share it.
     </p>
-  `, `Your ${data.activityName} reservation #${data.registrationNumber} is confirmed.`);
+  `, `Your ${data.activityName} reservation #${data.registrationNumber} is confirmed.`, data.place);
 
   await transporter.sendMail({
-    from: FROM,
+    from: buildFrom(data.place),
     to: email,
     subject: subjectLine,
     html,
@@ -286,7 +417,8 @@ export async function sendRegistrationStatusUpdate(
   firstName: string,
   registrationNumber: string,
   status: string,
-  editToken: string
+  editToken: string,
+  place?: PlaceBranding
 ): Promise<void> {
   const statusMessages: Record<string, { emoji: string; message: string; color: string }> = {
     CONFIRMED: { emoji: '✅', message: 'Your reservation has been confirmed!', color: '#2d5a27' },
@@ -303,7 +435,7 @@ export async function sendRegistrationStatusUpdate(
     COMPLETED: 'Completed',
   };
 
-  const html = baseTemplate(`
+  const html = placeTemplate(`
     <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:${info.color};margin:0 0 28px;">${info.message}</h2>
     <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 24px;">Hi <strong>${firstName}</strong>,</p>
     ${infoCard(
@@ -311,11 +443,11 @@ export async function sendRegistrationStatusUpdate(
       detailRow('Status', `<strong style="color:${info.color};">${statusLabel[status] ?? status}</strong>`)
     , info.color)}
     <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:28px 0 0;">You can view the full details of your reservation using the link below.</p>
-    ${btn('View My Reservation', editUrl)}
-  `, `Reservation #${registrationNumber} status update from ${APP_NAME}.`);
+    ${btn('View My Reservation', editUrl, place?.color ?? info.color)}
+  `, `Reservation #${registrationNumber} status update from ${place?.name ?? APP_NAME}.`, place);
 
   await transporter.sendMail({
-    from: FROM,
+    from: buildFrom(place),
     to: email,
     subject: `Reservation #${registrationNumber} – Status Updated to ${statusLabel[status] ?? status}`,
     html,
@@ -560,6 +692,137 @@ export async function sendOrgRejectionEmail(email: string, orgName: string, reas
     from: FROM,
     to: email,
     subject: `Your organization application – ${APP_NAME}`,
+    html,
+  });
+}
+
+// ─────────────────────────────────────────
+// RESERVATION REMINDER (sent before check-in)
+// ─────────────────────────────────────────
+
+export interface ReservationReminderData {
+  registrationNumber: string;
+  firstName: string;
+  activityName: string;
+  locationName: string;
+  startDate: string;
+  daysUntil: number;
+  editToken: string;
+  place?: PlaceBranding;
+}
+
+export async function sendReservationReminder(
+  email: string,
+  data: ReservationReminderData
+): Promise<void> {
+  const editUrl = `${APP_URL}/registration/edit/${data.editToken}`;
+  const accent = data.place?.color ?? '#2d5a27';
+  const daysText = data.daysUntil === 1 ? 'tomorrow' : `in ${data.daysUntil} days`;
+
+  const html = placeTemplate(`
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:${accent};margin:0 0 6px;">Your activity is coming up!</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 24px;">
+      Hi <strong>${data.firstName}</strong>, just a friendly reminder that your reservation starts <strong>${daysText}</strong>.
+    </p>
+    ${infoCard(
+      detailRow('Activity', data.activityName) +
+      detailRow('Location', data.locationName) +
+      detailRow('Starts', data.startDate) +
+      detailRow('Reservation', `#${data.registrationNumber}`)
+    , accent)}
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:28px 0 0;">
+      Need to make changes? You can update your reservation using the link below.
+    </p>
+    ${btn('View My Reservation', editUrl, accent)}
+  `, `Reminder: your ${data.activityName} reservation starts ${daysText}.`, data.place);
+
+  await transporter.sendMail({
+    from: buildFrom(data.place),
+    to: email,
+    subject: `Reminder: ${data.activityName} starts ${daysText} — #${data.registrationNumber}`,
+    html,
+  });
+}
+
+// ─────────────────────────────────────────
+// REVIEW REQUEST (sent after stay is completed)
+// ─────────────────────────────────────────
+
+export interface ReviewRequestData {
+  firstName: string;
+  activityName: string;
+  placeSlug: string;
+  editToken: string;
+  place?: PlaceBranding;
+}
+
+export async function sendReviewRequest(
+  email: string,
+  data: ReviewRequestData
+): Promise<void> {
+  const reviewUrl = `${APP_URL}/places/${data.placeSlug}?editToken=${data.editToken}`;
+  const accent = data.place?.color ?? '#2d5a27';
+
+  const html = placeTemplate(`
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:${accent};margin:0 0 6px;">How was your experience?</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 24px;">
+      Hi <strong>${data.firstName}</strong>, we hope you enjoyed your <strong>${data.activityName}</strong>!
+      Your feedback helps us improve and helps others discover great experiences.
+    </p>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 28px;">
+      It only takes a minute — we'd love to hear what you think.
+    </p>
+    ${btn('Leave a Review', reviewUrl, accent)}
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:#9e8e7e;text-align:center;margin:20px 0 0;">
+      If you did not recently complete an activity with us, you can safely ignore this email.
+    </p>
+  `, `Share your feedback on ${data.activityName} — leave a review!`, data.place);
+
+  await transporter.sendMail({
+    from: buildFrom(data.place),
+    to: email,
+    subject: `How was your ${data.activityName}? Leave us a review`,
+    html,
+  });
+}
+
+// ─────────────────────────────────────────
+// COME BACK EMAIL (re-engagement)
+// ─────────────────────────────────────────
+
+export interface ComeBackEmailData {
+  firstName: string;
+  placeSlug: string;
+  place?: PlaceBranding;
+}
+
+export async function sendComeBackEmail(
+  email: string,
+  data: ComeBackEmailData
+): Promise<void> {
+  const placeUrl = `${APP_URL}/places/${data.placeSlug}`;
+  const accent = data.place?.color ?? '#2d5a27';
+  const placeName = data.place?.name ?? APP_NAME;
+
+  const html = placeTemplate(`
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:${accent};margin:0 0 6px;">We miss you, ${data.firstName}!</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 24px;">
+      It's been a while since your last visit. We have plenty of activities waiting for you at
+      <strong>${placeName}</strong> — why not come back and explore?
+    </p>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 28px;">
+      Browse available spots and book your next adventure today.
+    </p>
+    ${btn('Explore Activities', placeUrl, accent)}
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:#b8a898;text-align:center;margin:24px 0 0;">
+      You are receiving this email because you previously booked an activity with ${placeName}.
+    </p>
+  `, `Come back and book your next adventure at ${placeName}!`, data.place);
+
+  await transporter.sendMail({
+    from: buildFrom(data.place),
+    to: email,
+    subject: `We'd love to see you again at ${placeName}, ${data.firstName}`,
     html,
   });
 }

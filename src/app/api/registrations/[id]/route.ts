@@ -144,10 +144,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           activityLocation: {
             include: {
               activityTypes: { include: { activityType: { select: { name: true } } } },
-              place: { select: { name: true } },
+              place: { select: { name: true, logoUrl: true, phone: true, website: true, facebookUrl: true, instagramUrl: true, twitterUrl: true, tiktokUrl: true, youtubeUrl: true, linkedinUrl: true } },
             },
           },
-          event: { include: { place: { select: { name: true } } } },
+          event: { include: { place: { select: { name: true, logoUrl: true, phone: true, website: true, facebookUrl: true, instagramUrl: true, twitterUrl: true, tiktokUrl: true, youtubeUrl: true, linkedinUrl: true } } } },
           registrationSpots: { include: { spot: { select: { name: true, code: true } } } },
           paymentBreakdown: { orderBy: { sortOrder: 'asc' } },
           pricingRule: { select: { requiresPayment: true, currency: true } },
@@ -176,6 +176,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           })),
           editToken: fullReg.editToken,
           status: 'CONFIRMED',
+          place: {
+            name: fullReg.activityLocation?.place.name ?? fullReg.event?.place.name ?? '',
+            logoUrl: fullReg.activityLocation?.place.logoUrl ?? fullReg.event?.place.logoUrl,
+            phone: fullReg.activityLocation?.place.phone ?? fullReg.event?.place.phone,
+            website: fullReg.activityLocation?.place.website ?? fullReg.event?.place.website,
+            facebookUrl: fullReg.activityLocation?.place.facebookUrl ?? fullReg.event?.place.facebookUrl,
+            instagramUrl: fullReg.activityLocation?.place.instagramUrl ?? fullReg.event?.place.instagramUrl,
+            twitterUrl: fullReg.activityLocation?.place.twitterUrl ?? fullReg.event?.place.twitterUrl,
+            tiktokUrl: fullReg.activityLocation?.place.tiktokUrl ?? fullReg.event?.place.tiktokUrl,
+            youtubeUrl: fullReg.activityLocation?.place.youtubeUrl ?? fullReg.event?.place.youtubeUrl,
+            linkedinUrl: fullReg.activityLocation?.place.linkedinUrl ?? fullReg.event?.place.linkedinUrl,
+          },
         });
       }).catch(console.error);
     } else {

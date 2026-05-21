@@ -103,7 +103,10 @@
     "saveInformation": "Informationen speichern",
     "saveLogo": "Logo speichern",
     "saveCover": "Titelbild speichern",
-    "saveMap": "Kartenbild speichern"
+    "saveMap": "Kartenbild speichern",
+    "sectionSocialMedia": "Soziale Medien",
+    "socialMediaHint": "Fügen Sie Ihre Social-Media-Links hinzu. Sie werden auf Ihrer öffentlichen Ortsseite angezeigt.",
+    "saveSocialMedia": "Soziale Medien speichern"
   },
   "activityTypes": {
     "title": "Aktivitätstypen",
@@ -219,6 +222,12 @@
       "activityTypeRequired": "Mindestens ein Aktivitätstyp ist erforderlich"
     },
     "nameRequired": "Name ist erforderlich",
+    "embedDialog": {
+      "title": "Einbetten — {{name}}",
+      "createNew": "Neues Token erstellen",
+      "tokens": "Tokens",
+      "noTokens": "Noch keine Tokens. Erstellen Sie oben einen."
+    },
     "mapZoneHint": "Vorhandene Standortzonen werden angezeigt. Klicken Sie auf \"Auf Karte markieren\" und dann auf den Ort der neuen Lokation.",
     "noMapHint": "Bitte legen Sie zuerst ein Karten-Hintergrundbild fest, um die Zonenplatzierung zu aktivieren."
   },
