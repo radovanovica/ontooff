@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "save": "Guardar",
     "cancel": "Cancelar",
@@ -9,7 +9,9 @@
     "inactive": "Inactivo",
     "breadcrumbAdmin": "Administración",
     "loadingMap": "Cargando mapa…",
-    "loading": "Cargando…"
+    "loading": "Cargando…",
+    "search": "Buscar",
+    "clearAll": "Borrar todo"
   },
   "dashboard": {
     "title": "Panel de administración",
@@ -199,7 +201,8 @@
     },
     "totalCount": "{{count}} reserva en total",
     "totalCount_plural": "{{count}} reservas en total",
-    "backToList": "Volver a Reservas"
+    "backToList": "Volver a Reservas",
+    "filtered": "filtrado"
   },
   "freeLocations": {
     "title": "Ubicaciones gratuitas / de la comunidad",

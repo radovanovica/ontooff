@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "save": "Save",
     "cancel": "Cancel",
@@ -9,7 +9,9 @@
     "inactive": "Inactive",
     "breadcrumbAdmin": "Admin",
     "loadingMap": "Loading map…",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "search": "Search",
+    "clearAll": "Clear all"
   },
   "dashboard": {
     "title": "Admin Dashboard",
@@ -199,7 +201,8 @@
     },
     "totalCount": "{{count}} total registration",
     "totalCount_plural": "{{count}} total registrations",
-    "backToList": "Back to Registrations"
+    "backToList": "Back to Registrations",
+    "filtered": "filtered"
   },
   "freeLocations": {
     "title": "Free / Community Locations",

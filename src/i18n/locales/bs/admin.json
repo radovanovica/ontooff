@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "save": "Sačuvaj",
     "cancel": "Odustani",
@@ -9,7 +9,9 @@
     "inactive": "Neaktivno",
     "breadcrumbAdmin": "Admin",
     "loadingMap": "Učitavanje mape…",
-    "loading": "Učitavanje…"
+    "loading": "Učitavanje…",
+    "search": "Pretraži",
+    "clearAll": "Obriši sve"
   },
   "dashboard": {
     "title": "Admin kontrolna tabla",
@@ -199,7 +201,8 @@
     },
     "totalCount": "{{count}} ukupno rezervacija",
     "totalCount_plural": "{{count}} ukupno rezervacija",
-    "backToList": "Natrag na rezervacije"
+    "backToList": "Natrag na rezervacije",
+    "filtered": "filtrirano"
   },
   "freeLocations": {
     "title": "Besplatne / Zajedničke lokacije",

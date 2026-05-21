@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "save": "Speichern",
     "cancel": "Abbrechen",
@@ -9,7 +9,9 @@
     "inactive": "Inaktiv",
     "breadcrumbAdmin": "Admin",
     "loadingMap": "Karte lädt…",
-    "loading": "Lädt…"
+    "loading": "Lädt…",
+    "search": "Suchen",
+    "clearAll": "Alle löschen"
   },
   "dashboard": {
     "title": "Admin-Dashboard",
@@ -199,7 +201,8 @@
     },
     "totalCount": "{{count}} Buchung insgesamt",
     "totalCount_plural": "{{count}} Buchungen insgesamt",
-    "backToList": "Zurück zur Buchungsliste"
+    "backToList": "Zurück zur Buchungsliste",
+    "filtered": "gefiltert"
   },
   "freeLocations": {
     "title": "Kostenlose / Community-Standorte",
