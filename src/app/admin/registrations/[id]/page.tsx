@@ -171,7 +171,7 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
                   <Typography variant="body2">
                     {Object.entries(guestCounts)
                       .filter(([, value]) => Number(value) > 0)
-                      .map(([key, value]) => `${key}: ${value}`)
+                      .map(([key, value]) => `${t(`bookings.guestTypes.${key}`, key)}: ${value}`)
                       .join(', ') || t('bookings.table.empty')}
                   </Typography>
                 </Grid>
@@ -179,7 +179,7 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
                 {booking.paymentMethod && (
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography variant="caption" color="text.secondary">{t('bookings.details.paymentMethod')}</Typography>
-                    <Typography variant="body2">{booking.paymentMethod}</Typography>
+                    <Typography variant="body2">{t(`bookings.paymentMethodValues.${booking.paymentMethod}`, booking.paymentMethod)}</Typography>
                   </Grid>
                 )}
 
@@ -206,7 +206,7 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
 
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">{t('bookings.details.source')}</Typography>
-                  <Typography variant="body2">{booking.source ?? 'web'}</Typography>
+                  <Typography variant="body2">{t(`bookings.sources.${(booking.source ?? 'WEB').toUpperCase()}`, booking.source ?? 'web')}</Typography>
                 </Grid>
 
                 {booking.pricingRule && (

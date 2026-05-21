@@ -1,276 +1,286 @@
 {
-  "common": {
-    "save": "Sačuvaj",
-    "cancel": "Odustani",
-    "actions": "Akcije",
-    "noData": "Nema dostupnih podataka",
-    "all": "Sve",
-    "active": "Aktivno",
-    "inactive": "Neaktivno",
-    "breadcrumbAdmin": "Admin",
-    "loadingMap": "Učitavanje mape…",
-    "loading": "Učitavanje…",
-    "search": "Pretraži",
-    "clearAll": "Obriši sve"
-  },
-  "dashboard": {
-    "title": "Admin kontrolna tabla",
-    "subtitle": "Pregled platforme",
-    "stats": {
-      "totalUsers": "Ukupno korisnika",
-      "totalPlaces": "Aktivna mjesta",
-      "totalRegistrations": "Ukupno rezervacija",
-      "pendingRegistrations": "Na čekanju",
-      "confirmedRegistrations": "Potvrđeno",
-      "totalRevenue": "Ukupni prihod",
-      "totalOrgs": "Organizacije",
-      "pendingOrgs": "Organizacije na čekanju",
-      "freeLocations": "Lokacije zajednice"
-    },
-    "pendingOrgsButton": "{{count}} org čeka odobrenje",
-    "pendingOrgsButton_plural": "{{count}} org čekaju odobrenje",
-    "recentBookings": "Nedavne rezervacije",
-    "quickLinks": "Brze veze"
-  },
-  "users": {
-    "title": "Upravljanje korisnicima",
-    "subtitle": "Upravljajte svim korisnicima platforme",
-    "table": {
-      "name": "Ime",
-      "email": "Email",
-      "role": "Uloga",
-      "status": "Status",
-      "bookings": "Rezervacije",
-      "places": "Mjesta",
-      "joined": "Pridružio/la se",
-      "actions": "Akcije"
-    },
-    "columns": {
-      "name": "Ime",
-      "email": "Email",
-      "role": "Uloga",
-      "status": "Status",
-      "joined": "Pridružio/la se",
-      "registrations": "Rezervacije",
-      "actions": "Akcije"
-    },
-    "searchPlaceholder": "Traži po imenu ili emailu…",
-    "roleFilter": "Uloga",
-    "active": "Aktivno",
-    "inactive": "Neaktivno",
-    "activate": "Aktiviraj",
-    "deactivate": "Deaktiviraj",
-    "roles": {
-      "SUPER_ADMIN": "Super Admin",
-      "PLACE_OWNER": "Vlasnik mjesta",
-      "USER": "Korisnik"
-    },
-    "actions": {
-      "activate": "Aktiviraj",
-      "deactivate": "Deaktiviraj",
-      "changeRole": "Promijeni ulogu",
-      "viewBookings": "Pogledaj rezervacije"
-    },
-    "filters": {
-      "allRoles": "Sve uloge",
-      "searchPlaceholder": "Traži po imenu ili emailu…"
-    },
-    "confirmDeactivate": "Deaktivirati ovog korisnika? Neće moći da se prijavi.",
-    "confirmActivate": "Reaktivirati ovog korisnika?",
-    "confirmRoleChange": "Promijeniti ulogu u {{role}}?",
-    "errors": {
-      "loadFailed": "Učitavanje korisnika nije uspjelo"
-    }
-  },
-  "places": {
-    "title": "Sva mjesta",
-    "subtitle": "Upravljajte svim registrovanim mjestima",
-    "table": {
-      "name": "Naziv mjesta",
-      "owner": "Vlasnik",
-      "city": "Grad",
-      "locations": "Lokacije",
-      "status": "Status",
-      "created": "Kreirano"
-    },
-    "columns": {
-      "name": "Naziv mjesta",
-      "location": "Lokacija",
-      "owner": "Vlasnik",
-      "locations": "Lokacije",
-      "registrations": "Rezervacije",
-      "status": "Status",
-      "created": "Kreirano"
-    },
-    "confirmDelete": "Obrisati ovo mjesto? Svi povezani podaci bit će trajno uklonjeni.",
-    "searchPlaceholder": "Pretraži mjesta…",
-    "manage": "Upravljaj",
-    "totalCount": "{{count}} ukupno mjesto",
-    "totalCount_plural": "{{count}} ukupno mjesta",
-    "errors": {
-      "loadFailed": "Učitavanje mjesta nije uspjelo"
-    }
-  },
-  "organizations": {
-    "title": "Organizacije",
-    "subtitle": "Upravljajte registracijama organizacija",
-    "searchPlaceholder": "Pretraži po imenu ili emailu…",
-    "status": "Status",
-    "statuses": {
-      "PENDING": "Na čekanju",
-      "APPROVED": "Odobreno",
-      "REJECTED": "Odbijeno",
-      "SUSPENDED": "Suspendovano"
-    },
-    "columns": {
-      "name": "Naziv",
-      "email": "Email",
-      "location": "Lokacija",
-      "places": "Mjesta",
-      "status": "Status",
-      "registered": "Registrovano"
-    },
-    "actions": {
-      "approve": "Odobri",
-      "reject": "Odbij",
-      "suspend": "Suspendiraj",
-      "website": "Web sajt",
-      "delete": "Trajno obriši"
-    },
-    "confirmApprove": "Odobri organizaciju",
-    "confirmReject": "Odbij organizaciju",
-    "confirmSuspend": "Suspendiraj organizaciju",
-    "rejectionReason": "Razlog (neobavezno)",
-    "approveConfirmText": "Odobriti \"{{name}}\"? Bit će kreiran nalog PLACE_OWNER i podaci za prijavu bit će poslani na {{email}}.",
-    "rejectConfirmText": "Odbiti \"{{name}}\"? Obavještenje emailom bit će poslano na {{email}}.",
-    "suspendConfirmText": "Suspendovati \"{{name}}\"? Njihova mjesta ostaju ali neće moći kreirati nova.",
-    "deleteTitle": "Trajno obriši organizaciju",
-    "deleteConfirmText": "Trajno obrisati {{name}}?",
-    "deleteWarning": "Ovo uklanja organizaciju iz baze podataka, oslobađajući email adresu {{email}} za ponovnu registraciju. Sva povezana mjesta bit će zadržana ali odvojena od ove organizacije.",
-    "deletingLabel": "Brisanje…",
-    "deletePermanently": "Trajno obriši",
-    "errors": {
-      "loadFailed": "Učitavanje organizacija nije uspjelo",
-      "actionFailed": "Akcija nije uspjela",
-      "deleteFailed": "Brisanje nije uspjelo"
-    },
-    "totalCount": "{{count}} ukupno organizacija",
-    "totalCount_plural": "{{count}} ukupno organizacija"
-  },
-  "registrations": {
-    "title": "Sve rezervacije",
-    "subtitle": "Pregledajte i upravljajte svim rezervacijama",
-    "searchPlaceholder": "Traži po imenu, emailu ili ref…",
-    "table": {
-      "number": "Ref #",
-      "guest": "Gost",
-      "activity": "Aktivnost",
-      "place": "Mjesto",
-      "dates": "Datumi",
-      "guests": "Gosti",
-      "total": "Ukupno",
-      "payment": "Plaćanje",
-      "status": "Status",
-      "created": "Rezervisano"
-    },
-    "columns": {
-      "number": "Ref #",
-      "guest": "Gost",
-      "location": "Lokacija",
-      "dates": "Datumi",
-      "status": "Status",
-      "payment": "Plaćanje",
-      "amount": "Iznos"
-    },
-    "filters": {
-      "allStatuses": "Svi statusi",
-      "searchPlaceholder": "Traži po imenu, emailu ili ref…"
-    },
-    "actions": {
-      "confirm": "Potvrdi",
-      "cancel": "Otkaži",
-      "markPaid": "Označi kao plaćeno",
-      "viewDetails": "Detalji",
-      "sendEmail": "Ponovo pošalji email"
-    },
-    "confirmCancel": "Otkazati ovu rezervaciju? Gost će primiti email obavještenje.",
-    "confirmConfirm": "Potvrditi ovu rezervaciju? Gost će biti obaviješten.",
-    "confirmMarkPaid": "Označiti ovu rezervaciju kao potpuno plaćenu?",
-    "errors": {
-      "loadFailed": "Učitavanje rezervacija nije uspjelo"
-    },
-    "totalCount": "{{count}} ukupno rezervacija",
-    "totalCount_plural": "{{count}} ukupno rezervacija",
-    "backToList": "Natrag na rezervacije",
-    "filtered": "filtrirano"
-  },
-  "freeLocations": {
-    "title": "Besplatne / Zajedničke lokacije",
-    "subtitle": "Javne lokacije koje nisu vezane za niti jedan poslovni ili sistem rezervacija",
-    "addNew": "Dodaj lokaciju",
-    "searchPlaceholder": "Pretraži lokacije…",
-    "empty": "Još nema besplatnih lokacija. Dodajte jednu!",
-    "breadcrumbAdmin": "Admin",
-    "breadcrumbFreeLocations": "Besplatne lokacije",
-    "slugPreview": "Pregled: /locations/{{slug}}",
-    "deleteConfirm": "Obrisati \"{{name}}\"?",
-    "totalCount": "{{count}} ukupno lokacija",
-    "totalCount_plural": "{{count}} ukupno lokacija",
-    "table": {
-      "name": "Naziv",
-      "location": "Lokacija",
-      "tags": "Oznake",
-      "status": "Status",
-      "created": "Kreirano"
-    },
-    "actions": {
-      "viewPublic": "Pogledaj javnu stranicu",
-      "edit": "Uredi",
-      "delete": "Obriši"
-    },
-    "dialog": {
-      "addTitle": "Dodaj besplatnu lokaciju",
-      "editTitle": "Uredi: {{name}}",
-      "pinMapTitle": "Prikvači lokaciju na mapi"
-    },
-    "form": {
-      "images": "Slike",
-      "coverImage": "Naslovna slika",
-      "galleryPhotos": "Galerija fotografija ({{count}}/{{max}}) — postavite naslovnu ★ ili uklonite",
-      "galleryHint": "Dodajte do {{max}} fotografija. Prva koja nije naslovna prikazuje se na karticama.",
-      "locationDetails": "Detalji lokacije",
-      "gpsCoordinates": "GPS koordinate",
-      "contact": "Kontakt",
-      "additionalInfo": "Dodatne informacije",
-      "tagsSection": "Kategorije / Oznake",
-      "tagsHint": "Odaberite odgovarajuće kategorije aktivnosti:",
-      "name": "Naziv",
-      "slug": "Slug (URL)",
-      "slugHint": "Koristi se u URL-u: /places/{{slug}}",
-      "description": "Opis",
-      "address": "Adresa",
-      "city": "Grad",
-      "country": "Država",
-      "latitude": "Geografska širina",
-      "longitude": "Geografska dužina",
-      "phone": "Telefon",
-      "email": "Email",
-      "website": "Web sajt",
-      "howToFind": "Kako pronaći / Uputstvo",
-      "directionsHint": "Uputstva, informacije o parkingu, napomene o pristupu",
-      "saveChanges": "Sačuvaj promjene",
-      "createLocation": "Kreiraj lokaciju",
-      "activeSwitch": "Aktivno (vidljivo u pretrazi)",
-      "pinOnMap": "Prikvači na mapi",
-      "uploadCover": "Učitaj naslovnu",
-      "replace": "Zamijeni",
-      "add": "Dodaj"
-    },
-    "errors": {
-      "loadFailed": "Učitavanje nije uspjelo",
-      "saveFailed": "Čuvanje nije uspjelo",
-      "coverUploadFailed": "Učitavanje naslovne slike nije uspjelo",
-      "galleryUploadFailed": "Učitavanje galerije nije uspjelo"
-    }
-  }
+    "common":  {
+                   "save":  "Sačuvaj",
+                   "cancel":  "Odustani",
+                   "actions":  "Akcije",
+                   "noData":  "Nema dostupnih podataka",
+                   "all":  "Sve",
+                   "active":  "Aktivno",
+                   "inactive":  "Neaktivno",
+                   "breadcrumbAdmin":  "Admin",
+                   "loadingMap":  "Učitavanje mape…",
+                   "loading":  "Učitavanje…",
+                   "search":  "Pretraži",
+                   "clearAll":  "Obriši sve"
+               },
+    "dashboard":  {
+                      "title":  "Admin kontrolna tabla",
+                      "subtitle":  "Pregled platforme",
+                      "stats":  {
+                                    "totalUsers":  "Ukupno korisnika",
+                                    "totalPlaces":  "Aktivna mjesta",
+                                    "totalRegistrations":  "Ukupno rezervacija",
+                                    "pendingRegistrations":  "Na čekanju",
+                                    "confirmedRegistrations":  "Potvrđeno",
+                                    "totalRevenue":  "Ukupni prihod",
+                                    "totalOrgs":  "Organizacije",
+                                    "pendingOrgs":  "Organizacije na čekanju",
+                                    "freeLocations":  "Lokacije zajednice"
+                                },
+                      "pendingOrgsButton":  "{{count}} org čeka odobrenje",
+                      "pendingOrgsButton_plural":  "{{count}} org čekaju odobrenje",
+                      "recentBookings":  "Nedavne rezervacije",
+                      "quickLinks":  "Brze veze"
+                  },
+    "users":  {
+                  "title":  "Upravljanje korisnicima",
+                  "subtitle":  "Upravljajte svim korisnicima platforme",
+                  "table":  {
+                                "name":  "Ime",
+                                "email":  "Email",
+                                "role":  "Uloga",
+                                "status":  "Status",
+                                "bookings":  "Rezervacije",
+                                "places":  "Mjesta",
+                                "joined":  "Pridružio/la se",
+                                "actions":  "Akcije"
+                            },
+                  "columns":  {
+                                  "name":  "Ime",
+                                  "email":  "Email",
+                                  "role":  "Uloga",
+                                  "status":  "Status",
+                                  "joined":  "Pridružio/la se",
+                                  "registrations":  "Rezervacije",
+                                  "actions":  "Akcije"
+                              },
+                  "searchPlaceholder":  "Traži po imenu ili emailu…",
+                  "roleFilter":  "Uloga",
+                  "active":  "Aktivno",
+                  "inactive":  "Neaktivno",
+                  "activate":  "Aktiviraj",
+                  "deactivate":  "Deaktiviraj",
+                  "roles":  {
+                                "SUPER_ADMIN":  "Super Admin",
+                                "PLACE_OWNER":  "Vlasnik mjesta",
+                                "USER":  "Korisnik"
+                            },
+                  "actions":  {
+                                  "activate":  "Aktiviraj",
+                                  "deactivate":  "Deaktiviraj",
+                                  "changeRole":  "Promijeni ulogu",
+                                  "viewBookings":  "Pogledaj rezervacije"
+                              },
+                  "filters":  {
+                                  "allRoles":  "Sve uloge",
+                                  "searchPlaceholder":  "Traži po imenu ili emailu…"
+                              },
+                  "confirmDeactivate":  "Deaktivirati ovog korisnika? Neće moći da se prijavi.",
+                  "confirmActivate":  "Reaktivirati ovog korisnika?",
+                  "confirmRoleChange":  "Promijeniti ulogu u {{role}}?",
+                  "errors":  {
+                                 "loadFailed":  "Učitavanje korisnika nije uspjelo"
+                             }
+              },
+    "places":  {
+                   "title":  "Sva mjesta",
+                   "subtitle":  "Upravljajte svim registrovanim mjestima",
+                   "table":  {
+                                 "name":  "Naziv mjesta",
+                                 "owner":  "Vlasnik",
+                                 "city":  "Grad",
+                                 "locations":  "Lokacije",
+                                 "status":  "Status",
+                                 "created":  "Kreirano"
+                             },
+                   "columns":  {
+                                   "name":  "Naziv mjesta",
+                                   "location":  "Lokacija",
+                                   "owner":  "Vlasnik",
+                                   "locations":  "Lokacije",
+                                   "registrations":  "Rezervacije",
+                                   "status":  "Status",
+                                   "created":  "Kreirano"
+                               },
+                   "confirmDelete":  "Obrisati ovo mjesto? Svi povezani podaci bit će trajno uklonjeni.",
+                   "searchPlaceholder":  "Pretraži mjesta…",
+                   "manage":  "Upravljaj",
+                   "totalCount":  "{{count}} ukupno mjesto",
+                   "totalCount_plural":  "{{count}} ukupno mjesta",
+                   "errors":  {
+                                  "loadFailed":  "Učitavanje mjesta nije uspjelo"
+                              }
+               },
+    "organizations":  {
+                          "title":  "Organizacije",
+                          "subtitle":  "Upravljajte registracijama organizacija",
+                          "searchPlaceholder":  "Pretraži po imenu ili emailu…",
+                          "status":  "Status",
+                          "statuses":  {
+                                           "PENDING":  "Na čekanju",
+                                           "APPROVED":  "Odobreno",
+                                           "REJECTED":  "Odbijeno",
+                                           "SUSPENDED":  "Suspendovano"
+                                       },
+                          "columns":  {
+                                          "name":  "Naziv",
+                                          "email":  "Email",
+                                          "location":  "Lokacija",
+                                          "places":  "Mjesta",
+                                          "status":  "Status",
+                                          "registered":  "Registrovano"
+                                      },
+                          "actions":  {
+                                          "approve":  "Odobri",
+                                          "reject":  "Odbij",
+                                          "suspend":  "Suspendiraj",
+                                          "website":  "Web sajt",
+                                          "delete":  "Trajno obriši"
+                                      },
+                          "confirmApprove":  "Odobri organizaciju",
+                          "confirmReject":  "Odbij organizaciju",
+                          "confirmSuspend":  "Suspendiraj organizaciju",
+                          "rejectionReason":  "Razlog (neobavezno)",
+                          "approveConfirmText":  "Odobriti \"{{name}}\"? Bit će kreiran nalog PLACE_OWNER i podaci za prijavu bit će poslani na {{email}}.",
+                          "rejectConfirmText":  "Odbiti \"{{name}}\"? Obavještenje emailom bit će poslano na {{email}}.",
+                          "suspendConfirmText":  "Suspendovati \"{{name}}\"? Njihova mjesta ostaju ali neće moći kreirati nova.",
+                          "deleteTitle":  "Trajno obriši organizaciju",
+                          "deleteConfirmText":  "Trajno obrisati {{name}}?",
+                          "deleteWarning":  "Ovo uklanja organizaciju iz baze podataka, oslobađajući email adresu {{email}} za ponovnu registraciju. Sva povezana mjesta bit će zadržana ali odvojena od ove organizacije.",
+                          "deletingLabel":  "Brisanje…",
+                          "deletePermanently":  "Trajno obriši",
+                          "errors":  {
+                                         "loadFailed":  "Učitavanje organizacija nije uspjelo",
+                                         "actionFailed":  "Akcija nije uspjela",
+                                         "deleteFailed":  "Brisanje nije uspjelo"
+                                     },
+                          "totalCount":  "{{count}} ukupno organizacija",
+                          "totalCount_plural":  "{{count}} ukupno organizacija"
+                      },
+    "registrations":  {
+                          "title":  "Sve rezervacije",
+                          "subtitle":  "Pregledajte i upravljajte svim rezervacijama",
+                          "searchPlaceholder":  "Traži po imenu, emailu ili ref…",
+                          "table":  {
+                                        "number":  "Ref #",
+                                        "guest":  "Gost",
+                                        "activity":  "Aktivnost",
+                                        "place":  "Mjesto",
+                                        "dates":  "Datumi",
+                                        "guests":  "Gosti",
+                                        "total":  "Ukupno",
+                                        "payment":  "Plaćanje",
+                                        "status":  "Status",
+                                        "created":  "Rezervisano"
+                                    },
+                          "columns":  {
+                                          "number":  "Ref #",
+                                          "guest":  "Gost",
+                                          "location":  "Lokacija",
+                                          "dates":  "Datumi",
+                                          "status":  "Status",
+                                          "payment":  "Plaćanje",
+                                          "amount":  "Iznos"
+                                      },
+                          "filters":  {
+                                          "allStatuses":  "Svi statusi",
+                                          "searchPlaceholder":  "Traži po imenu, emailu ili ref…"
+                                      },
+                          "actions":  {
+                                          "confirm":  "Potvrdi",
+                                          "cancel":  "Otkaži",
+                                          "markPaid":  "Označi kao plaćeno",
+                                          "viewDetails":  "Detalji",
+                                          "sendEmail":  "Ponovo pošalji email"
+                                      },
+                          "confirmCancel":  "Otkazati ovu rezervaciju? Gost će primiti email obavještenje.",
+                          "confirmConfirm":  "Potvrditi ovu rezervaciju? Gost će biti obaviješten.",
+                          "confirmMarkPaid":  "Označiti ovu rezervaciju kao potpuno plaćenu?",
+                          "errors":  {
+                                         "loadFailed":  "Učitavanje rezervacija nije uspjelo"
+                                     },
+                          "totalCount":  "{{count}} ukupno rezervacija",
+                          "totalCount_plural":  "{{count}} ukupno rezervacija",
+                          "backToList":  "Natrag na rezervacije",
+                          "filtered":  "filtrirano",
+                          "statuses":  {
+                                           "PENDING":  "Na čekanju",
+                                           "CONFIRMED":  "Potvrđeno",
+                                           "CANCELLED":  "Otkazano",
+                                           "COMPLETED":  "Završeno",
+                                           "NO_SHOW":  "Nije se pojavio"
+                                       },
+                          "filtersLabel":  "Filteri",
+                          "dateFrom":  "Datum početka od",
+                          "dateTo":  "Datum početka do"
+                      },
+    "freeLocations":  {
+                          "title":  "Besplatne / Zajedničke lokacije",
+                          "subtitle":  "Javne lokacije koje nisu vezane za niti jedan poslovni ili sistem rezervacija",
+                          "addNew":  "Dodaj lokaciju",
+                          "searchPlaceholder":  "Pretraži lokacije…",
+                          "empty":  "Još nema besplatnih lokacija. Dodajte jednu!",
+                          "breadcrumbAdmin":  "Admin",
+                          "breadcrumbFreeLocations":  "Besplatne lokacije",
+                          "slugPreview":  "Pregled: /locations/{{slug}}",
+                          "deleteConfirm":  "Obrisati \"{{name}}\"?",
+                          "totalCount":  "{{count}} ukupno lokacija",
+                          "totalCount_plural":  "{{count}} ukupno lokacija",
+                          "table":  {
+                                        "name":  "Naziv",
+                                        "location":  "Lokacija",
+                                        "tags":  "Oznake",
+                                        "status":  "Status",
+                                        "created":  "Kreirano"
+                                    },
+                          "actions":  {
+                                          "viewPublic":  "Pogledaj javnu stranicu",
+                                          "edit":  "Uredi",
+                                          "delete":  "Obriši"
+                                      },
+                          "dialog":  {
+                                         "addTitle":  "Dodaj besplatnu lokaciju",
+                                         "editTitle":  "Uredi: {{name}}",
+                                         "pinMapTitle":  "Prikvači lokaciju na mapi"
+                                     },
+                          "form":  {
+                                       "images":  "Slike",
+                                       "coverImage":  "Naslovna slika",
+                                       "galleryPhotos":  "Galerija fotografija ({{count}}/{{max}}) — postavite naslovnu ★ ili uklonite",
+                                       "galleryHint":  "Dodajte do {{max}} fotografija. Prva koja nije naslovna prikazuje se na karticama.",
+                                       "locationDetails":  "Detalji lokacije",
+                                       "gpsCoordinates":  "GPS koordinate",
+                                       "contact":  "Kontakt",
+                                       "additionalInfo":  "Dodatne informacije",
+                                       "tagsSection":  "Kategorije / Oznake",
+                                       "tagsHint":  "Odaberite odgovarajuće kategorije aktivnosti:",
+                                       "name":  "Naziv",
+                                       "slug":  "Slug (URL)",
+                                       "slugHint":  "Koristi se u URL-u: /places/{{slug}}",
+                                       "description":  "Opis",
+                                       "address":  "Adresa",
+                                       "city":  "Grad",
+                                       "country":  "Država",
+                                       "latitude":  "Geografska širina",
+                                       "longitude":  "Geografska dužina",
+                                       "phone":  "Telefon",
+                                       "email":  "Email",
+                                       "website":  "Web sajt",
+                                       "howToFind":  "Kako pronaći / Uputstvo",
+                                       "directionsHint":  "Uputstva, informacije o parkingu, napomene o pristupu",
+                                       "saveChanges":  "Sačuvaj promjene",
+                                       "createLocation":  "Kreiraj lokaciju",
+                                       "activeSwitch":  "Aktivno (vidljivo u pretrazi)",
+                                       "pinOnMap":  "Prikvači na mapi",
+                                       "uploadCover":  "Učitaj naslovnu",
+                                       "replace":  "Zamijeni",
+                                       "add":  "Dodaj"
+                                   },
+                          "errors":  {
+                                         "loadFailed":  "Učitavanje nije uspjelo",
+                                         "saveFailed":  "Čuvanje nije uspjelo",
+                                         "coverUploadFailed":  "Učitavanje naslovne slike nije uspjelo",
+                                         "galleryUploadFailed":  "Učitavanje galerije nije uspjelo"
+                                     }
+                      }
 }

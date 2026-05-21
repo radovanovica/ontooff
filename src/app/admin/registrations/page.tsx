@@ -152,7 +152,7 @@ export default function AdminRegistrationsPage() {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
           <FilterAlt fontSize="small" color="action" />
           <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-            {t('registrations.filters', 'Filters')}
+            {t('registrations.filtersLabel', 'Filters')}
           </Typography>
           {hasAppliedFilters && (
             <Button size="small" startIcon={<ClearAll />} onClick={handleReset} sx={{ ml: 'auto' }}>
@@ -184,7 +184,7 @@ export default function AdminRegistrationsPage() {
               >
                 <MenuItem value="">{t('common.all', 'All')}</MenuItem>
                 {STATUSES.map((s) => (
-                  <MenuItem key={s} value={s}>{s}</MenuItem>
+                  <MenuItem key={s} value={s}>{t(`registrations.statuses.${s}`, s)}</MenuItem>
                 ))}
               </Select>
             </FormControl>
