@@ -130,7 +130,7 @@ export default function AdminUsersPage() {
           <Select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }} label={t('users.roleFilter')}>
             <MenuItem value="">{t('common.all')}</MenuItem>
             {Object.values(UserRole).map((r) => (
-              <MenuItem key={r} value={r}>{r}</MenuItem>
+              <MenuItem key={r} value={r}>{t(`users.roles.${r}`, r)}</MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -184,7 +184,7 @@ export default function AdminUsersPage() {
                       sx={{ fontSize: '0.75rem' }}
                     >
                       {Object.values(UserRole).map((r) => (
-                        <MenuItem key={r} value={r}>{r}</MenuItem>
+                        <MenuItem key={r} value={r}>{t(`users.roles.${r}`, r)}</MenuItem>
                       ))}
                     </Select>
                   </TableCell>

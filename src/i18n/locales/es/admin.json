@@ -63,7 +63,8 @@
                   "roles":  {
                                 "SUPER_ADMIN":  "Super Admin",
                                 "PLACE_OWNER":  "Propietario de lugar",
-                                "USER":  "Usuario"
+                                "USER":  "Usuario",
+                                "CONTRIBUTOR":  "Colaborador"
                             },
                   "actions":  {
                                   "activate":  "Activar",

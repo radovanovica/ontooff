@@ -63,7 +63,8 @@
                   "roles":  {
                                 "SUPER_ADMIN":  "Super administrator",
                                 "PLACE_OWNER":  "Vlasnik mesta",
-                                "USER":  "Korisnik"
+                                "USER":  "Korisnik",
+                                "CONTRIBUTOR":  "Saradnik"
                             },
                   "actions":  {
                                   "activate":  "Aktiviraj",

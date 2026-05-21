@@ -263,10 +263,10 @@
                   "maxPeopleLabel_plural":  "Máx. {{count}} personas",
                   "deleteConfirm":  "¿Eliminar este espacio?",
                   "status":  {
-                                 "AVAILABLE":  "DISPONIBLE",
-                                 "OCCUPIED":  "OCUPADO",
-                                 "MAINTENANCE":  "MANTENIMIENTO",
-                                 "DISABLED":  "DESHABILITADO"
+                                 "AVAILABLE":  "Disponible",
+                                 "OCCUPIED":  "Ocupado",
+                                 "MAINTENANCE":  "Mantenimiento",
+                                 "DISABLED":  "Desactivado"
                              },
                   "errors":  {
                                  "saveFailed":  "Error al guardar",
@@ -326,7 +326,11 @@
                     "noPaymentNote":  "Esta actividad es gratuita. No se pedirá pago a los huéspedes.",
                     "created":  "Regla de precios creada.",
                     "updated":  "Precios actualizados.",
-                    "deleted":  "Regla de precios eliminada."
+                    "deleted":  "Regla de precios eliminada.",
+                    "preview":  {
+                                    "show":  "Mostrar vista previa de precio",
+                                    "hide":  "Ocultar vista previa de precio"
+                                }
                 },
     "embedTokens":  {
                         "title":  "Tokens de Incrustación",

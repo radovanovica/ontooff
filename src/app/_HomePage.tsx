@@ -153,6 +153,7 @@ export default function HomePage() {
                   lineHeight: 1.1,
                   mb: 2,
                   textShadow: '0 2px 20px rgba(0,0,0,0.4)',
+                  textTransform: 'uppercase',
                 }}
               >
                 {t('home.heroTitle')}

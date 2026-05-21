@@ -263,10 +263,10 @@
                   "maxPeopleLabel_plural":  "Max. {{count}} Personen",
                   "deleteConfirm":  "Diesen Platz löschen?",
                   "status":  {
-                                 "AVAILABLE":  "VERFÜGBAR",
-                                 "OCCUPIED":  "BELEGT",
-                                 "MAINTENANCE":  "WARTUNG",
-                                 "DISABLED":  "DEAKTIVIERT"
+                                 "AVAILABLE":  "Verfügbar",
+                                 "OCCUPIED":  "Belegt",
+                                 "MAINTENANCE":  "Wartung",
+                                 "DISABLED":  "Deaktiviert"
                              },
                   "errors":  {
                                  "saveFailed":  "Speichern fehlgeschlagen",
@@ -326,7 +326,11 @@
                     "noPaymentNote":  "Diese Aktivität ist kostenlos. Gäste werden nicht nach einer Zahlung gefragt.",
                     "created":  "Preisregel erstellt.",
                     "updated":  "Preise aktualisiert.",
-                    "deleted":  "Preisregel gelöscht."
+                    "deleted":  "Preisregel gelöscht.",
+                    "preview":  {
+                                    "show":  "Preisvorschau anzeigen",
+                                    "hide":  "Preisvorschau verbergen"
+                                }
                 },
     "embedTokens":  {
                         "title":  "Einbettungstoken",

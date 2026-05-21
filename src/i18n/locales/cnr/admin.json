@@ -63,7 +63,8 @@
                   "roles":  {
                                 "SUPER_ADMIN":  "Super Admin",
                                 "PLACE_OWNER":  "Vlasnik mjesta",
-                                "USER":  "Korisnik"
+                                "USER":  "Korisnik",
+                                "CONTRIBUTOR":  "Saradnik"
                             },
                   "actions":  {
                                   "activate":  "Aktivirajte",

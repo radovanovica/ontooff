@@ -263,10 +263,10 @@
                   "maxPeopleLabel_plural":  "Max {{count}} people",
                   "deleteConfirm":  "Delete this spot?",
                   "status":  {
-                                 "AVAILABLE":  "AVAILABLE",
-                                 "OCCUPIED":  "OCCUPIED",
-                                 "MAINTENANCE":  "MAINTENANCE",
-                                 "DISABLED":  "DISABLED"
+                                 "AVAILABLE":  "Available",
+                                 "OCCUPIED":  "Occupied",
+                                 "MAINTENANCE":  "Maintenance",
+                                 "DISABLED":  "Disabled"
                              },
                   "errors":  {
                                  "saveFailed":  "Save failed",
@@ -326,7 +326,11 @@
                     "noPaymentNote":  "This activity is free. Guests will not be asked for payment.",
                     "created":  "Pricing rule created.",
                     "updated":  "Pricing updated.",
-                    "deleted":  "Pricing rule deleted."
+                    "deleted":  "Pricing rule deleted.",
+                    "preview":  {
+                                    "show":  "Show price preview",
+                                    "hide":  "Hide price preview"
+                                }
                 },
     "embedTokens":  {
                         "title":  "Embed Tokens",

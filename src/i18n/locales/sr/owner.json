@@ -261,10 +261,10 @@
                   "maxPeopleLabel":  "Maks {{count}} osoba",
                   "deleteConfirm":  "Obrisati ovo mesto?",
                   "status":  {
-                                 "AVAILABLE":  "DOSTUPNO",
-                                 "OCCUPIED":  "ZAUZETO",
-                                 "MAINTENANCE":  "ODRŽAVANJE",
-                                 "DISABLED":  "ONEMOGUĆENO"
+                                 "AVAILABLE":  "Slobodno",
+                                 "OCCUPIED":  "Zauzeto",
+                                 "MAINTENANCE":  "Održavanje",
+                                 "DISABLED":  "Onemogućeno"
                              },
                   "errors":  {
                                  "saveFailed":  "Čuvanje nije uspelo",
@@ -324,7 +324,11 @@
                     "noPaymentNote":  "Ova aktivnost je besplatna. Od gostiju se neće tražiti plaćanje.",
                     "created":  "Pravilo cenovnika kreirano.",
                     "updated":  "Cenovnik ažuriran.",
-                    "deleted":  "Pravilo cenovnika obrisano."
+                    "deleted":  "Pravilo cenovnika obrisano.",
+                    "preview":  {
+                                    "show":  "Prikaži pregled cene",
+                                    "hide":  "Sakrij pregled cene"
+                                }
                 },
     "embedTokens":  {
                         "title":  "Embed tokeni",
