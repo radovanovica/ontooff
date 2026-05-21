@@ -65,7 +65,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       .then((r) => r.json())
       .then((d: { rates?: Record<string, number> }) => {
         if (d.rates) {
-          setRates(d.rates);
+          setRates((prev) => ({ ...prev, ...d.rates }));
           setRatesLoaded(true);
         }
       })

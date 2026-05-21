@@ -155,7 +155,7 @@
     "title": "Rezervacija potvrđena! 🎉",
     "subtitle": "Vaša rezervacija je uspešno primljena.",
     "message": "Vaša rezervacija <strong>#{{number}}</strong> je primljena.",
-    "emailSent": "Potvrda je poslata na <strong>{{email}}</strong>.",
+    "emailSent": "Potvrda je poslata na {{email}}.",
     "editLink": "Rezervaciju možete izmeniti putem linka u emailu.",
     "newBooking": "Nova rezervacija",
     "viewBooking": "Moje rezervacije",

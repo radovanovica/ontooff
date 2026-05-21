@@ -553,6 +553,53 @@ export async function sendOwnerNewBookingNotification(
 }
 
 // ─────────────────────────────────────────
+// OWNER — BOOKING EDITED BY GUEST
+// ─────────────────────────────────────────
+
+export interface OwnerBookingEditedData {
+  registrationId: string;
+  registrationNumber: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone?: string;
+  guestAddress?: string;
+  placeName: string;
+}
+
+export async function sendOwnerBookingEditedNotification(
+  ownerEmail: string,
+  data: OwnerBookingEditedData
+): Promise<void> {
+  const viewUrl = `${APP_URL}/owner/bookings/${data.registrationId}`;
+
+  const html = baseTemplate(`
+    <h2 style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;font-weight:700;color:#2d3a2e;margin:0 0 6px;">Booking Updated by Guest</h2>
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;color:#9e8e7e;letter-spacing:0.5px;text-transform:uppercase;margin:0 0 28px;">Reservation #${data.registrationNumber} &mdash; ${data.placeName}</p>
+
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#555048;line-height:1.7;margin:0 0 24px;">
+      The guest has updated their contact information for this booking. The current details are shown below.
+    </p>
+
+    <p style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;color:#9e8e7e;text-transform:uppercase;letter-spacing:1.5px;margin:24px 0 12px;">Updated Guest Information</p>
+    ${infoCard(
+      detailRow('Name', data.guestName) +
+      detailRow('Email', `<a href="mailto:${data.guestEmail}" style="color:#4a7c59;text-decoration:none;">${data.guestEmail}</a>`) +
+      (data.guestPhone ? detailRow('Phone', data.guestPhone) : '') +
+      (data.guestAddress ? detailRow('Address', data.guestAddress) : '')
+    , '#4a7c59')}
+
+    ${btnOutline('View Booking in Dashboard', viewUrl)}
+  `, `Booking #${data.registrationNumber} was updated by ${data.guestName}.`);
+
+  await transporter.sendMail({
+    from: FROM,
+    to: ownerEmail,
+    subject: `Booking #${data.registrationNumber} Updated – ${data.guestName}`,
+    html,
+  });
+}
+
+// ─────────────────────────────────────────
 // ORGANIZATION REGISTRATION
 // ─────────────────────────────────────────
 

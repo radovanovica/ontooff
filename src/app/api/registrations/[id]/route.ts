@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 import { UserRole, RegistrationStatus } from '@/types';
-import { sendRegistrationStatusUpdate, sendRegistrationConfirmation } from '@/lib/email';
+import { sendRegistrationStatusUpdate, sendRegistrationConfirmation, sendOwnerBookingEditedNotification } from '@/lib/email';
 import { formatGuestSummary } from '@/lib/pricing';
 
 const updateSchema = z.object({
@@ -133,6 +133,39 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     where: { id },
     data: updateData,
   });
+
+  // Notify place owner when guest edits their contact info via the edit link
+  if (isTokenAccess) {
+    prisma.registration.findUnique({
+      where: { id },
+      include: {
+        activityLocation: {
+          include: {
+            place: { include: { owner: { select: { email: true } } } },
+          },
+        },
+        event: {
+          include: {
+            place: { include: { owner: { select: { email: true } } } },
+          },
+        },
+      },
+    }).then(async (fullReg) => {
+      if (!fullReg) return;
+      const place = fullReg.activityLocation?.place ?? fullReg.event?.place;
+      const ownerEmail = place?.owner?.email;
+      if (!ownerEmail) return;
+      await sendOwnerBookingEditedNotification(ownerEmail, {
+        registrationId: id,
+        registrationNumber: fullReg.registrationNumber,
+        guestName: `${updated.firstName} ${updated.lastName}`,
+        guestEmail: fullReg.email,
+        guestPhone: updated.phone ?? undefined,
+        guestAddress: updated.address ?? undefined,
+        placeName: place?.name ?? '—',
+      });
+    }).catch(console.error);
+  }
 
   // Send email on status change
   if (result.data.status && result.data.status !== reg.status) {

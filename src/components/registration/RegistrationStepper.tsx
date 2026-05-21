@@ -577,7 +577,13 @@ useEffect(() => {
           <Typography color="text.secondary" sx={{ mb: 2 }}>{t('success.subtitle')}</Typography>
           <Chip label={registrationNumber} color="primary" sx={{ fontSize: '1.1rem', px: 2, py: 2.5, fontWeight: 700 }} />
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-            {t('success.emailSent', { email: formData.email })}
+            {(() => {
+              const raw = t('success.emailSent', { email: formData.email });
+              const parts = raw.split(formData.email);
+              return parts.length === 2
+                ? <>{parts[0]}<strong>{formData.email}</strong>{parts[1]}</>
+                : raw;
+            })()}
           </Typography>
         </Box>
 

@@ -155,7 +155,7 @@
     "title": "¡Reserva confirmada! 🎉",
     "subtitle": "Tu reserva ha sido recibida exitosamente.",
     "message": "Tu reserva <strong>#{{number}}</strong> ha sido enviada.",
-    "emailSent": "Se ha enviado una confirmación a <strong>{{email}}</strong>.",
+    "emailSent": "Se ha enviado una confirmación a {{email}}.",
     "editLink": "Puedes editar tu reserva usando el enlace en el email.",
     "newBooking": "Hacer otra reserva",
     "viewBooking": "Ver mis reservas",

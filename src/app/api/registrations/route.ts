@@ -64,6 +64,9 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get('status');
   const locationId = searchParams.get('activityLocationId');
   const eventId = searchParams.get('eventId');
+  const search = searchParams.get('search');
+  const dateFrom = searchParams.get('dateFrom');
+  const dateTo = searchParams.get('dateTo');
 
   const where: Record<string, unknown> = {};
 
@@ -100,6 +103,28 @@ export async function GET(req: NextRequest) {
       { activityLocationId: { in: placeLocations.map((l: { id: string }) => l.id) } },
       { event: { placeId } },
     ];
+  }
+
+  // Full-text search across name, email, registration number
+  if (search) {
+    const andFilters: unknown[] = where.AND ? (where.AND as unknown[]) : [];
+    andFilters.push({
+      OR: [
+        { email: { contains: search, mode: 'insensitive' } },
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { registrationNumber: { contains: search, mode: 'insensitive' } },
+      ],
+    });
+    where.AND = andFilters;
+  }
+
+  // Date range on startDate
+  if (dateFrom || dateTo) {
+    const dateFilter: Record<string, Date> = {};
+    if (dateFrom) dateFilter.gte = new Date(dateFrom);
+    if (dateTo) dateFilter.lte = new Date(dateTo + 'T23:59:59.999Z');
+    where.startDate = dateFilter;
   }
 
   const [registrations, total] = await Promise.all([

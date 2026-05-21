@@ -57,6 +57,7 @@ interface RegistrationData {
   numberOfDays: number;
   activityLocation?: { name: string; place?: { name: string } };
   registrationSpots?: { spot: { name: string; code: string } }[];
+  pricingRule?: { currency: string } | null;
 }
 
 export default function RegistrationEditPage() {
@@ -202,8 +203,8 @@ export default function RegistrationEditPage() {
                   )}
                   {registration.totalAmount != null && (
                     <Typography variant="body2" sx={{ mt: 1 }}>
-                      {t('pricing.total')}: <strong>€{Number(registration.totalAmount).toFixed(2)}</strong>
-                      <CurrencyConversion amount={Number(registration.totalAmount)} sourceCurrency="EUR" />
+                      {t('pricing.total')}: <strong>{registration.pricingRule?.currency ?? 'RSD'} {Number(registration.totalAmount).toFixed(2)}</strong>
+                      <CurrencyConversion amount={Number(registration.totalAmount)} sourceCurrency={registration.pricingRule?.currency ?? 'RSD'} />
                     </Typography>
                   )}
                 </Box>
@@ -212,7 +213,7 @@ export default function RegistrationEditPage() {
 
                 {saved && (
                   <Alert icon={<CheckCircle />} severity="success" sx={{ mb: 3 }}>
-                    {t('edit.saved')}
+                    {t('edit.savedSuccess')}
                   </Alert>
                 )}
                 {isConfirmed && (
@@ -282,7 +283,7 @@ export default function RegistrationEditPage() {
                           disabled={saving}
                           startIcon={saving ? <CircularProgress size={18} color="inherit" /> : <Edit />}
                         >
-                          {t('edit.save')}
+                          {saving ? t('edit.saving') : t('edit.saveButton')}
                         </Button>
                       ) : canCancel ? (
                         <Button
