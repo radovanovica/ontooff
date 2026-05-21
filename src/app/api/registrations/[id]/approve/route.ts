@@ -83,7 +83,6 @@ export async function GET(
       place: {
         name: registration.activityLocation?.place.name ?? registration.event?.place.name ?? '',
         logoUrl: registration.activityLocation?.place.logoUrl ?? registration.event?.place.logoUrl,
-        color: registration.activityLocation?.place.color ?? registration.event?.place.color,
         phone: registration.activityLocation?.place.phone ?? registration.event?.place.phone,
         website: registration.activityLocation?.place.website ?? registration.event?.place.website,
         facebookUrl: registration.activityLocation?.place.facebookUrl ?? registration.event?.place.facebookUrl,
