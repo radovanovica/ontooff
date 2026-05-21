@@ -578,10 +578,11 @@ useEffect(() => {
           <Chip label={registrationNumber} color="primary" sx={{ fontSize: '1.1rem', px: 2, py: 2.5, fontWeight: 700 }} />
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
             {(() => {
-              const raw = t('success.emailSent', { email: formData.email });
-              const parts = raw.split(formData.email);
-              return parts.length === 2
-                ? <>{parts[0]}<strong>{formData.email}</strong>{parts[1]}</>
+              const email = formData.email ?? '';
+              const raw = t('success.emailSent', { email });
+              const parts = raw.split(email);
+              return parts.length === 2 && email
+                ? <>{parts[0]}<strong>{email}</strong>{parts[1]}</>
                 : raw;
             })()}
           </Typography>
