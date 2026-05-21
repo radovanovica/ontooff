@@ -31,10 +31,10 @@ export async function GET(
       activityLocation: {
         include: {
           activityTypes: { include: { activityType: { select: { name: true } } } },
-          place: { select: { name: true } },
+          place: { select: { name: true, logoUrl: true, color: true, phone: true, website: true, facebookUrl: true, instagramUrl: true, twitterUrl: true, tiktokUrl: true, youtubeUrl: true, linkedinUrl: true } },
         },
       },
-      event: { include: { place: { select: { name: true } } } },
+      event: { include: { place: { select: { name: true, logoUrl: true, color: true, phone: true, website: true, facebookUrl: true, instagramUrl: true, twitterUrl: true, tiktokUrl: true, youtubeUrl: true, linkedinUrl: true } } } },
       registrationSpots: { include: { spot: { select: { name: true, code: true } } } },
       paymentBreakdown: { orderBy: { sortOrder: 'asc' } },
       pricingRule: { select: { requiresPayment: true, currency: true } },
@@ -80,6 +80,19 @@ export async function GET(
       })),
       editToken: registration.editToken,
       status: 'CONFIRMED',
+      place: {
+        name: registration.activityLocation?.place.name ?? registration.event?.place.name ?? '',
+        logoUrl: registration.activityLocation?.place.logoUrl ?? registration.event?.place.logoUrl,
+        color: registration.activityLocation?.place.color ?? registration.event?.place.color,
+        phone: registration.activityLocation?.place.phone ?? registration.event?.place.phone,
+        website: registration.activityLocation?.place.website ?? registration.event?.place.website,
+        facebookUrl: registration.activityLocation?.place.facebookUrl ?? registration.event?.place.facebookUrl,
+        instagramUrl: registration.activityLocation?.place.instagramUrl ?? registration.event?.place.instagramUrl,
+        twitterUrl: registration.activityLocation?.place.twitterUrl ?? registration.event?.place.twitterUrl,
+        tiktokUrl: registration.activityLocation?.place.tiktokUrl ?? registration.event?.place.tiktokUrl,
+        youtubeUrl: registration.activityLocation?.place.youtubeUrl ?? registration.event?.place.youtubeUrl,
+        linkedinUrl: registration.activityLocation?.place.linkedinUrl ?? registration.event?.place.linkedinUrl,
+      },
     }
   ).catch(console.error);
 
