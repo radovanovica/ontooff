@@ -190,6 +190,12 @@ model Place {
   phone          String?
   email          String?
   website        String?
+  facebookUrl    String?
+  instagramUrl   String?
+  twitterUrl     String?
+  tiktokUrl      String?
+  youtubeUrl     String?
+  linkedinUrl    String?
   logoUrl        String?
   coverUrl       String?
   mapImageUrl    String?  @db.Text
@@ -438,6 +444,9 @@ model Registration {
 
   editToken          String             @unique @default(cuid())
   editTokenExpiresAt DateTime?
+
+  reminderSentAt     DateTime?
+  reviewRequestSentAt DateTime?
 
   ipAddress          String?
   userAgent          String?
