@@ -31,10 +31,10 @@ export async function GET(
       activityLocation: {
         include: {
           activityTypes: { include: { activityType: { select: { name: true } } } },
-          place: { select: { name: true, logoUrl: true, color: true, phone: true, website: true, facebookUrl: true, instagramUrl: true, twitterUrl: true, tiktokUrl: true, youtubeUrl: true, linkedinUrl: true } },
+          place: { select: { name: true, logoUrl: true, phone: true, website: true, facebookUrl: true, instagramUrl: true, twitterUrl: true, tiktokUrl: true, youtubeUrl: true, linkedinUrl: true } },
         },
       },
-      event: { include: { place: { select: { name: true, logoUrl: true, color: true, phone: true, website: true, facebookUrl: true, instagramUrl: true, twitterUrl: true, tiktokUrl: true, youtubeUrl: true, linkedinUrl: true } } } },
+      event: { include: { place: { select: { name: true, logoUrl: true, phone: true, website: true, facebookUrl: true, instagramUrl: true, twitterUrl: true, tiktokUrl: true, youtubeUrl: true, linkedinUrl: true } } } },
       registrationSpots: { include: { spot: { select: { name: true, code: true } } } },
       paymentBreakdown: { orderBy: { sortOrder: 'asc' } },
       pricingRule: { select: { requiresPayment: true, currency: true } },

@@ -445,7 +445,23 @@
       "notes": "Napomene",
       "paymentSummary": "Sažetak plaćanja",
       "noBreakdown": "Nema dostupnog rasporeda",
-      "total": "Ukupno"
+      "total": "Ukupno",
+      "paymentStatus": "Status plaćanja",
+      "paymentMethod": "Način plaćanja",
+      "paidAt": "Plaćeno dana",
+      "paymentNotes": "Napomene o plaćanju",
+      "source": "Izvor",
+      "pricingRule": "Plan cijena",
+      "address": "Adresa",
+      "place": "Mjesto",
+      "viewPlace": "Prikaži mjesto"
+    },
+    "paymentStatus": {
+      "UNPAID": "Nije plaćeno",
+      "PARTIALLY_PAID": "Djelomično plaćeno",
+      "PAID": "Plaćeno",
+      "REFUNDED": "Vraćeno",
+      "WAIVED": "Oslobođeno"
     },
     "errors": {
       "fetchFailed": "Dohvaćanje rezervacija nije uspjelo",

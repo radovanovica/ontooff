@@ -228,8 +228,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       prisma.registration.findUnique({
         where: { id },
         include: {
-          activityLocation: { include: { place: { select: { name: true, logoUrl: true, color: true, phone: true, website: true, facebookUrl: true, instagramUrl: true, twitterUrl: true, tiktokUrl: true, youtubeUrl: true, linkedinUrl: true } } } },
-          event: { include: { place: { select: { name: true, logoUrl: true, color: true, phone: true, website: true, facebookUrl: true, instagramUrl: true, twitterUrl: true, tiktokUrl: true, youtubeUrl: true, linkedinUrl: true } } } },
+          activityLocation: { include: { place: { select: { name: true, logoUrl: true, phone: true, website: true, facebookUrl: true, instagramUrl: true, twitterUrl: true, tiktokUrl: true, youtubeUrl: true, linkedinUrl: true } } } },
+          event: { include: { place: { select: { name: true, logoUrl: true, phone: true, website: true, facebookUrl: true, instagramUrl: true, twitterUrl: true, tiktokUrl: true, youtubeUrl: true, linkedinUrl: true } } } },
         },
       }).then((r) => {
         const p = r?.activityLocation?.place ?? r?.event?.place;
@@ -239,7 +239,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           reg.registrationNumber,
           result.data.status!,
           reg.editToken,
-          p ? { name: p.name, logoUrl: p.logoUrl, color: p.color, phone: p.phone, website: p.website, facebookUrl: p.facebookUrl, instagramUrl: p.instagramUrl, twitterUrl: p.twitterUrl, tiktokUrl: p.tiktokUrl, youtubeUrl: p.youtubeUrl, linkedinUrl: p.linkedinUrl } : undefined
+          p ? { name: p.name, logoUrl: p.logoUrl, phone: p.phone, website: p.website, facebookUrl: p.facebookUrl, instagramUrl: p.instagramUrl, twitterUrl: p.twitterUrl, tiktokUrl: p.tiktokUrl, youtubeUrl: p.youtubeUrl, linkedinUrl: p.linkedinUrl } : undefined
         );
       }).catch(console.error);
     }

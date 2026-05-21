@@ -445,7 +445,23 @@
       "notes": "Notizen",
       "paymentSummary": "Zahlungsübersicht",
       "noBreakdown": "Keine Aufschlüsselung verfügbar",
-      "total": "Gesamt"
+      "total": "Gesamt",
+      "paymentStatus": "Zahlungsstatus",
+      "paymentMethod": "Zahlungsmethode",
+      "paidAt": "Bezahlt am",
+      "paymentNotes": "Zahlungshinweise",
+      "source": "Quelle",
+      "pricingRule": "Preisplan",
+      "address": "Adresse",
+      "place": "Veranstaltungsort",
+      "viewPlace": "Ort anzeigen"
+    },
+    "paymentStatus": {
+      "UNPAID": "Unbezahlt",
+      "PARTIALLY_PAID": "Teilweise bezahlt",
+      "PAID": "Bezahlt",
+      "REFUNDED": "Erstattet",
+      "WAIVED": "Erlassen"
     },
     "errors": {
       "fetchFailed": "Buchungen konnten nicht abgerufen werden",

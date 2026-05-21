@@ -7,6 +7,7 @@ import { prisma } from '@/lib/prisma';
 import { RegistrationStatus } from '@/types';
 import BookingDecisionActions from '@/app/owner/bookings/[id]/_components/BookingDecisionActions';
 import ApprovalBanner from '@/app/owner/bookings/[id]/_components/ApprovalBanner';
+import { getTranslation, getServerLocale } from '@/i18n/server';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -35,6 +36,9 @@ function formatDate(value: Date | null | undefined): string {
 
 export default async function AdminRegistrationDetailPage({ params }: Props) {
   const { id } = await params;
+  const locale = await getServerLocale();
+  const { t } = await getTranslation(locale, 'owner');
+  const { t: ta } = await getTranslation(locale, 'admin');
 
   const booking = await prisma.registration.findUnique({
     where: { id },
@@ -72,7 +76,7 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1.5 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Booking #{booking.registrationNumber}
+            {t('bookings.details.titleWithNumber', { number: booking.registrationNumber })}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {booking.activityLocation?.place.name ?? booking.event?.place.name} — {booking.activityLocation?.name ?? booking.event?.title}
@@ -82,7 +86,7 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
           <BookingDecisionActions bookingId={booking.id} currentStatus={booking.status} />
           <Link href="/admin/registrations" style={{ textDecoration: 'none' }}>
             <Button variant="outlined" startIcon={<ArrowBackIcon />}>
-              Back to registrations
+              {ta('registrations.backToList')}
             </Button>
           </Link>
         </Box>
@@ -94,12 +98,12 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
           <Card variant="outlined" sx={{ borderRadius: 2 }}>
             <CardContent>
               <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-                Booking Details
+                {t('bookings.details.sectionDetails')}
               </Typography>
 
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Guest</Typography>
+                  <Typography variant="caption" color="text.secondary">{t('bookings.details.guest')}</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {booking.firstName} {booking.lastName}
                   </Typography>
@@ -113,42 +117,42 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Status</Typography>
+                  <Typography variant="caption" color="text.secondary">{t('bookings.table.status')}</Typography>
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 0.25 }}>
                     <Chip
-                      label={booking.status}
+                      label={t(`bookings.status.${booking.status}`, booking.status)}
                       color={STATUS_COLOR[booking.status]}
                       size="small"
                     />
                     <Chip
-                      label={booking.paymentStatus}
+                      label={t(`bookings.paymentStatus.${booking.paymentStatus}`, booking.paymentStatus)}
                       color={PAYMENT_COLOR[booking.paymentStatus] ?? 'default'}
                       size="small"
                       variant="outlined"
                     />
                   </Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                    Created
+                    {t('bookings.table.created')}
                   </Typography>
                   <Typography variant="body2">{formatDate(booking.createdAt)}</Typography>
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Dates</Typography>
+                  <Typography variant="caption" color="text.secondary">{t('bookings.table.dates')}</Typography>
                   <Typography variant="body2">
                     {formatDate(booking.startDate)} → {formatDate(booking.endDate)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {booking.numberOfDays} {booking.numberOfDays === 1 ? 'day' : 'days'}
+                    {t('bookings.details.numberOfDays', { count: booking.numberOfDays })}
                   </Typography>
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Activity</Typography>
+                  <Typography variant="caption" color="text.secondary">{t('bookings.details.activity')}</Typography>
                   <Typography variant="body2">
                     {booking.activityLocation?.activityTypes
                       .map((a: { activityType: { name: string } }) => a.activityType.name)
-                      .join(', ') || booking.event?.title || '—'}
+                      .join(', ') || booking.event?.title || t('bookings.table.empty')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {booking.activityLocation?.name ?? booking.event?.title}
@@ -156,58 +160,58 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
                 </Grid>
 
                 <Grid size={{ xs: 12 }}>
-                  <Typography variant="caption" color="text.secondary">Spots</Typography>
+                  <Typography variant="caption" color="text.secondary">{t('bookings.details.spots')}</Typography>
                   <Typography variant="body2">
-                    {spots.length > 0 ? spots.join(', ') : 'No spot selected'}
+                    {spots.length > 0 ? spots.join(', ') : t('bookings.details.noSpotSelected')}
                   </Typography>
                 </Grid>
 
                 <Grid size={{ xs: 12 }}>
-                  <Typography variant="caption" color="text.secondary">Guest counts</Typography>
+                  <Typography variant="caption" color="text.secondary">{t('bookings.details.guestCounts')}</Typography>
                   <Typography variant="body2">
                     {Object.entries(guestCounts)
                       .filter(([, value]) => Number(value) > 0)
                       .map(([key, value]) => `${key}: ${value}`)
-                      .join(', ') || '—'}
+                      .join(', ') || t('bookings.table.empty')}
                   </Typography>
                 </Grid>
 
                 {booking.paymentMethod && (
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary">Payment method</Typography>
+                    <Typography variant="caption" color="text.secondary">{t('bookings.details.paymentMethod')}</Typography>
                     <Typography variant="body2">{booking.paymentMethod}</Typography>
                   </Grid>
                 )}
 
                 {booking.paidAt && (
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary">Paid at</Typography>
+                    <Typography variant="caption" color="text.secondary">{t('bookings.details.paidAt')}</Typography>
                     <Typography variant="body2">{formatDate(booking.paidAt)}</Typography>
                   </Grid>
                 )}
 
                 {booking.notes && (
                   <Grid size={{ xs: 12 }}>
-                    <Typography variant="caption" color="text.secondary">Notes</Typography>
+                    <Typography variant="caption" color="text.secondary">{t('bookings.details.notes')}</Typography>
                     <Typography variant="body2">{booking.notes}</Typography>
                   </Grid>
                 )}
 
                 {booking.paymentNotes && (
                   <Grid size={{ xs: 12 }}>
-                    <Typography variant="caption" color="text.secondary">Payment notes</Typography>
+                    <Typography variant="caption" color="text.secondary">{t('bookings.details.paymentNotes')}</Typography>
                     <Typography variant="body2">{booking.paymentNotes}</Typography>
                   </Grid>
                 )}
 
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">Source</Typography>
+                  <Typography variant="caption" color="text.secondary">{t('bookings.details.source')}</Typography>
                   <Typography variant="body2">{booking.source ?? 'web'}</Typography>
                 </Grid>
 
                 {booking.pricingRule && (
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary">Pricing rule</Typography>
+                    <Typography variant="caption" color="text.secondary">{t('bookings.details.pricingRule')}</Typography>
                     <Typography variant="body2">{booking.pricingRule.name}</Typography>
                   </Grid>
                 )}
@@ -221,7 +225,7 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
           <Card variant="outlined" sx={{ borderRadius: 2 }}>
             <CardContent>
               <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5 }}>
-                Payment Summary
+                {t('bookings.details.paymentSummary')}
               </Typography>
 
               {booking.paymentBreakdown.length > 0 ? (
@@ -238,16 +242,16 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
                 </>
               ) : (
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  No payment breakdown available.
+                  {t('bookings.details.noBreakdown')}
                 </Typography>
               )}
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="subtitle2">Total</Typography>
+                <Typography variant="subtitle2">{t('bookings.details.total')}</Typography>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                   {booking.totalAmount != null
                     ? `${currency} ${Number(booking.totalAmount).toFixed(2)}`
-                    : '—'}
+                    : t('bookings.table.empty')}
                 </Typography>
               </Box>
             </CardContent>
@@ -257,7 +261,7 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
           <Card variant="outlined" sx={{ borderRadius: 2, mt: 2 }}>
             <CardContent>
               <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
-                Place
+                {t('bookings.details.place')}
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>
                 {booking.activityLocation?.place.name ?? booking.event?.place.name}
@@ -267,7 +271,7 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
               </Typography>
               <Link href={`/admin/places/${booking.activityLocation?.place.id ?? booking.event?.place.id}`} style={{ textDecoration: 'none' }}>
                 <Button variant="outlined" size="small">
-                  View place
+                  {t('bookings.details.viewPlace')}
                 </Button>
               </Link>
             </CardContent>

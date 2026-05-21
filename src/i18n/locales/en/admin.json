@@ -198,7 +198,8 @@
       "loadFailed": "Failed to load registrations"
     },
     "totalCount": "{{count}} total registration",
-    "totalCount_plural": "{{count}} total registrations"
+    "totalCount_plural": "{{count}} total registrations",
+    "backToList": "Back to Registrations"
   },
   "freeLocations": {
     "title": "Free / Community Locations",

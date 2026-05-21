@@ -445,7 +445,23 @@
       "notes": "Notas",
       "paymentSummary": "Resumen de Pago",
       "noBreakdown": "No hay desglose disponible",
-      "total": "Total"
+      "total": "Total",
+      "paymentStatus": "Estado de Pago",
+      "paymentMethod": "Método de Pago",
+      "paidAt": "Pagado el",
+      "paymentNotes": "Notas de Pago",
+      "source": "Origen",
+      "pricingRule": "Plan de Precios",
+      "address": "Dirección",
+      "place": "Lugar",
+      "viewPlace": "Ver lugar"
+    },
+    "paymentStatus": {
+      "UNPAID": "Sin pagar",
+      "PARTIALLY_PAID": "Parcialmente pagado",
+      "PAID": "Pagado",
+      "REFUNDED": "Reembolsado",
+      "WAIVED": "Exonerado"
     },
     "errors": {
       "fetchFailed": "Error al obtener reservas",

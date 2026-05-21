@@ -445,7 +445,23 @@
       "notes": "Notes",
       "paymentSummary": "Payment Summary",
       "noBreakdown": "No breakdown available",
-      "total": "Total"
+      "total": "Total",
+      "paymentStatus": "Payment Status",
+      "paymentMethod": "Payment Method",
+      "paidAt": "Paid at",
+      "paymentNotes": "Payment Notes",
+      "source": "Source",
+      "pricingRule": "Pricing Plan",
+      "address": "Address",
+      "place": "Place",
+      "viewPlace": "View place"
+    },
+    "paymentStatus": {
+      "UNPAID": "Unpaid",
+      "PARTIALLY_PAID": "Partially Paid",
+      "PAID": "Paid",
+      "REFUNDED": "Refunded",
+      "WAIVED": "Waived"
     },
     "errors": {
       "fetchFailed": "Failed to fetch bookings",

@@ -198,7 +198,8 @@
       "loadFailed": "Buchungen konnten nicht geladen werden"
     },
     "totalCount": "{{count}} Buchung insgesamt",
-    "totalCount_plural": "{{count}} Buchungen insgesamt"
+    "totalCount_plural": "{{count}} Buchungen insgesamt",
+    "backToList": "Zurück zur Buchungsliste"
   },
   "freeLocations": {
     "title": "Kostenlose / Community-Standorte",

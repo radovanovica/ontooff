@@ -198,7 +198,8 @@
       "loadFailed": "Učitavanje rezervacija nije uspjelo"
     },
     "totalCount": "{{count}} ukupno rezervacija",
-    "totalCount_plural": "{{count}} ukupno rezervacija"
+    "totalCount_plural": "{{count}} ukupno rezervacija",
+    "backToList": "Nazad na rezervacije"
   },
   "freeLocations": {
     "title": "Besplatne / Zajedničke lokacije",
