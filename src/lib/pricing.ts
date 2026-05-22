@@ -56,7 +56,7 @@ export function calculatePricing(
       if (tier) {
         const price = Number(tier.pricePerUnit);
         breakdown.push({
-          label: 'Activity fee',
+          label: 'ACTIVITY_FEE',
           ageGroup: tier.ageGroup as AgeGroupType,
           quantity: 1,
           unitPrice: price,
