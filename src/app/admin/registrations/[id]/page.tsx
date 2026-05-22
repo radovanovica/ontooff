@@ -150,7 +150,7 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">{t('bookings.details.activity')}</Typography>
                   <Typography variant="body2">
-                    {booking.activityLocation?.activityTypes
+                    {booking.activityLocation?.activityTypes.filter((a: { activityType: { name: string, id: string } }) => booking.activityLocationId === a.activityType.id)
                       .map((a: { activityType: { name: string } }) => a.activityType.name)
                       .join(', ') || booking.event?.title || t('bookings.table.empty')}
                   </Typography>
