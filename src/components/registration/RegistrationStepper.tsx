@@ -275,12 +275,21 @@ useEffect(() => {
       setAvailableSpots([]);
       return;
     }
-    setFormData((prev) => ({ ...prev, activityLocationId: selectedLocation.id }));
+    setFormData((prev) => ({
+      ...prev,
+      activityLocationId: selectedLocation.id,
+      activityTypeId: selectedActivityTypeId ?? prev.activityTypeId,
+    }));
     setValue1('spotIds', []);
     const firstRule = selectedLocation.pricingRules?.[0] ?? null;
     setValue2('pricingRuleId', firstRule?.id ?? '');
     setValue2('guestCounts', getDefaultGuestCounts(firstRule));
   }, [selectedLocation?.id]);
+
+  useEffect(() => {
+    if (!selectedActivityTypeId) return;
+    setFormData((prev) => ({ ...prev, activityTypeId: selectedActivityTypeId }));
+  }, [selectedActivityTypeId]);
 
   useEffect(() => {
     const rule = pricingRules.find((pricingRule) => pricingRule.id === selectedRuleId) ?? null;
@@ -523,6 +532,7 @@ useEffect(() => {
     try {
       const payload = {
         activityLocationId: formData.activityLocationId,
+        activityTypeId: selectedActivityTypeId ?? formData.activityTypeId,
         spotTimeslots: formData.spotTimeslots ?? (formData.spotIds ?? []).map((id) => ({ spotId: id, timeslotId: null })),
         pricingRuleId: formData.pricingRuleId ?? null,
         firstName: formData.firstName,
@@ -952,6 +962,11 @@ useEffect(() => {
       {activeStep === 3 && (
         <StepConfirm
           formData={formData}
+          selectedActivityType={
+            selectedActivityTypeId
+              ? (activityTypes.find((a) => a.id === selectedActivityTypeId) ?? null)
+              : null
+          }
           selectedLocation={selectedLocation}
           availableSpots={availableSpots}
           numberOfDays={numberOfDays}

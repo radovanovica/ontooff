@@ -243,6 +243,7 @@ model ActivityType {
   tags              ActivityTypeTag[]
   spots             Spot[]
   embedTokens       EmbedToken[]
+  registrations     Registration[]
 
   @@index([placeId])
   @@index([isActive])
@@ -417,6 +418,7 @@ model PricingTier {
 model Registration {
   id                 String             @id @default(cuid())
   registrationNumber String             @unique
+  activityTypeId     String?
   activityLocationId String?
   eventId            String?
   userId             String?
@@ -456,6 +458,7 @@ model Registration {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
+  activityType      ActivityType?        @relation(fields: [activityTypeId], references: [id], onDelete: Restrict)
   activityLocation  ActivityLocation?    @relation(fields: [activityLocationId], references: [id], onDelete: Restrict)
   event             PlaceEvent?          @relation(fields: [eventId], references: [id], onDelete: SetNull)
   user              User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -465,6 +468,8 @@ model Registration {
   paymentBreakdown  PaymentBreakdownItem[]
   review            Review?
 
+  @@index([activityTypeId, status, startDate, endDate])
+  @@index([activityTypeId])
   @@index([activityLocationId, status, startDate, endDate])
   @@index([activityLocationId])
   @@index([eventId])

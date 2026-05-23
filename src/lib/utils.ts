@@ -176,6 +176,19 @@ export async function validateEmbedToken(token: string) {
   return embedToken;
 }
 
+/** Resolved activity label for emails and UI (prefers stored registration.activityType). */
+export function getRegistrationActivityName(reg: {
+  activityType?: { name: string } | null;
+  activityLocation?: { activityTypes?: Array<{ activityType: { name: string } }> } | null;
+  event?: { title: string } | null;
+}): string {
+  if (reg.activityType?.name) return reg.activityType.name;
+  if (reg.event?.title) return reg.event.title;
+  const types = reg.activityLocation?.activityTypes;
+  if (types?.length) return types.map((a) => a.activityType.name).join(', ');
+  return '—';
+}
+
 /**
  * Slugify a string
  */

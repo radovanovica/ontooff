@@ -29,8 +29,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n/client';
 import PageHeader from '@/components/ui/PageHeader';
-import StatusBadge from '@/components/ui/StatusBadge';
 import Link from 'next/link';
+import RegistrationStatusSelect from '@/components/registrations/RegistrationStatusSelect';
+import RegistrationPaymentStatusSelect from '@/components/registrations/RegistrationPaymentStatusSelect';
+import { RegistrationStatus, PaymentStatus } from '@/types';
 
 interface RegistrationRow {
   id: string;
@@ -45,6 +47,8 @@ interface RegistrationRow {
   startDate: string;
   endDate: string;
   createdAt: string;
+  activityType?: { name: string; icon?: string | null } | null;
+  event?: { title: string; place?: { name: string } } | null;
   activityLocation?: { name: string; place?: { name: string } };
 }
 
@@ -136,6 +140,24 @@ export default function AdminRegistrationsPage() {
 
   const hasDraftFilters = !!(searchDraft || statusDraft || dateFromDraft || dateToDraft);
   const hasAppliedFilters = !!(search || statusFilter || dateFrom || dateTo);
+
+  const handleStatusChange = async (id: string, status: RegistrationStatus) => {
+    await fetch(`/api/registrations/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    fetchData(page, search, statusFilter, dateFrom, dateTo);
+  };
+
+  const handlePaymentStatusChange = async (id: string, paymentStatus: PaymentStatus) => {
+    await fetch(`/api/registrations/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paymentStatus }),
+    });
+    fetchData(page, search, statusFilter, dateFrom, dateTo);
+  };
 
   return (
     <Box>
@@ -241,6 +263,7 @@ export default function AdminRegistrationsPage() {
             <TableRow sx={{ bgcolor: 'grey.50' }}>
               <TableCell sx={{ fontWeight: 700 }}>{t('registrations.columns.number')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('registrations.columns.guest')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('registrations.columns.activity')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('registrations.columns.location')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('registrations.columns.dates')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('registrations.columns.status')}</TableCell>
@@ -252,13 +275,13 @@ export default function AdminRegistrationsPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
                   <CircularProgress size={32} />
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
                   <Typography color="text.secondary">{t('common.noData')}</Typography>
                 </TableCell>
               </TableRow>
@@ -280,10 +303,16 @@ export default function AdminRegistrationsPage() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {reg.activityLocation?.name}
+                      {reg.activityType?.icon ? `${reg.activityType.icon} ` : ''}
+                      {reg.activityType?.name ?? reg.event?.title ?? '—'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {reg.activityLocation?.name ?? '—'}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {reg.activityLocation?.place?.name}
+                      {reg.activityLocation?.place?.name ?? reg.event?.place?.name}
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -292,10 +321,18 @@ export default function AdminRegistrationsPage() {
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={reg.status} />
+                    <RegistrationStatusSelect
+                      namespace="admin"
+                      value={reg.status}
+                      onChange={(status) => handleStatusChange(reg.id, status)}
+                    />
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={reg.paymentStatus} />
+                    <RegistrationPaymentStatusSelect
+                      namespace="admin"
+                      value={reg.paymentStatus}
+                      onChange={(paymentStatus) => handlePaymentStatusChange(reg.id, paymentStatus)}
+                    />
                   </TableCell>
                   <TableCell>
                     {reg.totalAmount != null ? (

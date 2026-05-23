@@ -17,8 +17,16 @@ import type { PricingCalculation, RegistrationFormData } from '@/types';
 import { PaymentMethod } from '@/types';
 import type { LocationWithDetails, AvailableSpot } from '../types';
 
+interface SelectedActivityType {
+  id: string;
+  name: string;
+  icon?: string | null;
+  color?: string | null;
+}
+
 interface StepConfirmProps {
   formData: Partial<RegistrationFormData>;
+  selectedActivityType: SelectedActivityType | null;
   selectedLocation: LocationWithDetails | null;
   availableSpots: AvailableSpot[];
   numberOfDays: number;
@@ -33,6 +41,7 @@ interface StepConfirmProps {
 
 export default function StepConfirm({
   formData,
+  selectedActivityType,
   selectedLocation,
   availableSpots,
   numberOfDays,
@@ -53,6 +62,15 @@ export default function StepConfirm({
     <Box>
       <Paper variant="outlined" sx={{ p: 3, mb: 3, borderRadius: 2 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>{t('confirm.summaryTitle')}</Typography>
+
+        {selectedActivityType && (
+          <Box sx={{ mb: 1.5 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{t('step1.activityLabel')}</Typography>
+            <Typography variant="body2">
+              {selectedActivityType.icon ? `${selectedActivityType.icon} ` : ''}{selectedActivityType.name}
+            </Typography>
+          </Box>
+        )}
 
         {selectedLocation && (
           <Box sx={{ mb: 1.5 }}>

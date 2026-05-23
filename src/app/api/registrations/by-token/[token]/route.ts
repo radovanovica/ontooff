@@ -13,6 +13,7 @@ export async function GET(
       OR: [{ editTokenExpiresAt: null }, { editTokenExpiresAt: { gt: new Date() } }],
     },
     include: {
+      activityType: { select: { id: true, name: true, icon: true } },
       activityLocation: {
         include: { place: { select: { name: true } } },
       },

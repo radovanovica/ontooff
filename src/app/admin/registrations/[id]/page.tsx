@@ -43,6 +43,7 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
   const booking = await prisma.registration.findUnique({
     where: { id },
     include: {
+      activityType: { select: { id: true, name: true, icon: true } },
       activityLocation: {
         include: {
           place: { select: { id: true, name: true } },
@@ -150,9 +151,7 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">{t('bookings.details.activity')}</Typography>
                   <Typography variant="body2">
-                    {booking.activityLocation?.activityTypes.filter((a: { activityLocationId: string, activityType: { name: string, id: string } }) => booking.activityLocationId === a.activityLocationId)
-                      .map((a: { activityType: { name: string } }) => a.activityType.name)
-                      .join(', ') || booking.event?.title || t('bookings.table.empty')}
+                    {booking.activityType?.name ?? booking.event?.title ?? t('bookings.table.empty')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {booking.activityLocation?.name ?? booking.event?.title}

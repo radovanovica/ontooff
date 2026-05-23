@@ -37,7 +37,9 @@ import { Pagination } from '@mui/material';
 import { useState, useEffect, useCallback } from 'react';
 import { format, differenceInCalendarDays } from 'date-fns';
 import { useTranslation } from '@/i18n/client';
-import { RegistrationStatus, PaymentMethod } from '@/types';
+import { RegistrationStatus, PaymentMethod, PaymentStatus } from '@/types';
+import RegistrationStatusSelect from '@/components/registrations/RegistrationStatusSelect';
+import RegistrationPaymentStatusSelect from '@/components/registrations/RegistrationPaymentStatusSelect';
 
 interface BookingRow {
   id: string;
@@ -46,17 +48,20 @@ interface BookingRow {
   lastName: string;
   email: string;
   status: string;
+  paymentStatus: string;
   totalAmount: number | null;
   currency: string | null;
   startDate: string;
   endDate: string;
+  activityType?: { name: string; icon?: string | null } | null;
+  event?: { title: string } | null;
   activityLocation?: { name: string };
 }
 
 interface ActivityLocation {
   id: string;
   name: string;
-  activityTypes: Array<{ activityType: { name: string } }>;
+  activityTypes: Array<{ activityTypeId: string; activityType: { id: string; name: string } }>;
   spots: { id: string; name: string; code: string | null; minDays?: number | null; maxDays?: number | null }[];
   pricingRules?: Array<{
     id: string;
@@ -73,6 +78,7 @@ interface ActivityLocation {
 
 interface ManualBookingForm {
   activityLocationId: string;
+  activityTypeId: string;
   spotIds: string[];
   firstName: string;
   lastName: string;
@@ -90,6 +96,7 @@ interface ManualBookingForm {
 
 const EMPTY_FORM: ManualBookingForm = {
   activityLocationId: '',
+  activityTypeId: '',
   spotIds: [],
   firstName: '',
   lastName: '',
@@ -149,11 +156,20 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
       .catch(() => {/* silent */});
   }, [placeId]);
 
-  const handleStatusChange = async (id: string, status: string) => {
+  const handleStatusChange = async (id: string, status: RegistrationStatus) => {
     await fetch(`/api/registrations/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
+    });
+    fetchData();
+  };
+
+  const handlePaymentStatusChange = async (id: string, paymentStatus: PaymentStatus) => {
+    await fetch(`/api/registrations/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paymentStatus }),
     });
     fetchData();
   };
@@ -173,6 +189,7 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
   const handleSubmit = async () => {
     setFormError(null);
     if (!form.activityLocationId) { setFormError(t('bookings.manual.selectLocation')); return; }
+    if (!form.activityTypeId) { setFormError(t('bookings.manual.selectActivity', 'Select an activity type')); return; }
     if (!form.firstName || !form.lastName || !form.email) { setFormError(t('bookings.manual.errors.fillRequired')); return; }
     if (!form.startDate || !form.endDate) { setFormError(t('bookings.manual.errors.selectDates')); return; }
     if (new Date(form.endDate) <= new Date(form.startDate)) { setFormError(t('bookings.manual.errors.endDateAfterStart')); return; }
@@ -218,6 +235,7 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           activityLocationId: form.activityLocationId,
+          activityTypeId: form.activityTypeId,
           spotIds: form.spotIds.length > 0 ? form.spotIds : undefined,
           firstName: form.firstName,
           lastName: form.lastName,
@@ -274,9 +292,11 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
             <TableRow>
               <TableCell sx={{ fontWeight: 700 }}>{t('bookings.table.bookingNumber')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('bookings.table.guest')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('bookings.table.activityType')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('bookings.table.location')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('bookings.table.dates')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('bookings.table.status')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('bookings.table.paymentStatus')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('bookings.table.amount')}</TableCell>
               <TableCell />
             </TableRow>
@@ -284,7 +304,7 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
                   <Typography color="text.secondary">{t('bookings.empty')}</Typography>
                 </TableCell>
               </TableRow>
@@ -301,7 +321,13 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
                     <Typography variant="caption" color="text.secondary">{reg.email}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2">{reg.activityLocation?.name ?? '—'}</Typography>
+                    <Typography variant="body2">
+                      {reg.activityType?.icon ? `${reg.activityType.icon} ` : ''}
+                      {reg.activityType?.name ?? reg.event?.title ?? t('bookings.table.empty')}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">{reg.activityLocation?.name ?? t('bookings.table.empty')}</Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="caption">
@@ -309,16 +335,16 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Select
+                    <RegistrationStatusSelect
                       value={reg.status}
-                      size="small"
-                      variant="standard"
-                      onChange={(e) => handleStatusChange(reg.id, e.target.value)}
-                    >
-                      {Object.values(RegistrationStatus).map((s) => (
-                        <MenuItem key={s} value={s}>{t(`bookings.status.${s}`)}</MenuItem>
-                      ))}
-                    </Select>
+                      onChange={(status) => handleStatusChange(reg.id, status)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <RegistrationPaymentStatusSelect
+                      value={reg.paymentStatus}
+                      onChange={(paymentStatus) => handlePaymentStatusChange(reg.id, paymentStatus)}
+                    />
                   </TableCell>
                   <TableCell>
                     {reg.totalAmount != null ? (
@@ -369,15 +395,47 @@ export default function BookingsTab({ placeId }: { placeId: string }) {
               <Select
                 value={form.activityLocationId}
                 label={t('bookings.table.location')}
-                onChange={(e) => setForm((prev) => ({ ...prev, activityLocationId: e.target.value, spotIds: [] }))}
+                onChange={(e) => {
+                  const loc = locations.find((l) => l.id === e.target.value);
+                  const types = loc?.activityTypes ?? [];
+                  setForm((prev) => ({
+                    ...prev,
+                    activityLocationId: e.target.value,
+                    activityTypeId: types.length === 1 ? types[0].activityTypeId : '',
+                    spotIds: [],
+                    pricingRuleId: '',
+                  }));
+                }}
               >
                 {locations.map((loc) => (
                   <MenuItem key={loc.id} value={loc.id}>
-                    {loc.name}{loc.activityTypes.length > 0 ? ` — ${loc.activityTypes.map((a) => a.activityType.name).join(', ')}` : ''}
+                    {loc.name}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
+
+            {(() => {
+              const selectedLoc = locations.find((l) => l.id === form.activityLocationId);
+              const types = selectedLoc?.activityTypes ?? [];
+              if (types.length <= 1) return null;
+              return (
+                <FormControl fullWidth size="small" required>
+                  <InputLabel>{tReg('step1.activityLabel')}</InputLabel>
+                  <Select
+                    value={form.activityTypeId}
+                    label={tReg('step1.activityLabel')}
+                    onChange={(e) => setForm((prev) => ({ ...prev, activityTypeId: e.target.value, pricingRuleId: '' }))}
+                  >
+                    {types.map((entry) => (
+                      <MenuItem key={entry.activityTypeId} value={entry.activityTypeId}>
+                        {entry.activityType.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              );
+            })()}
 
             {/* Spots — shown once a location is selected */}
             {(() => {

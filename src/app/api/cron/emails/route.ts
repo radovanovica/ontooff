@@ -77,6 +77,7 @@ async function runReminderJob() {
       reminderSentAt: null,
     },
     include: {
+      activityType: { select: { name: true } },
       activityLocation: { include: { place: { select: placeSelect } } },
       event: { include: { place: { select: placeSelect } } },
     },
@@ -94,9 +95,7 @@ async function runReminderJob() {
       await sendReservationReminder(reg.email, {
         registrationNumber: reg.registrationNumber,
         firstName: reg.firstName,
-        activityName: reg.activityLocation
-          ? 'your activity'
-          : (reg.event?.title ?? 'your activity'),
+        activityName: reg.activityType?.name ?? reg.event?.title ?? 'your activity',
         locationName: reg.activityLocation?.name ?? reg.event?.title ?? '',
         startDate: reg.startDate.toLocaleDateString('en-GB'),
         daysUntil,
@@ -134,6 +133,7 @@ async function runReviewJob() {
       review: null, // no review yet
     },
     include: {
+      activityType: { select: { name: true } },
       activityLocation: { include: { place: { select: placeSelect } } },
       event: { include: { place: { select: placeSelect } } },
     },
@@ -147,9 +147,7 @@ async function runReviewJob() {
     try {
       await sendReviewRequest(reg.email, {
         firstName: reg.firstName,
-        activityName: reg.activityLocation
-          ? 'your activity'
-          : (reg.event?.title ?? 'your activity'),
+        activityName: reg.activityType?.name ?? reg.event?.title ?? 'your activity',
         placeSlug: place.slug,
         editToken: reg.editToken,
         place: buildBranding(place),

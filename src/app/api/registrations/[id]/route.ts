@@ -6,6 +6,7 @@ import { authOptions } from '@/lib/auth';
 import { UserRole, RegistrationStatus } from '@/types';
 import { sendRegistrationStatusUpdate, sendRegistrationConfirmation, sendOwnerBookingEditedNotification } from '@/lib/email';
 import { formatGuestSummary } from '@/lib/pricing';
+import { getRegistrationActivityName } from '@/lib/utils';
 
 const updateSchema = z.object({
   status: z.nativeEnum(RegistrationStatus).optional(),
@@ -69,6 +70,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const full = await prisma.registration.findUnique({
     where: { id },
     include: {
+      activityType: true,
       activityLocation: {
         include: {
           activityTypes: { include: { activityType: true } },
@@ -108,11 +110,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   // Edit token users can only update contact info/notes, not status
   const isTokenAccess = !session && editToken;
+  const canManageBooking =
+    !!session &&
+    (session.user.role === UserRole.SUPER_ADMIN || session.user.role === UserRole.PLACE_OWNER);
 
   const body = await req.json();
   const result = updateSchema.safeParse(body);
   if (!result.success) {
     return NextResponse.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, { status: 422 });
+  }
+
+  const wantsStatusOrPayment =
+    result.data.status !== undefined ||
+    result.data.paymentStatus !== undefined ||
+    result.data.paymentMethod !== undefined ||
+    result.data.paymentNotes !== undefined ||
+    result.data.paidAt !== undefined;
+
+  if (!isTokenAccess && wantsStatusOrPayment && !canManageBooking) {
+    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
 
   // Restrict what token-based access can change
@@ -124,10 +140,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         phone: result.data.phone,
         address: result.data.address,
       }
-    : {
-        ...result.data,
-        paidAt: result.data.paidAt ? new Date(result.data.paidAt) : undefined,
-      };
+    : (() => {
+        const data: Record<string, unknown> = {
+          ...result.data,
+          paidAt: result.data.paidAt ? new Date(result.data.paidAt) : undefined,
+        };
+        if (result.data.paymentStatus === 'PAID' && !result.data.paidAt) {
+          data.paidAt = new Date();
+        }
+        if (result.data.paymentStatus === 'UNPAID') {
+          data.paidAt = null;
+        }
+        return data;
+      })();
 
   const updated = await prisma.registration.update({
     where: { id },
@@ -174,6 +199,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       prisma.registration.findUnique({
         where: { id },
         include: {
+          activityType: { select: { name: true } },
           activityLocation: {
             include: {
               activityTypes: { include: { activityType: { select: { name: true } } } },
@@ -191,7 +217,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           registrationNumber: fullReg.registrationNumber,
           firstName: fullReg.firstName,
           locationName: fullReg.activityLocation?.name ?? fullReg.event?.title ?? '—',
-          activityName: fullReg.activityLocation?.activityTypes.map((a) => a.activityType.name).join(', ') ?? fullReg.event?.title ?? '—',
+          activityName: getRegistrationActivityName(fullReg),
           placeName: fullReg.activityLocation?.place.name ?? fullReg.event?.place.name ?? '—',
           startDate: fullReg.startDate.toLocaleDateString('en-GB'),
           endDate: fullReg.endDate.toLocaleDateString('en-GB'),

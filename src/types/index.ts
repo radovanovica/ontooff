@@ -395,7 +395,9 @@ export interface PricingCalculation {
 export interface Registration {
   id: string;
   registrationNumber: string;
-  activityLocationId: string;
+  activityTypeId: string | null;
+  activityLocationId: string | null;
+  eventId?: string | null;
   userId: string | null;
   pricingRuleId: string | null;
   firstName: string;
@@ -420,6 +422,7 @@ export interface Registration {
   embedTokenId: string | null;
   createdAt: Date;
   updatedAt: Date;
+  activityType?: ActivityType | null;
   activityLocation?: ActivityLocation;
   user?: User | null;
   pricingRule?: PricingRule | null;
@@ -562,6 +565,7 @@ export interface PricingTierFormData {
 
 export interface RegistrationStep1Data {
   activityLocationId: string;
+  activityTypeId?: string;
   placeId?: string;
 }
 
@@ -597,6 +601,7 @@ export type RegistrationFormData = RegistrationStep1Data &
 
 export interface RegistrationCreateInput {
   activityLocationId: string;
+  activityTypeId: string;
   spotIds?: string[];
   pricingRuleId?: string;
   firstName: string;

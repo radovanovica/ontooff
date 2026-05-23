@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 import { UserRole, PaymentMethod, GuestCounts, AgeGroupType } from '@/types';
-import { generateRegistrationNumber, checkSpotAvailability } from '@/lib/utils';
+import { generateRegistrationNumber, checkSpotAvailability, getRegistrationActivityName } from '@/lib/utils';
 import { calculatePricing, formatGuestSummary, getTotalGuests } from '@/lib/pricing';
 import { sendRegistrationConfirmation, sendOwnerNewBookingNotification } from '@/lib/email';
 import type { PricingTier } from '@prisma/client';
@@ -15,6 +15,7 @@ const guestCountsSchema = z.record(z.string(), z.number().int().nonnegative()).r
 );
 
 const createSchema = z.object({
+  activityTypeId: z.string().optional(),
   activityLocationId: z.string().optional(),
   eventId: z.string().optional(),
   // New: explicit spot+timeslot pairs (preferred)
@@ -63,6 +64,7 @@ export async function GET(req: NextRequest) {
   const pageSize = Number(searchParams.get('pageSize') ?? 20);
   const status = searchParams.get('status');
   const locationId = searchParams.get('activityLocationId');
+  const activityTypeId = searchParams.get('activityTypeId');
   const eventId = searchParams.get('eventId');
   const search = searchParams.get('search');
   const dateFrom = searchParams.get('dateFrom');
@@ -92,6 +94,7 @@ export async function GET(req: NextRequest) {
   const placeId = searchParams.get('placeId');
   if (status) where.status = status;
   if (locationId) where.activityLocationId = locationId;
+  if (activityTypeId) where.activityTypeId = activityTypeId;
   if (eventId) where.eventId = eventId;
   if (placeId) {
     // Filter by all locations and events belonging to this place
@@ -131,9 +134,10 @@ export async function GET(req: NextRequest) {
     prisma.registration.findMany({
       where,
       include: {
+        activityType: { select: { id: true, name: true, icon: true, color: true } },
+        event: { select: { id: true, title: true, place: { select: { id: true, name: true } } } },
         activityLocation: {
           include: {
-            activityTypes: { include: { activityType: { select: { id: true, name: true, icon: true } } } },
             place: { select: { id: true, name: true, slug: true } },
           },
         },
@@ -418,6 +422,49 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Activity location not found' }, { status: 404 });
     }
 
+    const locationActivityTypeIds = location.activityTypes.map((a) => a.activityTypeId);
+    let resolvedActivityTypeId = data.activityTypeId ?? null;
+
+    if (!resolvedActivityTypeId && locationActivityTypeIds.length === 1) {
+      resolvedActivityTypeId = locationActivityTypeIds[0];
+    }
+
+    if (!resolvedActivityTypeId && data.pricingRuleId) {
+      const ruleForType = await prisma.pricingRule.findUnique({
+        where: { id: data.pricingRuleId },
+        select: { activityTypeId: true },
+      });
+      if (
+        ruleForType?.activityTypeId &&
+        locationActivityTypeIds.includes(ruleForType.activityTypeId)
+      ) {
+        resolvedActivityTypeId = ruleForType.activityTypeId;
+      }
+    }
+
+    if (!resolvedActivityTypeId) {
+      return NextResponse.json(
+        { success: false, error: 'activityTypeId is required for this booking' },
+        { status: 422 }
+      );
+    }
+
+    if (!locationActivityTypeIds.includes(resolvedActivityTypeId)) {
+      return NextResponse.json(
+        { success: false, error: 'Selected activity is not available at this location' },
+        { status: 422 }
+      );
+    }
+
+    const activityType = await prisma.activityType.findFirst({
+      where: { id: resolvedActivityTypeId, placeId: location.place.id, isActive: true },
+      select: { id: true, name: true },
+    });
+
+    if (!activityType) {
+      return NextResponse.json({ success: false, error: 'Activity type not found or inactive' }, { status: 404 });
+    }
+
     const totalGuests = getTotalGuests(data.guestCounts as GuestCounts);
 
     // Resolve the effective spot+timeslot pairs
@@ -528,13 +575,12 @@ export async function POST(req: NextRequest) {
     } = {};
 
     if (data.pricingRuleId) {
-      const locationActivityTypeIds = location.activityTypes.map((a: { activityTypeId: string }) => a.activityTypeId);
       const pricingRule = await prisma.pricingRule.findUnique({
         where: { id: data.pricingRuleId, isActive: true },
         include: { pricingTiers: true },
       });
 
-      if (!pricingRule || (pricingRule.activityTypeId && !locationActivityTypeIds.includes(pricingRule.activityTypeId))) {
+      if (!pricingRule || (pricingRule.activityTypeId && pricingRule.activityTypeId !== resolvedActivityTypeId)) {
         return NextResponse.json(
           { success: false, error: 'Selected pricing rule is not valid for this activity' },
           { status: 422 }
@@ -616,6 +662,7 @@ export async function POST(req: NextRequest) {
     const registration = await prisma.registration.create({
       data: {
         registrationNumber,
+        activityTypeId: resolvedActivityTypeId,
         activityLocationId: data.activityLocationId!,
         userId: session?.user.id ?? null,
         pricingRuleId: pricingData.pricingRuleId ?? null,
@@ -642,10 +689,16 @@ export async function POST(req: NextRequest) {
           : undefined,
       },
       include: {
+        activityType: { select: { name: true } },
         registrationSpots: { include: { spot: { select: { name: true, code: true } } } },
         paymentBreakdown: { orderBy: { sortOrder: 'asc' } },
         pricingRule: true,
       },
+    });
+
+    const activityName = getRegistrationActivityName({
+      activityType: registration.activityType,
+      activityLocation: location,
     });
 
     // Send confirmation email (skip for manual owner entries)
@@ -661,7 +714,7 @@ export async function POST(req: NextRequest) {
         registrationNumber,
         firstName: data.firstName,
         locationName: location.name,
-        activityName: location.activityTypes.map((a: { activityType: { name: string } }) => a.activityType.name).join(', '),
+        activityName,
         placeName: location.place.name,
         startDate: startDate.toLocaleDateString('en-GB'),
         endDate: endDate.toLocaleDateString('en-GB'),
@@ -696,7 +749,7 @@ export async function POST(req: NextRequest) {
         guestEmail: data.email,
         guestPhone: data.phone,
         locationName: location.name,
-        activityName: location.activityTypes.map((a: { activityType: { name: string } }) => a.activityType.name).join(', '),
+        activityName,
         placeName: location.place.name,
         startDate: startDate.toLocaleDateString('en-GB'),
         endDate: endDate.toLocaleDateString('en-GB'),

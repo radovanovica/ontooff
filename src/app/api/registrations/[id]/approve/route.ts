@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendRegistrationConfirmation } from '@/lib/email';
 import { formatGuestSummary } from '@/lib/pricing';
+import { getRegistrationActivityName } from '@/lib/utils';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
@@ -28,6 +29,7 @@ export async function GET(
   const registration = await prisma.registration.findUnique({
     where: { id },
     include: {
+      activityType: { select: { name: true } },
       activityLocation: {
         include: {
           activityTypes: { include: { activityType: { select: { name: true } } } },
@@ -62,7 +64,7 @@ export async function GET(
       registrationNumber: registration.registrationNumber,
       firstName: registration.firstName,
       locationName: registration.activityLocation?.name ?? registration.event?.title ?? '—',
-      activityName: registration.activityLocation?.activityTypes.map((a) => a.activityType.name).join(', ') ?? registration.event?.title ?? '—',
+      activityName: getRegistrationActivityName(registration),
       placeName: registration.activityLocation?.place.name ?? registration.event?.place.name ?? '—',
       startDate: registration.startDate.toLocaleDateString('en-GB'),
       endDate: registration.endDate.toLocaleDateString('en-GB'),

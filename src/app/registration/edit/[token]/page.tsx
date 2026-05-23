@@ -55,6 +55,7 @@ interface RegistrationData {
   startDate: string;
   endDate: string;
   numberOfDays: number;
+  activityType?: { name: string; icon?: string | null } | null;
   activityLocation?: { name: string; place?: { name: string } };
   registrationSpots?: { spot: { name: string; code: string } }[];
   pricingRule?: { currency: string } | null;
@@ -184,6 +185,12 @@ export default function RegistrationEditPage() {
               <Box sx={{ p: 3 }}>
                 {/* Summary */}
                 <Box sx={{ mb: 3 }}>
+                  {registration.activityType && (
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                      {registration.activityType.icon ? `${registration.activityType.icon} ` : ''}
+                      {registration.activityType.name}
+                    </Typography>
+                  )}
                   <Typography variant="subtitle2" color="text.secondary">
                     {registration.activityLocation?.place?.name} — {registration.activityLocation?.name}
                   </Typography>

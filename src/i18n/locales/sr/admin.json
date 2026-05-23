@@ -177,6 +177,7 @@
                           "columns":  {
                                           "number":  "Ref #",
                                           "guest":  "Gost",
+                                          "activity":  "Aktivnost",
                                           "location":  "Lokacija",
                                           "dates":  "Datumi",
                                           "status":  "Status",
@@ -211,6 +212,13 @@
                                            "COMPLETED":  "Završeno",
                                            "NO_SHOW":  "Nije se pojavio"
                                        },
+                          "paymentStatuses":  {
+                                                  "UNPAID":  "Nije plaćeno",
+                                                  "PARTIALLY_PAID":  "Delimično plaćeno",
+                                                  "PAID":  "Plaćeno",
+                                                  "REFUNDED":  "Refundirano",
+                                                  "WAIVED":  "Oslobođeno"
+                                              },
                           "filtersLabel":  "Filteri",
                           "dateFrom":  "Datum početka od",
                           "dateTo":  "Datum početka do"

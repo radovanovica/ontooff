@@ -28,6 +28,8 @@
     "phone": "Phone number",
     "address": "Address (optional)",
     "dates": "Dates",
+    "activity": "Activity",
+    "location": "Location",
     "selectedSpots": "Selected spot(s)",
     "guests": "Guests",
     "contact": "Contact"

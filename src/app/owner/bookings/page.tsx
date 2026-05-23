@@ -13,11 +13,10 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
-  Select,
-  MenuItem,
   FormControl,
   InputLabel,
+  Select,
+  MenuItem,
   CircularProgress,
   Alert,
   Tooltip,
@@ -29,8 +28,10 @@ import { Refresh } from '@mui/icons-material';
 import { Pagination } from '@mui/material';
 import { useTranslation } from '@/i18n/client';
 import { format } from 'date-fns';
-import { RegistrationStatus } from '@/types';
+import { RegistrationStatus, PaymentStatus } from '@/types';
 import PageHeader from '@/components/ui/PageHeader';
+import RegistrationStatusSelect from '@/components/registrations/RegistrationStatusSelect';
+import RegistrationPaymentStatusSelect from '@/components/registrations/RegistrationPaymentStatusSelect';
 
 interface BookingRow {
   id: string;
@@ -39,11 +40,14 @@ interface BookingRow {
   lastName: string;
   email: string;
   status: RegistrationStatus;
+  paymentStatus: string;
   totalAmount: number | null;
   currency: string | null;
   startDate: string;
   endDate: string;
   createdAt: string;
+  activityType?: { name: string; icon?: string | null } | null;
+  event?: { title: string; place?: { name: string } } | null;
   activityLocation?: { id: string; name: string; place?: { name: string } };
 }
 
@@ -52,14 +56,6 @@ interface LocationOption {
   name: string;
   place: { name: string };
 }
-
-const STATUS_COLORS: Record<RegistrationStatus, 'default' | 'warning' | 'info' | 'success' | 'error'> = {
-  [RegistrationStatus.PENDING]: 'warning',
-  [RegistrationStatus.CONFIRMED]: 'info',
-  [RegistrationStatus.COMPLETED]: 'default',
-  [RegistrationStatus.CANCELLED]: 'error',
-  [RegistrationStatus.NO_SHOW]: 'default',
-};
 
 export default function OwnerBookingsPage() {
   const { t } = useTranslation('owner');
@@ -133,6 +129,21 @@ export default function OwnerBookingsPage() {
       );
     } catch {
       setError(t('bookings.errors.updateStatusFailed'));
+    }
+  };
+
+  const handlePaymentStatusChange = async (bookingId: string, paymentStatus: PaymentStatus) => {
+    try {
+      await fetch(`/api/registrations/${bookingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentStatus }),
+      });
+      setBookings((prev) =>
+        prev.map((b) => (b.id === bookingId ? { ...b, paymentStatus } : b))
+      );
+    } catch {
+      setError(t('bookings.errors.updatePaymentStatusFailed', 'Failed to update payment status'));
     }
   };
 
@@ -213,18 +224,20 @@ export default function OwnerBookingsPage() {
               <TableRow sx={{ bgcolor: 'grey.50' }}>
                 <TableCell sx={{ fontWeight: 600 }}>{t('bookings.table.bookingNumber')}</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>{t('bookings.table.guest')}</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>{t('bookings.table.activityType')}</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>{t('bookings.table.location')}</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>{t('bookings.table.checkIn')}</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>{t('bookings.table.checkOut')}</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>{t('bookings.table.amount')}</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>{t('bookings.table.status')}</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>{t('bookings.table.paymentStatus')}</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>{t('bookings.table.created')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {bookings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                  <TableCell colSpan={10} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                     {t('common.noData')}
                   </TableCell>
                 </TableRow>
@@ -245,9 +258,15 @@ export default function OwnerBookingsPage() {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2">{booking.activityLocation?.name}</Typography>
+                      <Typography variant="body2">
+                        {booking.activityType?.icon ? `${booking.activityType.icon} ` : ''}
+                        {booking.activityType?.name ?? booking.event?.title ?? t('bookings.table.empty')}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">{booking.activityLocation?.name ?? t('bookings.table.empty')}</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {booking.activityLocation?.place?.name}
+                        {booking.activityLocation?.place?.name ?? booking.event?.place?.name}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -266,27 +285,16 @@ export default function OwnerBookingsPage() {
                         : t('bookings.table.empty')}
                     </TableCell>
                     <TableCell>
-                      <Select
+                      <RegistrationStatusSelect
                         value={booking.status}
-                        size="small"
-                        variant="standard"
-                        disableUnderline
-                        onChange={(e: SelectChangeEvent) =>
-                          handleStatusChange(booking.id, e.target.value as RegistrationStatus)
-                        }
-                        renderValue={(val) => (
-                          <Chip
-                            label={t(`bookings.status.${val as RegistrationStatus}`)}
-                            size="small"
-                            color={STATUS_COLORS[val as RegistrationStatus]}
-                          />
-                        )}
-                        sx={{ minWidth: 120 }}
-                      >
-                        {statuses.map((s) => (
-                          <MenuItem key={s} value={s}>{t(`bookings.status.${s}`)}</MenuItem>
-                        ))}
-                      </Select>
+                        onChange={(status) => handleStatusChange(booking.id, status)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <RegistrationPaymentStatusSelect
+                        value={booking.paymentStatus}
+                        onChange={(paymentStatus) => handlePaymentStatusChange(booking.id, paymentStatus)}
+                      />
                     </TableCell>
                     <TableCell sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
                       {format(new Date(booking.createdAt), 'dd MMM yyyy')}

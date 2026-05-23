@@ -379,12 +379,14 @@
         "table": {
             "bookingNumber": "Booking #",
             "guest": "Guest",
+            "activityType": "Activity",
             "location": "Location",
             "dates": "Dates",
             "checkIn": "Check-in",
             "checkOut": "Check-out",
             "amount": "Amount",
             "status": "Status",
+            "paymentStatus": "Payment",
             "created": "Created",
             "spots": "Spots",
             "currency": "RSD",
@@ -471,7 +473,8 @@
         "errors": {
             "fetchFailed": "Failed to fetch bookings",
             "loadFailed": "Failed to load bookings.",
-            "updateStatusFailed": "Failed to update status."
+            "updateStatusFailed": "Failed to update status.",
+            "updatePaymentStatusFailed": "Failed to update payment status."
         },
         "confirmed": "Booking confirmed! The guest has been notified by email.",
         "alreadyConfirmed": "This booking was already confirmed.",

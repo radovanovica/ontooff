@@ -177,6 +177,7 @@
                           "columns":  {
                                           "number":  "Ref #",
                                           "guest":  "Huésped",
+                                          "activity":  "Actividad",
                                           "location":  "Ubicación",
                                           "dates":  "Fechas",
                                           "status":  "Estado",
@@ -211,6 +212,13 @@
                                            "COMPLETED":  "Completada",
                                            "NO_SHOW":  "No presentado"
                                        },
+                          "paymentStatuses":  {
+                                                  "UNPAID":  "Sin pagar",
+                                                  "PARTIALLY_PAID":  "Parcialmente pagado",
+                                                  "PAID":  "Pagado",
+                                                  "REFUNDED":  "Reembolsado",
+                                                  "WAIVED":  "Exento"
+                                              },
                           "filtersLabel":  "Filtros",
                           "dateFrom":  "Fecha de inicio desde",
                           "dateTo":  "Fecha de inicio hasta"
