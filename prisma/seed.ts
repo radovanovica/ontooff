@@ -9,11 +9,11 @@ async function main() {
 
   const adminPassword = await bcrypt.hash(',14dmin123!', 12);
   const admin = await prisma.user.upsert({
-    where: { email: 'radovanovica1993@gmail.com' },
+    where: { email: 'ontooffapp@gmail.com' },
     update: {},
     create: {
       name: 'Super Admin',
-      email: 'radovanovica1993@gmail.com',
+      email: 'ontooffapp@gmail.com',
       password: adminPassword,
       emailVerified: new Date(),
       role: 'SUPER_ADMIN',
@@ -23,7 +23,7 @@ async function main() {
   console.log('?  Super admin:', admin.email);
 
   console.log('\n??  Seed complete!');
-  console.log('  Admin ?  radovanovica1993@gmail.com  /  ,14dmin123!');
+  console.log('  Admin ?  ontooffapp@gmail.com  /  ,14dmin123!');
 }
 
 main()
