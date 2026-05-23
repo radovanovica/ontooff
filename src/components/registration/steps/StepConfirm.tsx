@@ -119,7 +119,7 @@ export default function StepConfirm({
             {activePricing.breakdown?.map((item, index) => (
               <Box key={`${item.label}-${index}`} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.35 }}>
                 <Box>
-                  <Typography variant="body2">{item.label}</Typography>
+                  <Typography variant="body2">{t("bookings.details." + item.label)}</Typography>
                   <Typography variant="caption" color="text.secondary">
                     {item.quantity} × {activePricing.currency} {item.unitPrice.toFixed(2)}
                   </Typography>

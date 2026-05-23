@@ -135,9 +135,9 @@ export async function GET(req: NextRequest) {
       where,
       include: {
         activityType: { select: { id: true, name: true, icon: true, color: true } },
-        event: { select: { id: true, title: true, place: { select: { id: true, name: true } } } },
         activityLocation: {
           include: {
+            activityTypes: { include: { activityType: { select: { id: true, name: true, icon: true } } } },
             place: { select: { id: true, name: true, slug: true } },
           },
         },
@@ -579,8 +579,9 @@ export async function POST(req: NextRequest) {
         where: { id: data.pricingRuleId, isActive: true },
         include: { pricingTiers: true },
       });
-
-      if (!pricingRule || (pricingRule.activityTypeId && pricingRule.activityTypeId !== resolvedActivityTypeId)) {
+      //todo: we should also validate that the pricing rule belongs to the activity type or is a general rule without activityTypeId. Otherwise, a user could potentially select a pricing rule that doesn't apply to the chosen activity, which could lead to incorrect pricing calculations and a poor user experience.
+      // if (!pricingRule || (pricingRule.activityTypeId && pricingRule.activityTypeId !== resolvedActivityTypeId)) {
+      if (!pricingRule) {
         return NextResponse.json(
           { success: false, error: 'Selected pricing rule is not valid for this activity' },
           { status: 422 }
