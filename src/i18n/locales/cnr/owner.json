@@ -48,7 +48,9 @@
                                 "website":  "Veb stranica",
                                 "timezone":  "Vremenska zona",
                                 "logo":  "URL logotipa",
-                                "cover":  "URL naslovne slike"
+                                "cover":  "URL naslovne slike",
+                                "organization":  "Organizacija (opciono)",
+                                "organizationHint":  "Ako je postavljeno, mjesto će biti dodijeljeno vlasniku organizacije. Ostavite prazno da dodijelite sebi."
                             },
                    "deleteConfirm":  "Obrisati ovo mjesto? Sve lokacije, mjesta i rezervacije biće trajno uklonjene.",
                    "created":  "Mjesto uspješno kreirano!",

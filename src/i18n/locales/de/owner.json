@@ -48,7 +48,9 @@
                                 "website":  "Website",
                                 "timezone":  "Zeitzone",
                                 "logo":  "Logo-URL",
-                                "cover":  "Titelbild-URL"
+                                "cover":  "Titelbild-URL",
+                                "organization":  "Organisation (optional)",
+                                "organizationHint":  "Falls angegeben, wird der Ort dem Inhaber dieser Organisation zugewiesen. Leer lassen, um sich selbst zuzuweisen."
                             },
                    "deleteConfirm":  "Diesen Ort löschen? Alle Standorte, Plätze und Buchungen werden dauerhaft entfernt.",
                    "created":  "Ort erfolgreich erstellt!",

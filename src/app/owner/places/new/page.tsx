@@ -14,6 +14,7 @@ import {
   StepLabel,
   Divider,
 } from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete';
 import { ArrowBack, ArrowForward, Map as MapIcon, SkipNext, UploadFile, Clear } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,9 +22,11 @@ import { z } from 'zod';
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/i18n/client';
 import PageHeader from '@/components/ui/PageHeader';
 import { uploadFileToS3 } from '@/lib/upload';
+import { UserRole } from '@/types';
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
@@ -53,6 +56,8 @@ type MapValues = z.input<typeof mapSchema>;
 export default function NewPlacePage() {
   const { t } = useTranslation('owner');
   const router = useRouter();
+  const { data: session } = useSession();
+  const isSuperAdmin = session?.user?.role === UserRole.SUPER_ADMIN;
 
   const [activeStep, setActiveStep] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -62,6 +67,25 @@ export default function NewPlacePage() {
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Org picker (super admin only)
+  interface OrgOption { id: string; name: string; email: string }
+  const [orgOptions, setOrgOptions] = useState<OrgOption[]>([]);
+  const [selectedOrg, setSelectedOrg] = useState<OrgOption | null>(null);
+  const [orgLoading, setOrgLoading] = useState(false);
+
+  const searchOrgs = async (q: string) => {
+    setOrgLoading(true);
+    try {
+      const params = new URLSearchParams({ status: 'APPROVED', pageSize: '30' });
+      if (q) params.set('search', q);
+      const res = await fetch(`/api/admin/organizations?${params}`);
+      const data = await res.json();
+      setOrgOptions(data.data?.items ?? []);
+    } finally {
+      setOrgLoading(false);
+    }
+  };
 
   // ── Step 1 form ─────────────────────────────────────────────────────────
   const {
@@ -89,7 +113,10 @@ export default function NewPlacePage() {
       const res = await fetch('/api/places', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          ...(isSuperAdmin && selectedOrg ? { organizationId: selectedOrg.id } : {}),
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? t('places.errors.createFailed'));
@@ -251,6 +278,28 @@ export default function NewPlacePage() {
               <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField {...reg1('timezone')} label={t('places.form.timezone')} fullWidth />
               </Grid>
+              {isSuperAdmin && (
+                <Grid size={{ xs: 12 }}>
+                  <Autocomplete
+                    options={orgOptions}
+                    loading={orgLoading}
+                    value={selectedOrg}
+                    getOptionLabel={(o) => `${o.name} (${o.email})`}
+                    isOptionEqualToValue={(a, b) => a.id === b.id}
+                    noOptionsText={t('common.noData')}
+                    onOpen={() => { if (orgOptions.length === 0) searchOrgs(''); }}
+                    onInputChange={(_, val) => searchOrgs(val)}
+                    onChange={(_, val) => setSelectedOrg(val)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={t('places.form.organization', 'Organization (optional)')}
+                        helperText={t('places.form.organizationHint', 'If set, the place will be assigned to this organization\'s owner. Leave blank to assign to yourself.')}
+                      />
+                    )}
+                  />
+                </Grid>
+              )}
               <Grid size={{ xs: 12 }}>
                 <Button
                   type="submit"

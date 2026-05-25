@@ -48,7 +48,9 @@
                                 "website":  "Website",
                                 "timezone":  "Timezone",
                                 "logo":  "Logo URL",
-                                "cover":  "Cover image URL"
+                                "cover":  "Cover image URL",
+                                "organization":  "Organization (optional)",
+                                "organizationHint":  "If set, the place will be owned by this organization\u0027s owner. Leave blank to assign to yourself."
                             },
                    "deleteConfirm":  "Delete this place? All locations, spots and bookings will be permanently removed.",
                    "created":  "Place created successfully!",

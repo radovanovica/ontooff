@@ -48,7 +48,9 @@
                                 "website":  "Sitio web",
                                 "timezone":  "Zona horaria",
                                 "logo":  "URL del logo",
-                                "cover":  "URL de la imagen de portada"
+                                "cover":  "URL de la imagen de portada",
+                                "organization":  "Organización (opcional)",
+                                "organizationHint":  "Si se establece, el lugar se asignará al propietario de esta organización. Déjelo en blanco para asignárselo a usted mismo."
                             },
                    "deleteConfirm":  "¿Eliminar este lugar? Todas las ubicaciones, espacios y reservas se eliminarán permanentemente.",
                    "created":  "¡Lugar creado exitosamente!",

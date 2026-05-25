@@ -20,6 +20,7 @@ const placeSchema = z.object({
   mapImageUrl: z.string().optional(),
   mapWidth: z.number().int().positive().optional(),
   mapHeight: z.number().int().positive().optional(),
+  organizationId: z.string().optional(),
 });
 
 // GET /api/places
@@ -80,6 +81,8 @@ export async function POST(req: NextRequest) {
 
   // Non-admins must have an approved organization
   let organizationId: string | null = null;
+  let ownerId: string = session.user.id;
+
   if (session.user.role !== UserRole.SUPER_ADMIN) {
     const org = await prisma.organization.findFirst({
       where: { ownerId: session.user.id, status: 'APPROVED' },
@@ -100,7 +103,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, { status: 422 });
   }
 
-  const { name, ...rest } = result.data;
+  const { name, organizationId: bodyOrgId, ...rest } = result.data;
+
+  // Super admin: if an organizationId is provided, assign to that org's owner
+  if (session.user.role === UserRole.SUPER_ADMIN && bodyOrgId) {
+    const org = await prisma.organization.findUnique({
+      where: { id: bodyOrgId },
+      select: { id: true, ownerId: true },
+    });
+    if (!org) {
+      return NextResponse.json({ success: false, error: 'Organization not found' }, { status: 404 });
+    }
+    organizationId = org.id;
+    if (org.ownerId) {
+      ownerId = org.ownerId;
+    }
+  }
   const slug = rest.slug || slugify(name);
 
   const exists = await prisma.place.findUnique({ where: { slug } });
@@ -109,7 +127,7 @@ export async function POST(req: NextRequest) {
   }
 
   const place = await prisma.place.create({
-    data: { name, slug, ...rest, ownerId: session.user.id, organizationId },
+    data: { name, slug, ...rest, ownerId, organizationId },
   });
 
   return NextResponse.json({ success: true, data: place }, { status: 201 });
