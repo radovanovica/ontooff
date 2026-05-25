@@ -22,6 +22,7 @@ import EmbedTokensTab from './_components/EmbedTokensTab';
 import EventsTab from './_components/EventsTab';
 import BookingsTab from './_components/BookingsTab';
 import ReviewsTab from './_components/ReviewsTab';
+import CalendarTab from './_components/CalendarTab';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -87,6 +88,7 @@ export default function PlaceDetailPage() {
         <Tab label={t('events.title', 'Events')} />
         <Tab label={t('embedTokens.title')} />
         <Tab label={t('bookings.title')} />
+        <Tab label="Calendar" />
         <Tab label={t('reviews.tabLabel')} />
       </Tabs>
 
@@ -109,6 +111,9 @@ export default function PlaceDetailPage() {
         <BookingsTab placeId={placeId} />
       </TabPanel>
       <TabPanel value={tab} index={6}>
+        <CalendarTab placeId={placeId} />
+      </TabPanel>
+      <TabPanel value={tab} index={7}>
         <ReviewsTab placeId={placeId} />
       </TabPanel>
     </Box>

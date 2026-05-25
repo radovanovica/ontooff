@@ -228,6 +228,7 @@ model Place {
   reviews           Review[]
   blogPosts         BlogPost[]
   contributorAccess ContributorPlaceAccess[]
+  closedDates       ClosedDate[]
 
   @@index([ownerId])
   @@index([organizationId])
@@ -303,6 +304,7 @@ model ActivityLocation {
   pricingRules PricingRule[]
   embedTokens  EmbedToken[]
   reviews      Review[]
+  closedDates  ClosedDate[]
 
   @@index([placeId])
   @@index([isActive])
@@ -879,6 +881,35 @@ model EventPricingRule {
   @@unique([eventId, pricingRuleId])
   @@index([eventId])
   @@map("event_pricing_rules")
+}
+
+// ---
+// CLOSED DATES — non-working / blocked days
+// null activityLocationId = applies to entire place
+// ---
+
+model ClosedDate {
+  id                 String   @id @default(cuid())
+  placeId            String
+  activityLocationId String?  // null = all locations
+  activityTypeId     String?  // null = all activity types
+
+  // Either a specific calendar date OR a recurring weekly day
+  date               DateTime? @db.Date  // a specific blocked date (UTC midnight)
+  dayOfWeek          Int?               // 0=Sun … 6=Sat — recurring weekly closure
+  isRecurring        Boolean  @default(false)
+
+  reason             String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  place            Place              @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  activityLocation ActivityLocation?  @relation(fields: [activityLocationId], references: [id], onDelete: Cascade)
+
+  @@index([placeId])
+  @@index([activityLocationId])
+  @@index([date])
+  @@map("closed_dates")
 }
 
 
