@@ -9,7 +9,7 @@ import type { DateClickArg } from '@fullcalendar/interaction';
 interface Props {
   events: object[];
   onDateClick: (dateStr: string) => void;
-  onEventClick?: (registrationNumber: string) => void;
+  onEventClick?: (bookingId: string) => void;
 }
 
 export default function FullCalendarView({ events, onDateClick, onEventClick }: Props) {
@@ -25,29 +25,59 @@ export default function FullCalendarView({ events, onDateClick, onEventClick }: 
       }}
       dateClick={(info: DateClickArg) => onDateClick(info.dateStr)}
       eventClick={(info: EventClickArg) => {
-        const regNum = info.event.extendedProps.registrationNumber as string | undefined;
-        if (regNum && onEventClick) {
-          onEventClick(regNum);
+        const bookingId = info.event.extendedProps.bookingId as string | undefined;
+        if (bookingId && onEventClick) {
+          onEventClick(bookingId);
         }
       }}
       eventContent={(info: EventContentArg) => {
         if (info.event.display === 'background') return null;
+        const { activityType, activityLocation, registrationNumber } =
+          info.event.extendedProps as {
+            activityType?: string | null;
+            activityLocation?: string | null;
+            registrationNumber?: string;
+          };
+        const subtitle = [activityType, activityLocation].filter(Boolean).join(' · ');
         return (
-          <div style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            padding: '1px 4px',
-            fontSize: '0.72rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}>
-            {info.event.title}
+          <div style={{ overflow: 'hidden', padding: '2px 4px', cursor: 'pointer', lineHeight: 1.3 }}>
+            <div style={{
+              fontWeight: 700,
+              fontSize: '0.72rem',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}>
+              {info.event.title}
+            </div>
+            {subtitle && (
+              <div style={{
+                fontSize: '0.66rem',
+                opacity: 0.88,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {subtitle}
+              </div>
+            )}
+            {registrationNumber && (
+              <div style={{
+                fontSize: '0.60rem',
+                opacity: 0.72,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                fontFamily: 'monospace',
+              }}>
+                #{registrationNumber}
+              </div>
+            )}
           </div>
         );
       }}
       height="auto"
-      dayMaxEvents={3}
+      dayMaxEvents={4}
       nowIndicator
     />
   );
