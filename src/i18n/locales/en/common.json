@@ -186,7 +186,11 @@
                    "refresh":  "Refresh",
                    "viewAll":  "View All",
                    "seeDetails":  "See Details",
-                   "type":  "Type"
+                   "type":  "Type",
+                   "seeTranslation":  "See translation",
+                   "seeOriginal":  "See original",
+                   "translating":  "Translating\u2026",
+                   "translationError":  "Translation unavailable"
                },
     "status":  {
                    "PENDING":  "Pending",

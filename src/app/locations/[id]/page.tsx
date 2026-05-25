@@ -42,6 +42,7 @@ import ReviewList from '@/components/reviews/ReviewList';
 import ReviewForm from '@/components/reviews/ReviewForm';
 import InstagramStoryShare from '@/components/blog/InstagramStoryShare';
 import { useTranslation } from '@/i18n/client';
+import TranslatableText from '@/components/ui/TranslatableText';
 import type { ActivityTag } from '@/types';
 
 const LocationMap = dynamic(
@@ -236,9 +237,11 @@ function LocationContent() {
             {location.description && (
               <Paper elevation={1} sx={{ p: 3, borderRadius: 3, mb: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>{t('locations.about')}</Typography>
-                <Typography variant="body1" sx={{ whiteSpace: 'pre-line', color: 'text.secondary' }}>
-                  {location.description}
-                </Typography>
+                <TranslatableText
+                  text={location.description}
+                  variant="body1"
+                  color="text.secondary"
+                />
               </Paper>
             )}
 

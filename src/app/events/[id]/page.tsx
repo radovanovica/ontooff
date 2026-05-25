@@ -37,6 +37,7 @@ import Navbar from '@/components/layout/Navbar';
 import { useTranslation } from '@/i18n/client';
 import { useCurrency } from '@/lib/currency';
 import { useSession } from 'next-auth/react';
+import TranslatableText from '@/components/ui/TranslatableText';
 
 interface PricingTier {
   id: string;
@@ -299,9 +300,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             </Box>
 
             {event.description && (
-              <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.8, whiteSpace: 'pre-line' }}>
-                {event.description}
-              </Typography>
+              <TranslatableText
+                text={event.description}
+                variant="body1"
+                sx={{ mb: 3, lineHeight: 1.8 }}
+              />
             )}
 
             {event.maxReservations != null && (

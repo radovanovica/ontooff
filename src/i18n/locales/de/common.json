@@ -186,7 +186,11 @@
                    "refresh":  "Aktualisieren",
                    "viewAll":  "Alle anzeigen",
                    "seeDetails":  "Details ansehen",
-                   "type":  "Typ"
+                   "type":  "Typ",
+                   "seeTranslation":  "\u00dcbersetzung anzeigen",
+                   "seeOriginal":  "Original anzeigen",
+                   "translating":  "\u00dcbersetze\u2026",
+                   "translationError":  "\u00dcbersetzung nicht verf\u00fcgbar"
                },
     "status":  {
                    "PENDING":  "Ausstehend",

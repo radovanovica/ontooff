@@ -26,6 +26,7 @@ import { useTranslation } from '@/i18n/client';
 import Navbar from '@/components/layout/Navbar';
 import RegistrationStepper from '@/components/registration/RegistrationStepper';
 import ReviewList from '@/components/reviews/ReviewList';
+import TranslatableText from '@/components/ui/TranslatableText';
 
 interface PlaceDetail {
   id: string;
@@ -246,9 +247,12 @@ function PlaceContent() {
             <Paper variant="outlined" sx={{ p: 3, borderRadius: 2, mb: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{t('places.about')}</Typography>
               {place.description && (
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.7 }}>
-                  {place.description}
-                </Typography>
+                <TranslatableText
+                  text={place.description}
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1, lineHeight: 1.7 }}
+                />
               )}
               <Divider sx={{ my: 2 }} />
               {place.phone && (

@@ -186,7 +186,11 @@
                    "refresh":  "Osvježi",
                    "viewAll":  "Pogledaj sve",
                    "seeDetails":  "Detalji",
-                   "type":  "Vrsta"
+                   "type":  "Vrsta",
+                   "seeTranslation":  "Pogledaj prevod",
+                   "seeOriginal":  "Pogledaj original",
+                   "translating":  "Prevođenje\u2026",
+                   "translationError":  "Prevod nedostupan"
                },
     "status":  {
                    "PENDING":  "Na čekanju",
