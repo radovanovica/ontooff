@@ -273,6 +273,7 @@ export default function AdminOutreachPage() {
               <TableCell sx={{ fontWeight: 700 }}>{t('outreach.columns.status', 'Status')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('outreach.columns.priority', 'Priority')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('outreach.columns.nextAction', 'Next Action')}</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t('outreach.columns.notes', 'Notes')}</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>{t('outreach.columns.assignedTo', 'Assigned To')}</TableCell>
               <TableCell />
             </TableRow>
@@ -280,13 +281,13 @@ export default function AdminOutreachPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
                   <CircularProgress size={28} />
                 </TableCell>
               </TableRow>
             ) : contacts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                   {t('common.noData')}
                 </TableCell>
               </TableRow>
@@ -337,6 +338,27 @@ export default function AdminOutreachPage() {
                     <Typography variant="body2">
                       {row.nextActionAt ? format(new Date(row.nextActionAt), 'dd MMM yyyy') : '—'}
                     </Typography>
+                  </TableCell>
+                  <TableCell sx={{ maxWidth: 200 }}>
+                    {row.notes ? (
+                      <Tooltip title={row.notes} placement="top">
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            cursor: 'default',
+                          }}
+                        >
+                          {row.notes}
+                        </Typography>
+                      </Tooltip>
+                    ) : (
+                      <Typography variant="caption" color="text.disabled">—</Typography>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">{row.assignedTo?.name || '—'}</Typography>
