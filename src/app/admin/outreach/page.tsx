@@ -35,6 +35,7 @@ import {
   Edit,
   DeleteForever,
   OpenInNew,
+  Instagram,
 } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
@@ -53,6 +54,7 @@ interface OutreachRow {
   city: string | null;
   country: string | null;
   website: string | null;
+  instagramUrl: string | null;
   status: OutreachStatus;
   priority: OutreachPriority;
   source: string | null;
@@ -90,6 +92,7 @@ const EMPTY_FORM: Partial<OutreachRow> = {
   city: '',
   country: '',
   website: '',
+  instagramUrl: '',
   status: 'NEW',
   priority: 'MEDIUM',
   source: '',
@@ -162,6 +165,7 @@ export default function AdminOutreachPage() {
       city: row.city ?? '',
       country: row.country ?? '',
       website: row.website ?? '',
+      instagramUrl: row.instagramUrl ?? '',
       status: row.status,
       priority: row.priority,
       source: row.source ?? '',
@@ -298,6 +302,13 @@ export default function AdminOutreachPage() {
                         </IconButton>
                       </Tooltip>
                     )}
+                    {row.instagramUrl && (
+                      <Tooltip title={row.instagramUrl}>
+                        <IconButton size="small" component="a" href={row.instagramUrl} target="_blank" rel="noopener noreferrer" sx={{ p: 0, ml: 0.5, color: '#E1306C' }}>
+                          <Instagram sx={{ fontSize: 14 }} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">{row.contactPerson || '—'}</Typography>
@@ -421,6 +432,15 @@ export default function AdminOutreachPage() {
                 fullWidth size="small"
                 value={form.website ?? ''}
                 onChange={(e) => setField('website', e.target.value)}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <TextField
+                label={t('outreach.fields.instagramUrl', 'Instagram URL')}
+                fullWidth size="small"
+                value={form.instagramUrl ?? ''}
+                onChange={(e) => setField('instagramUrl', e.target.value)}
+                placeholder="https://instagram.com/..."
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>

@@ -817,6 +817,7 @@ model OutreachContact {
   city          String?
   country       String?
   website       String?
+  instagramUrl  String?
   status        OutreachStatus @default(NEW)
   priority      String         @default("MEDIUM") // LOW, MEDIUM, HIGH
   source        String?        // REFERRAL, COLD_OUTREACH, INBOUND, SOCIAL_MEDIA, EVENT, OTHER
