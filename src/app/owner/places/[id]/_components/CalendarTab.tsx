@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/i18n/client';
 import dynamic from 'next/dynamic';
 import {
   Box,
@@ -88,11 +90,11 @@ const STATUS_COLORS: Record<string, string> = {
   NO_SHOW: '#c62828',
 };
 
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
 // ─── CalendarTab ─────────────────────────────────────────────────────────────
 
 export default function CalendarTab({ placeId }: { placeId: string }) {
+  const router = useRouter();
+  const { t } = useTranslation('owner');
   const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [closedDates, setClosedDates] = useState<ClosedDateEntry[]>([]);
   const [locations, setLocations] = useState<LocationOption[]>([]);
@@ -128,7 +130,7 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
       setClosedDates(cdData.data ?? []);
       setLocations(locData.data ?? []);
     } catch {
-      setError('Failed to load calendar data');
+      setError(t('calendar.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -147,9 +149,11 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
       end: format(addDays(new Date(b.endDate), 1), 'yyyy-MM-dd'),
       color: STATUS_COLORS[b.status] ?? '#757575',
       extendedProps: {
+        bookingId: b.id,
         status: b.status,
         registrationNumber: b.registrationNumber,
-        activityLocation: b.activityLocation?.name,
+        activityType: b.activityType?.name ?? null,
+        activityLocation: b.activityLocation?.name ?? null,
       },
     })),
     [bookings]
@@ -200,7 +204,7 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
   const handleSave = async () => {
     setSaveError(null);
     if (!isRecurring && !closedDate) {
-      setSaveError('Please select a date.');
+      setSaveError(t('calendar.dialog.selectDateError'));
       return;
     }
     setSaving(true);
@@ -217,11 +221,11 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Failed to save');
+      if (!res.ok) throw new Error(data.error ?? t('calendar.dialog.saveFailed'));
       setClosedDates((prev) => [...prev, data.data]);
       setDialogOpen(false);
     } catch (e) {
-      setSaveError(e instanceof Error ? e.message : 'Failed to save');
+      setSaveError(e instanceof Error ? e.message : t('calendar.dialog.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -232,8 +236,8 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
     if (res.ok) setClosedDates((prev) => prev.filter((cd) => cd.id !== id));
   };
 
-  const handleEventClick = (registrationNumber: string) => {
-    window.open(`/owner/bookings?search=${encodeURIComponent(registrationNumber)}`, '_blank');
+  const handleEventClick = (bookingId: string) => {
+    router.push(`/owner/bookings/${bookingId}`);
   };
 
   // ─── Render ────────────────────────────────────────────────────────────────
@@ -286,7 +290,7 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
             />
           ))}
           <Chip
-            label="Closed"
+            label={t('calendar.legend.closed')}
             size="small"
             sx={{
               bgcolor: '#fce4ec',
@@ -299,7 +303,7 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
           />
         </Box>
         <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 0.5 }}>
-          Click on any date to mark it as closed. Click a booking to open it.
+          {t('calendar.hint')}
         </Typography>
       </Box>
 
@@ -316,7 +320,7 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EventBusy sx={{ color: '#c62828', fontSize: 20 }} />
               <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                Closed Days
+                {t('calendar.closedDays.title')}
               </Typography>
             </Box>
             <Button
@@ -326,7 +330,7 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
               onClick={() => openDialog()}
               sx={{ bgcolor: '#c62828', '&:hover': { bgcolor: '#b71c1c' }, minWidth: 0 }}
             >
-              Add
+              {t('calendar.closedDays.add')}
             </Button>
           </Box>
 
@@ -344,10 +348,10 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
             >
               <Block sx={{ color: 'text.disabled', fontSize: 32, mb: 1 }} />
               <Typography variant="body2" color="text.secondary">
-                No closed days yet.
+                {t('calendar.closedDays.empty')}
               </Typography>
               <Typography variant="caption" color="text.disabled">
-                Click a calendar date or &ldquo;+ Add&rdquo; to block it.
+                {t('calendar.closedDays.emptyHint')}
               </Typography>
             </Box>
           ) : (
@@ -359,7 +363,7 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
                     variant="overline"
                     sx={{ color: 'text.secondary', fontWeight: 700, display: 'block', mb: 0.5 }}
                   >
-                    All Locations
+                    {t('calendar.closedDays.allLocations')}
                   </Typography>
                   <List dense disablePadding>
                     {placeWideClosed.map((cd) => (
@@ -394,7 +398,7 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
                               )}
                               <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                 {cd.isRecurring
-                                  ? `Every ${DAY_NAMES[cd.dayOfWeek!]}`
+                                  ? t('calendar.closedDays.every', { day: t(`calendar.days.${cd.dayOfWeek!}`) })
                                   : format(new Date(cd.date!), 'MMM d, yyyy')}
                               </Typography>
                             </Box>
@@ -421,7 +425,7 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
                       mt: placeWideClosed.length > 0 ? 2 : 0,
                     }}
                   >
-                    Location-Specific
+                    {t('calendar.closedDays.locationSpecific')}
                   </Typography>
                   <List dense disablePadding>
                     {locationClosed.map((cd) => (
@@ -456,7 +460,7 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
                               )}
                               <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                 {cd.isRecurring
-                                  ? `Every ${DAY_NAMES[cd.dayOfWeek!]}`
+                                  ? t('calendar.closedDays.every', { day: t(`calendar.days.${cd.dayOfWeek!}`) })
                                   : format(new Date(cd.date!), 'MMM d, yyyy')}
                               </Typography>
                             </Box>
@@ -488,7 +492,7 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
 
       {/* ─── Add Closed Date Dialog ────────────────────────────────────────── */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Block a Date / Day</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{t('calendar.dialog.title')}</DialogTitle>
         <DialogContent>
           <FormControlLabel
             control={
@@ -498,26 +502,26 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
                 color="error"
               />
             }
-            label="Recurring — block every week"
+            label={t('calendar.dialog.recurring')}
             sx={{ mb: 2, mt: 0.5 }}
           />
 
           {isRecurring ? (
             <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-              <InputLabel>Day of week</InputLabel>
+              <InputLabel>{t('calendar.dialog.dayOfWeek')}</InputLabel>
               <Select
                 value={dayOfWeek}
-                label="Day of week"
+                label={t('calendar.dialog.dayOfWeek')}
                 onChange={(e) => setDayOfWeek(Number(e.target.value))}
               >
-                {DAY_NAMES.map((d, i) => (
-                  <MenuItem key={i} value={i}>{d}</MenuItem>
+                {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                  <MenuItem key={i} value={i}>{t(`calendar.days.${i}`)}</MenuItem>
                 ))}
               </Select>
             </FormControl>
           ) : (
             <TextField
-              label="Date"
+              label={t('calendar.dialog.date')}
               type="date"
               size="small"
               fullWidth
@@ -529,14 +533,14 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
           )}
 
           <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-            <InputLabel>Applies to</InputLabel>
+            <InputLabel>{t('calendar.dialog.appliesTo')}</InputLabel>
             <Select
               value={closedLocationId}
-              label="Applies to"
+              label={t('calendar.dialog.appliesTo')}
               onChange={(e) => setClosedLocationId(e.target.value)}
             >
               <MenuItem value="">
-                <em>All locations (place-wide)</em>
+                <em>{t('calendar.dialog.allLocations')}</em>
               </MenuItem>
               <Divider />
               {locations.map((loc) => (
@@ -548,12 +552,12 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
           </FormControl>
 
           <TextField
-            label="Reason (optional)"
+            label={t('calendar.dialog.reason')}
             size="small"
             fullWidth
             value={closedReason}
             onChange={(e) => setClosedReason(e.target.value)}
-            placeholder="e.g. Public holiday, Maintenance, Private event"
+            placeholder={t('calendar.dialog.reasonPlaceholder')}
           />
 
           {saveError && (
@@ -564,7 +568,7 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setDialogOpen(false)} disabled={saving}>
-            Cancel
+            {t('calendar.dialog.cancel')}
           </Button>
           <Button
             onClick={handleSave}
@@ -572,7 +576,7 @@ export default function CalendarTab({ placeId }: { placeId: string }) {
             disabled={saving || (!isRecurring && !closedDate)}
             sx={{ bgcolor: '#c62828', '&:hover': { bgcolor: '#b71c1c' } }}
           >
-            {saving ? 'Saving…' : 'Block Date'}
+            {saving ? t('calendar.dialog.saving') : t('calendar.dialog.save')}
           </Button>
         </DialogActions>
       </Dialog>

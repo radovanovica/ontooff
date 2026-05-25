@@ -598,5 +598,46 @@
                 "pending":  "Su organización \"{{name}}\" está pendiente de aprobación del administrador. Podrá crear lugares una vez aprobada.",
                 "statusBad":  "Su organización \"{{name}}\" tiene estado {{status}}. Por favor contacte al soporte.",
                 "approved":  "Organización: {{name}} — Aprobada ✓"
-            }
+            },
+    "calendar": {
+        "tabLabel": "Calendario",
+        "loadFailed": "Error al cargar los datos del calendario",
+        "legend": {
+            "closed": "Cerrado"
+        },
+        "hint": "Haz clic en cualquier fecha para marcarla como cerrada. Haz clic en una reserva para abrirla.",
+        "closedDays": {
+            "title": "Días cerrados",
+            "add": "Añadir",
+            "empty": "No hay días cerrados aún.",
+            "emptyHint": "Haz clic en una fecha del calendario o + Añadir para bloquearla.",
+            "allLocations": "Todas las ubicaciones",
+            "locationSpecific": "Específico por ubicación",
+            "every": "Cada {{day}}"
+        },
+        "dialog": {
+            "title": "Bloquear una fecha / día",
+            "recurring": "Recurrente — bloquear todas las semanas",
+            "dayOfWeek": "Día de la semana",
+            "date": "Fecha",
+            "appliesTo": "Aplicar a",
+            "allLocations": "Todas las ubicaciones (en todo el lugar)",
+            "reason": "Motivo (opcional)",
+            "reasonPlaceholder": "p. ej. Día festivo, Mantenimiento, Evento privado",
+            "cancel": "Cancelar",
+            "save": "Bloquear fecha",
+            "saving": "Guardando…",
+            "selectDateError": "Por favor, seleccione una fecha.",
+            "saveFailed": "Error al guardar"
+        },
+        "days": {
+            "0": "Domingo",
+            "1": "Lunes",
+            "2": "Martes",
+            "3": "Miércoles",
+            "4": "Jueves",
+            "5": "Viernes",
+            "6": "Sábado"
+        }
+    }
 }

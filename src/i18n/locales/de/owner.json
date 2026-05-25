@@ -609,5 +609,46 @@
                 "pending":  "Ihre Organisation \"{{name}}\" wartet auf die Genehmigung des Administrators. Sie können Orte erstellen, sobald die Genehmigung erteilt wurde.",
                 "statusBad":  "Ihre Organisation \"{{name}}\" hat den Status {{status}}. Bitte wenden Sie sich an den Support.",
                 "approved":  "Organisation: {{name}} — Genehmigt ✓"
-            }
+            },
+    "calendar": {
+        "tabLabel": "Kalender",
+        "loadFailed": "Fehler beim Laden der Kalenderdaten",
+        "legend": {
+            "closed": "Geschlossen"
+        },
+        "hint": "Klicken Sie auf ein Datum, um es als geschlossen zu markieren. Klicken Sie auf eine Buchung, um sie zu öffnen.",
+        "closedDays": {
+            "title": "Geschlossene Tage",
+            "add": "Hinzufügen",
+            "empty": "Noch keine geschlossenen Tage.",
+            "emptyHint": "Klicken Sie auf ein Datum im Kalender oder + Hinzufügen, um es zu sperren.",
+            "allLocations": "Alle Standorte",
+            "locationSpecific": "Standortspezifisch",
+            "every": "Jeden {{day}}"
+        },
+        "dialog": {
+            "title": "Datum / Tag sperren",
+            "recurring": "Wiederkehrend — jede Woche sperren",
+            "dayOfWeek": "Wochentag",
+            "date": "Datum",
+            "appliesTo": "Gilt für",
+            "allLocations": "Alle Standorte (ortsweit)",
+            "reason": "Grund (optional)",
+            "reasonPlaceholder": "z. B. Feiertag, Wartung, Privatveranstaltung",
+            "cancel": "Abbrechen",
+            "save": "Datum sperren",
+            "saving": "Wird gespeichert…",
+            "selectDateError": "Bitte wählen Sie ein Datum aus.",
+            "saveFailed": "Fehler beim Speichern"
+        },
+        "days": {
+            "0": "Sonntag",
+            "1": "Montag",
+            "2": "Dienstag",
+            "3": "Mittwoch",
+            "4": "Donnerstag",
+            "5": "Freitag",
+            "6": "Samstag"
+        }
+    }
 }

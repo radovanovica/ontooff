@@ -612,5 +612,46 @@
                 "pending":  "Your organization \"{{name}}\" is pending admin approval. You will be able to create places once approved.",
                 "statusBad":  "Your organization \"{{name}}\" is {{status}}. Please contact support.",
                 "approved":  "Organization: {{name}} — Approved ✓"
-            }
+            },
+    "calendar": {
+        "tabLabel": "Calendar",
+        "loadFailed": "Failed to load calendar data",
+        "legend": {
+            "closed": "Closed"
+        },
+        "hint": "Click on any date to mark it as closed. Click a booking to open it.",
+        "closedDays": {
+            "title": "Closed Days",
+            "add": "Add",
+            "empty": "No closed days yet.",
+            "emptyHint": "Click a calendar date or + Add to block it.",
+            "allLocations": "All Locations",
+            "locationSpecific": "Location-Specific",
+            "every": "Every {{day}}"
+        },
+        "dialog": {
+            "title": "Block a Date / Day",
+            "recurring": "Recurring — block every week",
+            "dayOfWeek": "Day of week",
+            "date": "Date",
+            "appliesTo": "Applies to",
+            "allLocations": "All locations (place-wide)",
+            "reason": "Reason (optional)",
+            "reasonPlaceholder": "e.g. Public holiday, Maintenance, Private event",
+            "cancel": "Cancel",
+            "save": "Block Date",
+            "saving": "Saving…",
+            "selectDateError": "Please select a date.",
+            "saveFailed": "Failed to save"
+        },
+        "days": {
+            "0": "Sunday",
+            "1": "Monday",
+            "2": "Tuesday",
+            "3": "Wednesday",
+            "4": "Thursday",
+            "5": "Friday",
+            "6": "Saturday"
+        }
+    }
 }

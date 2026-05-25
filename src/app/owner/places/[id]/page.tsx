@@ -88,7 +88,7 @@ export default function PlaceDetailPage() {
         <Tab label={t('events.title', 'Events')} />
         <Tab label={t('embedTokens.title')} />
         <Tab label={t('bookings.title')} />
-        <Tab label="Calendar" />
+        <Tab label={t('calendar.tabLabel')} />
         <Tab label={t('reviews.tabLabel')} />
       </Tabs>
 

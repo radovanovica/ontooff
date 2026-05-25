@@ -611,5 +611,46 @@
                 "pending":  "Vaša organizacija \"{{name}}\" čeka odobrenje administratora. Moći ćete da kreirate mjesta nakon odobrenja.",
                 "statusBad":  "Vaša organizacija \"{{name}}\" je {{status}}. Molimo kontaktirajte podršku.",
                 "approved":  "Organizacija: {{name}} — Odobrena ✓"
-            }
+            },
+    "calendar": {
+        "tabLabel": "Kalendar",
+        "loadFailed": "Greška pri učitavanju podataka kalendara",
+        "legend": {
+            "closed": "Zatvoreno"
+        },
+        "hint": "Kliknite na datum da ga označite kao zatvoren. Kliknite na rezervaciju da je otvorite.",
+        "closedDays": {
+            "title": "Zatvoreni dani",
+            "add": "Dodaj",
+            "empty": "Još nema zatvorenih dana.",
+            "emptyHint": "Kliknite na datum u kalendaru ili + Dodaj da ga blokirate.",
+            "allLocations": "Sve lokacije",
+            "locationSpecific": "Specifično za lokaciju",
+            "every": "Svaki {{day}}"
+        },
+        "dialog": {
+            "title": "Blokiraj datum / dan",
+            "recurring": "Ponavljajuće — blokiraj svake sedmice",
+            "dayOfWeek": "Dan u sedmici",
+            "date": "Datum",
+            "appliesTo": "Primjenjuje se na",
+            "allLocations": "Sve lokacije (cijelo mjesto)",
+            "reason": "Razlog (opciono)",
+            "reasonPlaceholder": "npr. Državni praznik, Održavanje, Privatni događaj",
+            "cancel": "Otkaži",
+            "save": "Blokiraj datum",
+            "saving": "Čuvanje…",
+            "selectDateError": "Molimo odaberite datum.",
+            "saveFailed": "Greška pri čuvanju"
+        },
+        "days": {
+            "0": "Nedjelja",
+            "1": "Ponedjeljak",
+            "2": "Utorak",
+            "3": "Srijeda",
+            "4": "Četvrtak",
+            "5": "Petak",
+            "6": "Subota"
+        }
+    }
 }
