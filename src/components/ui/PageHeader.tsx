@@ -20,7 +20,9 @@ interface PageHeaderProps {
 
 export default function PageHeader({ title, subtitle, breadcrumbs, action, badge }: PageHeaderProps) {
   const pathname = usePathname();
-  const showHelp = pathname?.startsWith('/admin') && pathname !== '/admin/help';
+  const showHelp =
+    (pathname?.startsWith('/admin') || pathname?.startsWith('/owner')) &&
+    pathname !== '/admin/help';
   return (
     <Box sx={{ mb: 4 }}>
       {breadcrumbs && breadcrumbs.length > 0 && (
