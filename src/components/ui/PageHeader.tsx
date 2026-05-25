@@ -1,7 +1,9 @@
 'use client';
-import { Box, Typography, Breadcrumbs, Link as MuiLink, Chip } from '@mui/material';
+import { Box, Typography, Breadcrumbs, Link as MuiLink, Chip, IconButton, Tooltip } from '@mui/material';
 import Link from 'next/link';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { usePathname } from 'next/navigation';
 
 interface Crumb {
   label: string;
@@ -17,6 +19,8 @@ interface PageHeaderProps {
 }
 
 export default function PageHeader({ title, subtitle, breadcrumbs, action, badge }: PageHeaderProps) {
+  const pathname = usePathname();
+  const showHelp = pathname?.startsWith('/admin') && pathname !== '/admin/help';
   return (
     <Box sx={{ mb: 4 }}>
       {breadcrumbs && breadcrumbs.length > 0 && (
@@ -54,7 +58,22 @@ export default function PageHeader({ title, subtitle, breadcrumbs, action, badge
             </Typography>
           )}
         </Box>
-        {action && <Box sx={{ flexShrink: 0 }}>{action}</Box>}
+        {(action || showHelp) && (
+          <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 1 }}>
+            {action}
+            {showHelp && (
+              <Tooltip title="Help & Instructions">
+                <IconButton
+                  size="small"
+                  onClick={() => window.open('/admin/help', '_blank')}
+                  sx={{ color: 'text.secondary' }}
+                >
+                  <HelpOutlineIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+        )}
       </Box>
     </Box>
   );
