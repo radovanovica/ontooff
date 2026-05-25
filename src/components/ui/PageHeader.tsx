@@ -2,7 +2,7 @@
 import { Box, Typography, Breadcrumbs, Link as MuiLink, Chip, IconButton, Tooltip } from '@mui/material';
 import Link from 'next/link';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutlined';
 import { usePathname } from 'next/navigation';
 
 interface Crumb {
