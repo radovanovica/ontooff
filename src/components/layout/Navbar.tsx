@@ -34,6 +34,7 @@ import {
   Article,
   Edit,
   Group,
+  Campaign,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -119,6 +120,12 @@ export default function Navbar() {
             label: t('nav.contributors', 'Contributors'),
             href: '/admin/contributors',
             icon: <Group />,
+            roles: [UserRole.SUPER_ADMIN],
+          },
+          {
+            label: t('nav.outreach', 'Outreach'),
+            href: '/admin/outreach',
+            icon: <Campaign />,
             roles: [UserRole.SUPER_ADMIN],
           },
         ]

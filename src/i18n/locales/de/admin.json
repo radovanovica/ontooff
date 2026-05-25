@@ -136,7 +136,8 @@
                                           "reject":  "Ablehnen",
                                           "suspend":  "Sperren",
                                           "website":  "Website",
-                                          "delete":  "Dauerhaft löschen"
+                                          "delete":  "Dauerhaft löschen",
+                                          "managePlaces":  "Orte verwalten"
                                       },
                           "confirmApprove":  "Organisation genehmigen",
                           "confirmReject":  "Organisation ablehnen",
@@ -153,10 +154,15 @@
                           "errors":  {
                                          "loadFailed":  "Organisationen konnten nicht geladen werden",
                                          "actionFailed":  "Aktion fehlgeschlagen",
-                                         "deleteFailed":  "Löschen fehlgeschlagen"
+                                         "deleteFailed":  "Löschen fehlgeschlagen",
+                                         "loadPlacesFailed":  "Kontakte konnten nicht geladen werden"
                                      },
                           "totalCount":  "{{count}} Organisation insgesamt",
-                          "totalCount_plural":  "{{count}} Organisationen insgesamt"
+                          "totalCount_plural":  "{{count}} Organisationen insgesamt",
+                          "linkedPlaces":  "Verknüpfte Orte ({{count}})",
+                          "noLinkedPlaces":  "Noch keine Orte verknüpft.",
+                          "assignPlace":  "Ort zuweisen",
+                          "searchPlacesPlaceholder":  "Nicht verknüpfte Orte suchen…"
                       },
     "registrations":  {
                           "title":  "Alle Buchungen",
@@ -291,5 +297,60 @@
                                          "coverUploadFailed":  "Titelbild-Upload fehlgeschlagen",
                                          "galleryUploadFailed":  "Galerie-Upload fehlgeschlagen"
                                      }
-                      }
+                      },
+    "outreach":  {
+                     "title":  "Akquise / CRM",
+                     "addNew":  "Kontakt hinzufügen",
+                     "editTitle":  "Kontakt bearbeiten",
+                     "searchPlaceholder":  "Suche nach Name, E-Mail oder Stadt…",
+                     "status":  "Status",
+                     "priority":  "Priorität",
+                     "deleteTitle":  "Kontakt löschen",
+                     "deleteConfirm":  "\"{{name}}\" löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+                     "totalCount":  "{{count}} Kontakte",
+                     "linkedPlaces":  "Verknüpfte Orte ({{count}})",
+                     "noLinkedPlaces":  "Noch keine Orte verknüpft.",
+                     "assignPlace":  "Ort zuweisen",
+                     "searchPlacesPlaceholder":  "Nicht verknüpfte Orte suchen…",
+                     "statuses":  {
+                                      "DECLINED":  "Abgelehnt",
+                                      "CONVERTED":  "Konvertiert",
+                                      "ARCHIVED":  "Archiviert",
+                                      "NEW":  "Neu",
+                                      "CONTACTED":  "Kontaktiert",
+                                      "PROPOSAL_SENT":  "Angebot gesendet",
+                                      "INTERESTED":  "Interessiert"
+                                  },
+                     "priorities":  {
+                                        "LOW":  "Niedrig",
+                                        "MEDIUM":  "Mittel",
+                                        "HIGH":  "Hoch"
+                                    },
+                     "columns":  {
+                                     "assignedTo":  "Zugewiesen an",
+                                     "contact":  "Kontakt",
+                                     "business":  "Unternehmen",
+                                     "priority":  "Priorität",
+                                     "nextAction":  "Nächste Aktion",
+                                     "location":  "Standort",
+                                     "status":  "Status"
+                                 },
+                     "fields":  {
+                                    "source":  "Quelle",
+                                    "website":  "Webseite",
+                                    "businessName":  "Unternehmensname",
+                                    "city":  "Stadt",
+                                    "notes":  "Notizen",
+                                    "nextActionAt":  "Datum der nächsten Aktion",
+                                    "phone":  "Telefon",
+                                    "country":  "Land",
+                                    "contactPerson":  "Kontaktperson",
+                                    "email":  "E-Mail"
+                                },
+                     "errors":  {
+                                    "saveFailed":  "Kontakt konnte nicht gespeichert werden",
+                                    "deleteFailed":  "Kontakt konnte nicht gelöscht werden",
+                                    "loadFailed":  "Kontakte konnten nicht geladen werden"
+                                }
+                 }
 }

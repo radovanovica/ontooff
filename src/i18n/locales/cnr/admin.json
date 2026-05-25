@@ -136,7 +136,8 @@
                                           "reject":  "Odbijte",
                                           "suspend":  "Suspendirajte",
                                           "website":  "Web sajt",
-                                          "delete":  "Trajno obrišite"
+                                          "delete":  "Trajno obrišite",
+                                          "managePlaces":  "Upravljaj mjestima"
                                       },
                           "confirmApprove":  "Odobrite organizaciju",
                           "confirmReject":  "Odbijte organizaciju",
@@ -153,10 +154,15 @@
                           "errors":  {
                                          "loadFailed":  "Učitavanje organizacija nije uspjelo",
                                          "actionFailed":  "Akcija nije uspjela",
-                                         "deleteFailed":  "Brisanje nije uspjelo"
+                                         "deleteFailed":  "Brisanje nije uspjelo",
+                                         "loadPlacesFailed":  "Greška pri učitavanju kontakata"
                                      },
                           "totalCount":  "{{count}} ukupno organizacija",
-                          "totalCount_plural":  "{{count}} ukupno organizacija"
+                          "totalCount_plural":  "{{count}} ukupno organizacija",
+                          "linkedPlaces":  "Povezana mjesta ({{count}})",
+                          "noLinkedPlaces":  "Nema još povezanih mjesta.",
+                          "assignPlace":  "Dodijeli mjesto",
+                          "searchPlacesPlaceholder":  "Pretraži nepovezana mjesta…"
                       },
     "registrations":  {
                           "title":  "Sve rezervacije",
@@ -291,5 +297,60 @@
                                          "coverUploadFailed":  "Učitavanje naslovne slike nije uspjelo",
                                          "galleryUploadFailed":  "Učitavanje galerije nije uspjelo"
                                      }
-                      }
+                      },
+    "outreach":  {
+                     "title":  "Akvizicija / CRM",
+                     "addNew":  "Dodaj kontakt",
+                     "editTitle":  "Uredi kontakt",
+                     "searchPlaceholder":  "Pretraži po imenu, emailu ili gradu…",
+                     "status":  "Status",
+                     "priority":  "Prioritet",
+                     "deleteTitle":  "Obriši kontakt",
+                     "deleteConfirm":  "Obrisati \"{{name}}\"? Ova radnja se ne može poništiti.",
+                     "totalCount":  "{{count}} kontakata",
+                     "linkedPlaces":  "Povezana mjesta ({{count}})",
+                     "noLinkedPlaces":  "Nema još povezanih mjesta.",
+                     "assignPlace":  "Dodijeli mjesto",
+                     "searchPlacesPlaceholder":  "Pretraži nepovezana mjesta…",
+                     "statuses":  {
+                                      "DECLINED":  "Odbijen",
+                                      "CONVERTED":  "Konvertovan",
+                                      "ARCHIVED":  "Arhiviran",
+                                      "NEW":  "Novi",
+                                      "CONTACTED":  "Kontaktiran",
+                                      "PROPOSAL_SENT":  "Ponuda poslata",
+                                      "INTERESTED":  "Zainteresovan"
+                                  },
+                     "priorities":  {
+                                        "LOW":  "Nizak",
+                                        "MEDIUM":  "Srednji",
+                                        "HIGH":  "Visok"
+                                    },
+                     "columns":  {
+                                     "assignedTo":  "Dodijeljeno",
+                                     "contact":  "Kontakt",
+                                     "business":  "Firma",
+                                     "priority":  "Prioritet",
+                                     "nextAction":  "Slijedeća akcija",
+                                     "location":  "Lokacija",
+                                     "status":  "Status"
+                                 },
+                     "fields":  {
+                                    "source":  "Izvor",
+                                    "website":  "Sajt",
+                                    "businessName":  "Naziv firme",
+                                    "city":  "Grad",
+                                    "notes":  "Napomene",
+                                    "nextActionAt":  "Datum slijedeće akcije",
+                                    "phone":  "Telefon",
+                                    "country":  "Država",
+                                    "contactPerson":  "Kontakt osoba",
+                                    "email":  "Email"
+                                },
+                     "errors":  {
+                                    "saveFailed":  "Greška pri čuvanju kontakta",
+                                    "deleteFailed":  "Greška pri brisanju kontakta",
+                                    "loadFailed":  "Greška pri učitavanju kontakata"
+                                }
+                 }
 }

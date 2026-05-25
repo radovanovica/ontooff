@@ -136,7 +136,8 @@
                                           "reject":  "Rechazar",
                                           "suspend":  "Suspender",
                                           "website":  "Sitio web",
-                                          "delete":  "Eliminar permanentemente"
+                                          "delete":  "Eliminar permanentemente",
+                                          "managePlaces":  "Gestionar lugares"
                                       },
                           "confirmApprove":  "Aprobar organización",
                           "confirmReject":  "Rechazar organización",
@@ -153,10 +154,15 @@
                           "errors":  {
                                          "loadFailed":  "Error al cargar organizaciones",
                                          "actionFailed":  "La acción falló",
-                                         "deleteFailed":  "La eliminación falló"
+                                         "deleteFailed":  "La eliminación falló",
+                                         "loadPlacesFailed":  "No se pudieron cargar los contactos"
                                      },
                           "totalCount":  "{{count}} organización en total",
-                          "totalCount_plural":  "{{count}} organizaciones en total"
+                          "totalCount_plural":  "{{count}} organizaciones en total",
+                          "linkedPlaces":  "Lugares vinculados ({{count}})",
+                          "noLinkedPlaces":  "Aún no hay lugares vinculados.",
+                          "assignPlace":  "Asignar un lugar",
+                          "searchPlacesPlaceholder":  "Buscar lugares no vinculados…"
                       },
     "registrations":  {
                           "title":  "Todas las reservas",
@@ -291,5 +297,60 @@
                                          "coverUploadFailed":  "Error al subir imagen de portada",
                                          "galleryUploadFailed":  "Error al subir galería"
                                      }
-                      }
+                      },
+    "outreach":  {
+                     "title":  "Captación / CRM",
+                     "addNew":  "Añadir contacto",
+                     "editTitle":  "Editar contacto",
+                     "searchPlaceholder":  "Buscar por nombre, email o ciudad…",
+                     "status":  "Estado",
+                     "priority":  "Prioridad",
+                     "deleteTitle":  "Eliminar contacto",
+                     "deleteConfirm":  "¿Eliminar \"{{name}}\"? Esta acción no se puede deshacer.",
+                     "totalCount":  "{{count}} contactos",
+                     "linkedPlaces":  "Lugares vinculados ({{count}})",
+                     "noLinkedPlaces":  "Aún no hay lugares vinculados.",
+                     "assignPlace":  "Asignar un lugar",
+                     "searchPlacesPlaceholder":  "Buscar lugares no vinculados…",
+                     "statuses":  {
+                                      "DECLINED":  "Rechazado",
+                                      "CONVERTED":  "Convertido",
+                                      "ARCHIVED":  "Archivado",
+                                      "NEW":  "Nuevo",
+                                      "CONTACTED":  "Contactado",
+                                      "PROPOSAL_SENT":  "Propuesta enviada",
+                                      "INTERESTED":  "Interesado"
+                                  },
+                     "priorities":  {
+                                        "LOW":  "Bajo",
+                                        "MEDIUM":  "Medio",
+                                        "HIGH":  "Alto"
+                                    },
+                     "columns":  {
+                                     "assignedTo":  "Asignado a",
+                                     "contact":  "Contacto",
+                                     "business":  "Empresa",
+                                     "priority":  "Prioridad",
+                                     "nextAction":  "Próxima acción",
+                                     "location":  "Ubicación",
+                                     "status":  "Estado"
+                                 },
+                     "fields":  {
+                                    "source":  "Fuente",
+                                    "website":  "Sitio web",
+                                    "businessName":  "Nombre de empresa",
+                                    "city":  "Ciudad",
+                                    "notes":  "Notas",
+                                    "nextActionAt":  "Fecha de próxima acción",
+                                    "phone":  "Teléfono",
+                                    "country":  "País",
+                                    "contactPerson":  "Persona de contacto",
+                                    "email":  "Email"
+                                },
+                     "errors":  {
+                                    "saveFailed":  "No se pudo guardar el contacto",
+                                    "deleteFailed":  "No se pudo eliminar el contacto",
+                                    "loadFailed":  "No se pudieron cargar los contactos"
+                                }
+                 }
 }

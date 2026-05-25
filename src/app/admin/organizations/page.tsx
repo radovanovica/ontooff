@@ -28,8 +28,12 @@ import {
   Button,
   Pagination,
 } from '@mui/material';
-import { Search, CheckCircle, Cancel, OpenInNew, DeleteForever } from '@mui/icons-material';
+import { Search, CheckCircle, Cancel, OpenInNew, DeleteForever, PlaceOutlined } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
+import Autocomplete from '@mui/material/Autocomplete';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n/client';
 import PageHeader from '@/components/ui/PageHeader';
@@ -77,6 +81,15 @@ export default function AdminOrganizationsPage() {
   // Delete dialog
   const [deleteTarget, setDeleteTarget] = useState<OrgRow | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Places management
+  interface PlaceOption { id: string; name: string; city: string | null; country: string | null }
+  const [placesOrg, setPlacesOrg] = useState<OrgRow | null>(null);
+  const [linkedPlaces, setLinkedPlaces] = useState<PlaceOption[]>([]);
+  const [unlinkedPlaces, setUnlinkedPlaces] = useState<PlaceOption[]>([]);
+  const [placeSearch, setPlaceSearch] = useState('');
+  const [placeDialogLoading, setPlaceDialogLoading] = useState(false);
+  const [placesError, setPlacesError] = useState<string | null>(null);
 
   const fetchOrgs = useCallback(async () => {
     setLoading(true);
@@ -140,6 +153,45 @@ export default function AdminOrganizationsPage() {
       setError(t('organizations.errors.deleteFailed'));
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const fetchOrgPlaces = useCallback(async (orgId: string, search = '') => {
+    setPlaceDialogLoading(true);
+    setPlacesError(null);
+    try {
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      const res = await fetch(`/api/admin/organizations/${orgId}/places?${params}`);
+      const data = await res.json();
+      setLinkedPlaces(data.data?.linked ?? []);
+      setUnlinkedPlaces(data.data?.unlinked ?? []);
+    } catch {
+      setPlacesError(t('organizations.errors.loadPlacesFailed', 'Failed to load places'));
+    } finally {
+      setPlaceDialogLoading(false);
+    }
+  }, [t]);
+
+  const openPlacesDialog = (org: OrgRow) => {
+    setPlacesOrg(org);
+    setPlaceSearch('');
+    fetchOrgPlaces(org.id);
+  };
+
+  const handlePlaceAction = async (placeId: string, action: 'assign' | 'unlink') => {
+    if (!placesOrg) return;
+    try {
+      const res = await fetch(`/api/admin/organizations/${placesOrg.id}/places`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ placeId, action }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      await fetchOrgPlaces(placesOrg.id, placeSearch);
+      fetchOrgs();
+    } catch {
+      setPlacesError(t('organizations.errors.actionFailed'));
     }
   };
 
@@ -241,6 +293,11 @@ export default function AdminOrganizationsPage() {
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Tooltip title={t('organizations.actions.managePlaces', 'Manage Places')}>
+                        <IconButton size="small" color="primary" onClick={() => openPlacesDialog(org)}>
+                          <PlaceOutlined fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                       {org.website && (
                         <Tooltip title={t('organizations.actions.website', 'Website')}>
                           <IconButton size="small" component="a" href={org.website} target="_blank" rel="noopener noreferrer">
@@ -366,6 +423,73 @@ export default function AdminOrganizationsPage() {
           >
             {deleting ? t('organizations.deletingLabel') : t('organizations.deletePermanently')}
           </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Places management dialog */}
+      <Dialog open={!!placesOrg} onClose={() => setPlacesOrg(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {t('organizations.actions.managePlaces', 'Manage Places')} — {placesOrg?.name}
+        </DialogTitle>
+        <DialogContent>
+          {placesError && <Alert severity="error" sx={{ mb: 1 }}>{placesError}</Alert>}
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            {t('organizations.linkedPlaces', 'Linked places ({{count}})', { count: linkedPlaces.length })}
+          </Typography>
+          {placeDialogLoading ? (
+            <CircularProgress size={20} />
+          ) : linkedPlaces.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {t('organizations.noLinkedPlaces', 'No places linked yet.')}
+            </Typography>
+          ) : (
+            <List dense disablePadding sx={{ mb: 2 }}>
+              {linkedPlaces.map((place) => (
+                <ListItem
+                  key={place.id}
+                  disablePadding
+                  sx={{ py: 0.25 }}
+                  secondaryAction={
+                    <Tooltip title={t('organizations.actions.unlink', 'Unlink')}>
+                      <IconButton size="small" color="error" onClick={() => handlePlaceAction(place.id, 'unlink')}>
+                        <Cancel fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  }
+                >
+                  <ListItemText
+                    primary={place.name}
+                    secondary={[place.city, place.country].filter(Boolean).join(', ') || undefined}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          )}
+
+          <Typography variant="subtitle2" sx={{ mb: 1, mt: 1 }}>
+            {t('organizations.assignPlace', 'Assign a place')}
+          </Typography>
+          <Autocomplete
+            size="small"
+            options={unlinkedPlaces}
+            getOptionLabel={(o) => `${o.name}${o.city ? ` (${o.city})` : ''}`}
+            noOptionsText={t('common.noData')}
+            onInputChange={(_, val) => {
+              setPlaceSearch(val);
+              if (placesOrg) fetchOrgPlaces(placesOrg.id, val);
+            }}
+            onChange={(_, val) => {
+              if (val && placesOrg) handlePlaceAction(val.id, 'assign');
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                placeholder={t('organizations.searchPlacesPlaceholder', 'Search unlinked places…')}
+              />
+            )}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPlacesOrg(null)}>{t('common.close', 'Close')}</Button>
         </DialogActions>
       </Dialog>
     </Box>

@@ -136,7 +136,8 @@
                                           "reject":  "Reject",
                                           "suspend":  "Suspend",
                                           "website":  "Website",
-                                          "delete":  "Delete permanently"
+                                          "delete":  "Delete permanently",
+                                          "managePlaces":  "Manage Places"
                                       },
                           "confirmApprove":  "Approve Organization",
                           "confirmReject":  "Reject Organization",
@@ -153,10 +154,15 @@
                           "errors":  {
                                          "loadFailed":  "Failed to load organizations",
                                          "actionFailed":  "Action failed",
-                                         "deleteFailed":  "Delete failed"
+                                         "deleteFailed":  "Delete failed",
+                                         "loadPlacesFailed":  "Failed to load places"
                                      },
                           "totalCount":  "{{count}} total organization",
-                          "totalCount_plural":  "{{count}} total organizations"
+                          "totalCount_plural":  "{{count}} total organizations",
+                          "linkedPlaces":  "Linked places ({{count}})",
+                          "noLinkedPlaces":  "No places linked yet.",
+                          "assignPlace":  "Assign a place",
+                          "searchPlacesPlaceholder":  "Search unlinked places…"
                       },
     "registrations":  {
                           "title":  "All Bookings",
@@ -291,5 +297,60 @@
                                          "coverUploadFailed":  "Cover image upload failed",
                                          "galleryUploadFailed":  "Gallery upload failed"
                                      }
-                      }
+                      },
+    "outreach":  {
+                     "title":  "Outreach / CRM",
+                     "addNew":  "Add Contact",
+                     "editTitle":  "Edit Contact",
+                     "searchPlaceholder":  "Search by name, email or city…",
+                     "status":  "Status",
+                     "priority":  "Priority",
+                     "deleteTitle":  "Delete Contact",
+                     "deleteConfirm":  "Delete \"{{name}}\"? This cannot be undone.",
+                     "totalCount":  "{{count}} contacts",
+                     "linkedPlaces":  "Linked places ({{count}})",
+                     "noLinkedPlaces":  "No places linked yet.",
+                     "assignPlace":  "Assign a place",
+                     "searchPlacesPlaceholder":  "Search unlinked places…",
+                     "statuses":  {
+                                      "DECLINED":  "Declined",
+                                      "CONVERTED":  "Converted",
+                                      "ARCHIVED":  "Archived",
+                                      "NEW":  "New",
+                                      "CONTACTED":  "Contacted",
+                                      "PROPOSAL_SENT":  "Proposal Sent",
+                                      "INTERESTED":  "Interested"
+                                  },
+                     "priorities":  {
+                                        "LOW":  "Low",
+                                        "MEDIUM":  "Medium",
+                                        "HIGH":  "High"
+                                    },
+                     "columns":  {
+                                     "assignedTo":  "Assigned To",
+                                     "contact":  "Contact",
+                                     "business":  "Business",
+                                     "priority":  "Priority",
+                                     "nextAction":  "Next Action",
+                                     "location":  "Location",
+                                     "status":  "Status"
+                                 },
+                     "fields":  {
+                                    "source":  "Source",
+                                    "website":  "Website",
+                                    "businessName":  "Business Name",
+                                    "city":  "City",
+                                    "notes":  "Notes",
+                                    "nextActionAt":  "Next Action Date",
+                                    "phone":  "Phone",
+                                    "country":  "Country",
+                                    "contactPerson":  "Contact Person",
+                                    "email":  "Email"
+                                },
+                     "errors":  {
+                                    "saveFailed":  "Failed to save contact",
+                                    "deleteFailed":  "Failed to delete contact",
+                                    "loadFailed":  "Failed to load contacts"
+                                }
+                 }
 }

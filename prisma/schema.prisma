@@ -86,6 +86,16 @@ enum OrgStatus {
   SUSPENDED
 }
 
+enum OutreachStatus {
+  NEW
+  CONTACTED
+  INTERESTED
+  PROPOSAL_SENT
+  CONVERTED
+  DECLINED
+  ARCHIVED
+}
+
 enum ReviewStatus {
   PENDING
   APPROVED
@@ -123,6 +133,7 @@ model User {
   blogPosts          BlogPost[]            @relation("AuthoredPosts")
   placeAccess        ContributorPlaceAccess[] @relation("ContributorAccess")
   grantedAccess      ContributorPlaceAccess[] @relation("GrantedByAdmin")
+  outreachContacts   OutreachContact[]
 
   @@index([email])
   @@index([role])
@@ -789,6 +800,37 @@ model ContributorPlaceAccess {
   @@index([contributorId])
   @@index([placeId])
   @@map("contributor_place_access")
+}
+
+// ─────────────────────────────────────────
+// OUTREACH / CRM
+// ─────────────────────────────────────────
+
+model OutreachContact {
+  id            String         @id @default(cuid())
+  businessName  String
+  contactPerson String?
+  email         String?
+  phone         String?
+  city          String?
+  country       String?
+  website       String?
+  status        OutreachStatus @default(NEW)
+  priority      String         @default("MEDIUM") // LOW, MEDIUM, HIGH
+  source        String?        // REFERRAL, COLD_OUTREACH, INBOUND, SOCIAL_MEDIA, EVENT, OTHER
+  notes         String?        @db.Text
+  nextActionAt  DateTime?
+  convertedAt   DateTime?
+  assignedToId  String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  assignedTo User? @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([assignedToId])
+  @@index([nextActionAt])
+  @@map("outreach_contacts")
 }
 
 // ─────────────────────────────────────────

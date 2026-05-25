@@ -74,7 +74,7 @@ export function calculatePricing(
         const price = Number(tier.pricePerUnit);
         const total = price * numberOfDays;
         breakdown.push({
-          label: 'Daily fee',
+          label: 'DAILY_FEE',
           ageGroup: tier.ageGroup as AgeGroupType,
           quantity: numberOfDays,
           unitPrice: price,
@@ -93,7 +93,7 @@ export function calculatePricing(
         const unitPrice = Number(tier.pricePerUnit);
         const total = unitPrice * count;
         breakdown.push({
-          label: `${tier.label} × ${count}`,
+          label: tier.label,
           ageGroup: tier.ageGroup as AgeGroupType,
           quantity: count,
           unitPrice,
@@ -112,7 +112,7 @@ export function calculatePricing(
         const unitPrice = Number(tier.pricePerUnit);
         const total = unitPrice * count * numberOfDays;
         breakdown.push({
-          label: `${tier.label} (per day)`,
+          label: tier.label,
           ageGroup: tier.ageGroup as AgeGroupType,
           quantity: count * numberOfDays,
           unitPrice,
