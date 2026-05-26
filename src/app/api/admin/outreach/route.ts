@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const {
     businessName, contactPerson, email, phone, city, country, website, instagramUrl,
-    status, priority, source, notes, nextActionAt, assignedToId,
+    activities, status, priority, source, notes, nextActionAt, assignedToId,
   } = body;
 
   if (!businessName?.trim()) {
@@ -79,6 +79,7 @@ export async function POST(req: NextRequest) {
       country: country?.trim() || null,
       website: website?.trim() || null,
       instagramUrl: instagramUrl?.trim() || null,
+      activities: activities?.trim() || null,
       status: status || 'NEW',
       priority: priority || 'MEDIUM',
       source: source?.trim() || null,
@@ -112,7 +113,7 @@ export async function PATCH(req: NextRequest) {
 
   const allowedFields = [
     'businessName', 'contactPerson', 'email', 'phone', 'city', 'country',
-    'website', 'instagramUrl', 'status', 'priority', 'source', 'notes', 'nextActionAt',
+    'website', 'instagramUrl', 'activities', 'status', 'priority', 'source', 'notes', 'nextActionAt',
     'assignedToId', 'convertedAt',
   ];
 

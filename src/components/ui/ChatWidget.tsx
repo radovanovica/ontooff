@@ -139,9 +139,26 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [retryAfter, setRetryAfter] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const retryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Countdown tick for rate-limit
+  useEffect(() => {
+    if (retryAfter <= 0) return;
+    retryTimerRef.current = setInterval(() => {
+      setRetryAfter((s) => {
+        if (s <= 1) {
+          clearInterval(retryTimerRef.current!);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(retryTimerRef.current!);
+  }, [retryAfter]);
 
   // Scroll to bottom whenever messages update
   useEffect(() => {
@@ -184,7 +201,7 @@ export default function ChatWidget() {
 
   const sendMessage = useCallback(async (text: string) => {
     const userText = text.trim();
-    if (!userText || loading) return;
+    if (!userText || loading || retryAfter > 0) return;
 
     setInput('');
     setMessages((prev) => [...prev, { role: 'user', text: userText }]);
@@ -207,11 +224,16 @@ export default function ChatWidget() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Something went wrong.' }));
+        const waitSecs: number = typeof err.retryAfter === 'number' ? err.retryAfter : 0;
+        const friendlyMsg = waitSecs > 0
+          ? `⏳ You've sent too many messages. Please wait **${waitSecs}s** before trying again.`
+          : (err.error ?? 'Something went wrong.');
         setMessages((prev) => {
           const next = [...prev];
-          next[next.length - 1] = { role: 'assistant', text: err.error ?? 'Something went wrong.', streaming: false };
+          next[next.length - 1] = { role: 'assistant', text: friendlyMsg, streaming: false };
           return next;
         });
+        if (waitSecs > 0) setRetryAfter(waitSecs);
         return;
       }
 
@@ -250,7 +272,7 @@ export default function ChatWidget() {
       setLoading(false);
       abortRef.current = null;
     }
-  }, [loading, getHistory]);
+  }, [loading, retryAfter, getHistory]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -491,12 +513,14 @@ export default function ChatWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={t('chat.inputPlaceholder', 'Ask about outdoor activities…')}
+              placeholder={retryAfter > 0
+                ? `Please wait ${retryAfter}s…`
+                : t('chat.inputPlaceholder', 'Ask about outdoor activities…')}
               multiline
               maxRows={3}
               size="small"
               fullWidth
-              disabled={loading}
+              disabled={loading || retryAfter > 0}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
@@ -508,7 +532,7 @@ export default function ChatWidget() {
               <span>
                 <IconButton
                   onClick={() => sendMessage(input)}
-                  disabled={!input.trim() || loading}
+                  disabled={!input.trim() || loading || retryAfter > 0}
                   size="small"
                   sx={{
                     bgcolor: '#2d5a27',

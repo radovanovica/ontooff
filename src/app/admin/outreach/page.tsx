@@ -70,6 +70,7 @@ interface OutreachRow {
   assignedTo: { id: string; name: string | null; email: string } | null;
   proposalText: string | null;
   proposalLanguage: string | null;
+  activities: string | null;
 }
 
 const STATUS_COLORS: Record<OutreachStatus, 'default' | 'info' | 'warning' | 'success' | 'error' | 'primary' | 'secondary'> = {
@@ -106,6 +107,7 @@ const EMPTY_FORM: Partial<OutreachRow> = {
   priority: 'MEDIUM',
   source: '',
   notes: '',
+  activities: '',
   nextActionAt: null,
 };
 
@@ -189,6 +191,7 @@ export default function AdminOutreachPage() {
       priority: row.priority,
       source: row.source ?? '',
       notes: row.notes ?? '',
+      activities: row.activities ?? '',
       nextActionAt: row.nextActionAt ? row.nextActionAt.slice(0, 10) : '',
     });
     setDialogOpen(true);
@@ -262,6 +265,7 @@ export default function AdminOutreachPage() {
           website: contact.website,
           instagramUrl: contact.instagramUrl,
           notes: contact.notes,
+          activities: contact.activities,
           language,
         }),
       });
@@ -623,6 +627,16 @@ export default function AdminOutreachPage() {
                 fullWidth size="small" multiline rows={3}
                 value={form.notes ?? ''}
                 onChange={(e) => setField('notes', e.target.value)}
+              />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                label={t('outreach.fields.activities', 'Activities Offered')}
+                fullWidth size="small"
+                value={form.activities ?? ''}
+                onChange={(e) => setField('activities', e.target.value)}
+                placeholder="e.g. camping, fishing, kayaking, hiking…"
+                helperText={t('outreach.fields.activitiesHelper', 'Used to personalise AI proposals')}
               />
             </Grid>
           </Grid>

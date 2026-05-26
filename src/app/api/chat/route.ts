@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 import { prisma } from '@/lib/prisma';
 import { withCache } from '@/lib/redis';
+import redis from '@/lib/redis';
 
 const CONTEXT_CACHE_KEY = 'chat:context:v1';
 const CONTEXT_TTL = 60 * 30; // 30 minutes — context rarely changes
@@ -9,27 +10,59 @@ const CONTEXT_TTL = 60 * 30; // 30 minutes — context rarely changes
 const GROQ_API_KEY = process.env.GROQ_API_KEY ?? '';
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.ontooff.app').replace(/\/$/, '');
 
-// Rate-limit: simple in-memory store (resets on dyno restart — fine for free tier)
-const requestCounts = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 5; // requests per minute per IP (conservative to protect free quota)
-const RATE_WINDOW_MS = 60_000;
+// ── Rate limiting ────────────────────────────────────────────────────────────
+// Three tiers: burst (per-minute), hourly, daily.
+// Uses Redis when available (survives dyno restarts); falls back to in-memory.
+
+const LIMITS = [
+  { key: 'min',  window: 60,        max: 6  },  // 6 per minute
+  { key: 'hour', window: 3600,      max: 30 },  // 30 per hour
+  { key: 'day',  window: 86400,     max: 80 },  // 80 per day
+];
+
+// In-memory fallback (keyed as `${ip}:${tier}`)
+const memStore = new Map<string, { count: number; resetAt: number }>();
+
+/** Returns seconds to wait if limited, or 0 if allowed. */
+async function checkRateLimit(ip: string): Promise<number> {
+  if (redis) {
+    // Redis path — atomic increment with expiry
+    for (const tier of LIMITS) {
+      const k = `chat:rl:${tier.key}:${ip}`;
+      try {
+        const count = await redis.incr(k);
+        if (count === 1) await redis.expire(k, tier.window);
+        if (count > tier.max) {
+          const ttl = await redis.ttl(k);
+          return ttl > 0 ? ttl : tier.window;
+        }
+      } catch {
+        // Redis error — fall through to allow the request
+      }
+    }
+    return 0;
+  }
+
+  // In-memory fallback
+  const now = Date.now();
+  for (const tier of LIMITS) {
+    const k = `${ip}:${tier.key}`;
+    const entry = memStore.get(k);
+    if (!entry || now > entry.resetAt) {
+      memStore.set(k, { count: 1, resetAt: now + tier.window * 1000 });
+    } else if (entry.count >= tier.max) {
+      return Math.ceil((entry.resetAt - now) / 1000);
+    } else {
+      entry.count++;
+    }
+  }
+  return 0;
+}
 
 // Response cache: avoid calling the API twice for the same opening question
 // Keys: normalized message text; values: { text, expiresAt }
 const responseCache = new Map<string, { text: string; expiresAt: number }>();
 const RESPONSE_CACHE_MS = 30 * 60 * 1000; // 30 minutes
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = requestCounts.get(ip);
-  if (!entry || now > entry.resetAt) {
-    requestCounts.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
-    return false;
-  }
-  if (entry.count >= RATE_LIMIT) return true;
-  entry.count++;
-  return false;
-}
 
 async function buildContext(): Promise<string> {
   return withCache(CONTEXT_CACHE_KEY, CONTEXT_TTL, async () => {
@@ -173,8 +206,12 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-  if (isRateLimited(ip)) {
-    return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 });
+  const retryAfter = await checkRateLimit(ip);
+  if (retryAfter > 0) {
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfter },
+      { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+    );
   }
 
   let body: { message: string; history?: MessagePart[] };

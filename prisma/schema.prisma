@@ -822,6 +822,7 @@ model OutreachContact {
   status        OutreachStatus @default(NEW)
   priority      String         @default("MEDIUM") // LOW, MEDIUM, HIGH
   source        String?        // REFERRAL, COLD_OUTREACH, INBOUND, SOCIAL_MEDIA, EVENT, OTHER
+  activities       String?        // e.g. "camping, fishing, kayaking"
   notes            String?        @db.Text
   proposalText     String?        @db.Text
   proposalLanguage String?

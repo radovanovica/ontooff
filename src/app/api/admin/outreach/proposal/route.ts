@@ -7,17 +7,44 @@ import { prisma } from '@/lib/prisma';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY ?? '';
 
-const SYSTEM_PROMPT = `You are a professional business development writer. Generate a concise, persuasive email proposal for ontooff — an online booking platform for outdoor nature activities (camping, fishing, kayaking, hiking, etc.).
+// ── Guidance text ─────────────────────────────────────────────────────────────
+// Edit this block to update what the AI knows about ontooff and its pitch.
+// This text is injected into every proposal generation as factual context.
+const ONTOOFF_GUIDANCE = `
+ABOUT ONTOOFF:
+ontooff is an online booking platform built specifically for outdoor nature-based businesses — camping sites, fishing spots, kayaking centres, hiking parks, adventure parks, and similar venues.
 
-The proposal should:
-- Be addressed to the business contact if a name is provided
-- Explain what ontooff is and how it helps outdoor businesses get more bookings
-- Highlight the key value: free listing setup, instant online bookings, no technical expertise needed, built-in payment handling
-- Be warm and personalized based on their location, activity type (inferred from business name/notes), and any notes provided
-- End with a clear call to action (schedule a quick call or reply to learn more)
-- Be 150–250 words, in a professional yet friendly tone
-- Written in plain text suitable for an email (no HTML, no markdown headers)
-- Write the entire proposal in the language specified in the user message`;
+WHAT WE OFFER BUSINESSES (key selling points to mention):
+- Free, fast listing setup — a business can be live and accepting bookings within a day
+- Online booking engine: guests can browse, book, and pay 24/7 without the business needing to manage phone calls or emails
+- Smart pricing rules: support for per-person, per-day, per-activity, and age-group pricing
+- Spot / zone management: define specific tent pitches, kayak launch spots, fishing pegs, etc., with capacity and availability tracking
+- Built-in payment handling: card and cash options, with automatic confirmation emails to guests
+- Real-time availability calendar and map-based spot selection for guests
+- Multi-language support: guests can book in their own language
+- Events module: businesses can publish special events and sell tickets directly through the platform
+- Zero technical expertise required — the platform does the heavy lifting
+- Dedicated support to help with the onboarding and listing setup
+
+PRICING MODEL:
+- Listing is free; ontooff takes a small commission only when a booking is made — no upfront costs or monthly fees for the basic plan
+
+PLATFORM URL: https://www.ontooff.app
+
+TONE GUIDANCE:
+- Be warm and personal — this is an outreach email, not a cold form letter
+- Acknowledge what the business does (use their activities if provided)
+- Keep it concise: 150–250 words in the body
+- End with a clear, low-pressure call to action (e.g. "Would you be open to a quick 15-minute call this week?")
+- No HTML, no markdown, plain email text only
+- Write the entire email in the language specified
+`.trim();
+
+const SYSTEM_PROMPT = `You are a professional business development writer working for ontooff.
+Use the guidance below as your source of truth about the platform and the pitch.
+Generate a personalized outreach proposal email based on the contact details the user provides.
+
+${ONTOOFF_GUIDANCE}`;
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -36,7 +63,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
-  const { businessName, contactPerson, city, country, website, instagramUrl, notes, language } = body;
+  const { businessName, contactPerson, city, country, website, instagramUrl, activities, notes, language } = body;
 
   if (!businessName?.trim()) {
     return NextResponse.json({ error: 'businessName is required.' }, { status: 400 });
@@ -48,14 +75,14 @@ export async function POST(req: NextRequest) {
     `Business: ${businessName.trim()}`,
     `Language: ${lang}`,
   ];
-  if (contactPerson?.trim()) contextLines.push(`Contact: ${contactPerson.trim()}`);
+  if (contactPerson?.trim()) contextLines.push(`Contact person: ${contactPerson.trim()}`);
   if (city?.trim() || country?.trim()) contextLines.push(`Location: ${[city?.trim(), country?.trim()].filter(Boolean).join(', ')}`);
+  if (activities?.trim()) contextLines.push(`Activities they offer: ${activities.trim()}`);
   if (website?.trim()) contextLines.push(`Website: ${website.trim()}`);
   if (instagramUrl?.trim()) contextLines.push(`Instagram: ${instagramUrl.trim()}`);
-  if (notes?.trim()) contextLines.push(`Notes: ${notes.trim()}`);
+  if (notes?.trim()) contextLines.push(`Additional notes: ${notes.trim()}`);
 
-  const userPrompt = `Write a proposal email for this business (write entirely in ${lang}):\n${contextLines.join('\n')}`;
-
+  const userPrompt = `Write a proposal email for this business (write entirely in ${lang}):\n\n${contextLines.join('\n')}`;
   try {
     const groq = new Groq({ apiKey: GROQ_API_KEY });
 
