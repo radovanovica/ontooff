@@ -68,6 +68,14 @@ const step3Schema = z.object({
 });
 
 
+interface ClosedDateEntry {
+  id: string;
+  date: string | null;
+  dayOfWeek: number | null;
+  isRecurring: boolean;
+  activityLocationId: string | null;
+}
+
 interface RegistrationStepperProps {
   location: LocationWithDetails;
   locations?: LocationWithDetails[];
@@ -178,6 +186,18 @@ export default function RegistrationStepper({
   const today = format(new Date(), 'yyyy-MM-dd');
   const tomorrow = format(addDays(new Date(), 1), 'yyyy-MM-dd');
 
+  const placeId = allLocations[0]?.place?.id ?? null;
+  const [closedDates, setClosedDates] = useState<ClosedDateEntry[]>([]);
+  const [closedDateError, setClosedDateError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!placeId) return;
+    fetch(`/api/places/${placeId}/closed-dates`)
+      .then((r) => r.json())
+      .then((d) => setClosedDates(d.data ?? []))
+      .catch(() => {});
+  }, [placeId]);
+
   const {
     control: control1,
     handleSubmit: handleSubmit1,
@@ -202,6 +222,37 @@ export default function RegistrationStepper({
     1,
     startDate && endDate ? differenceInCalendarDays(new Date(endDate), new Date(startDate)) : 1,
   );
+
+  const findClosedDayInRange = useCallback((start: string, end: string, locationId: string | null): string | null => {
+    if (!start || !end || closedDates.length === 0) return null;
+    const relevant = closedDates.filter((cd) =>
+      cd.activityLocationId === null || cd.activityLocationId === locationId
+    );
+    if (relevant.length === 0) return null;
+    const current = new Date(start + 'T00:00:00');
+    const endDt = new Date(end + 'T00:00:00');
+    while (current <= endDt) {
+      const dateStr = format(current, 'yyyy-MM-dd');
+      const dayOfWeek = current.getDay();
+      for (const cd of relevant) {
+        if (cd.isRecurring && cd.dayOfWeek !== null && cd.dayOfWeek === dayOfWeek) return dateStr;
+        if (!cd.isRecurring && cd.date && cd.date.slice(0, 10) === dateStr) return dateStr;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    return null;
+  }, [closedDates]);
+
+  useEffect(() => {
+    if (!startDate || !endDate) { setClosedDateError(null); return; }
+    const closedDay = findClosedDayInRange(startDate, endDate, selectedLocationId);
+    if (closedDay) {
+      const formatted = format(new Date(closedDay + 'T00:00:00'), 'MMM d, yyyy');
+      setClosedDateError(t('validation.closedDate', { date: formatted }));
+    } else {
+      setClosedDateError(null);
+    }
+  }, [startDate, endDate, selectedLocationId, findClosedDayInRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSpotToggle = (spot: SpotMapItem) => {
     const current = selectedSpotIds ?? [];
@@ -407,6 +458,7 @@ useEffect(() => {
 
   const onStep1Submit = (values: Step1Values) => {
     if (!selectedLocation) return;
+    if (closedDateError) return;
     if (effectiveRequiresSpot && (!values.spotIds || values.spotIds.length === 0)) {
       setError1('spotIds', { message: t('validation.spotRequired') });
       return;
@@ -916,7 +968,7 @@ useEffect(() => {
           endDate={endDate}
           numberOfDays={numberOfDays}
           today={today}
-          startDateError={errors1.startDate?.message ? t(errors1.startDate.message) : undefined}
+          startDateError={errors1.startDate?.message ? t(errors1.startDate.message) : closedDateError ?? undefined}
           endDateError={errors1.endDate?.message ? t(errors1.endDate.message) : undefined}
           onStartDateChange={(v) => setValue1('startDate', v, { shouldValidate: true })}
           onEndDateChange={(v) => setValue1('endDate', v, { shouldValidate: true })}

@@ -206,7 +206,8 @@
     "emailInvalid": "Por favor ingresa una dirección de email válida.",
     "paymentMethodRequired": "Por favor selecciona un método de pago para continuar.",
     "atLeastOneGuest": "Por favor añade al menos un huésped.",
-    "selectLocation": "Por favor selecciona una ubicación de la lista o el mapa."
+    "selectLocation": "Por favor selecciona una ubicación de la lista o el mapa.",
+    "closedDate": "Las fechas seleccionadas incluyen el {{date}}, que no es un día laborable. Por favor, elija otras fechas."
   },
   "review": {
     "title": "Dejar una reseña",

@@ -206,7 +206,8 @@
     "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
     "paymentMethodRequired": "Bitte wählen Sie eine Zahlungsmethode aus, um fortzufahren.",
     "atLeastOneGuest": "Bitte fügen Sie mindestens einen Gast hinzu.",
-    "selectLocation": "Bitte wählen Sie einen Standort aus der Liste oder Karte aus."
+    "selectLocation": "Bitte wählen Sie einen Standort aus der Liste oder Karte aus.",
+    "closedDate": "Ihre gewählten Daten umfassen den {{date}}, der kein Arbeitstag ist. Bitte wählen Sie andere Daten."
   },
   "review": {
     "title": "Bewertung hinterlassen",

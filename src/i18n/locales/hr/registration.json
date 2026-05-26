@@ -206,7 +206,8 @@
     "emailInvalid": "Molimo unesite valjanu email adresu.",
     "paymentMethodRequired": "Molimo odaberite način plaćanja za nastavak.",
     "atLeastOneGuest": "Molimo dodajte najmanje jednog gosta.",
-    "selectLocation": "Molimo odaberite lokaciju s popisa ili karte."
+    "selectLocation": "Molimo odaberite lokaciju s popisa ili karte.",
+    "closedDate": "Odabrani datumi uključuju {{date}}, koji nije radni dan. Molimo odaberite druge datume."
   },
   "review": {
     "title": "Ostavi recenziju",

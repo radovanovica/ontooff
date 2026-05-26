@@ -208,7 +208,8 @@
     "emailInvalid": "Please enter a valid email address.",
     "paymentMethodRequired": "Please select a payment method to continue.",
     "atLeastOneGuest": "Please add at least one guest.",
-    "selectLocation": "Please select a location from the list or map."
+    "selectLocation": "Please select a location from the list or map.",
+    "closedDate": "Your selected dates include {{date}}, which is not a working day. Please choose different dates."
   },
   "review": {
     "title": "Leave a Review",
