@@ -13,9 +13,12 @@ import {
   Step,
   StepLabel,
   Divider,
+  FormControlLabel,
+  Switch,
+  Tooltip,
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
-import { ArrowBack, ArrowForward, Map as MapIcon, SkipNext, UploadFile, Clear } from '@mui/icons-material';
+import { ArrowBack, ArrowForward, Map as MapIcon, SkipNext, UploadFile, Clear, Science } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -63,6 +66,7 @@ export default function NewPlacePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdPlaceId, setCreatedPlaceId] = useState<string | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
   const [mapImageUrl, setMapImageUrl] = useState<string>('');
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -116,6 +120,7 @@ export default function NewPlacePage() {
         body: JSON.stringify({
           ...data,
           ...(isSuperAdmin && selectedOrg ? { organizationId: selectedOrg.id } : {}),
+          ...(isSuperAdmin && isDemo ? { isDemo: true } : {}),
         }),
       });
       const json = await res.json();
@@ -298,6 +303,29 @@ export default function NewPlacePage() {
                       />
                     )}
                   />
+                </Grid>
+              )}
+              {isSuperAdmin && (
+                <Grid size={{ xs: 12 }}>
+                  <Tooltip title="Demo places are hidden from public search/explore. Use them for showroom links and demos.">
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={isDemo}
+                          onChange={(e) => setIsDemo(e.target.checked)}
+                          color="warning"
+                        />
+                      }
+                      label={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                          <Science sx={{ fontSize: 18, color: isDemo ? 'warning.main' : 'text.disabled' }} />
+                          <Typography variant="body2" sx={{ fontWeight: isDemo ? 700 : 400 }}>
+                            Demo place (hidden from public search)
+                          </Typography>
+                        </Box>
+                      }
+                    />
+                  </Tooltip>
                 </Grid>
               )}
               <Grid size={{ xs: 12 }}>

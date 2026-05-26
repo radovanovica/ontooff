@@ -29,6 +29,7 @@ interface PlaceData {
   city: string | null;
   country: string | null;
   isActive: boolean;
+  isDemo: boolean;
   logoUrl: string | null;
   _count?: { activityLocations: number };
 }
@@ -139,6 +140,15 @@ export default function OwnerPlacesPage() {
                       color={place.isActive ? 'success' : 'default'}
                       size="small"
                     />
+                    {place.isDemo && (
+                      <Chip
+                        label="DEMO"
+                        size="small"
+                        color="warning"
+                        variant="outlined"
+                        sx={{ fontWeight: 700, fontSize: '0.65rem' }}
+                      />
+                    )}
                   </Box>
                   {(place.city || place.country) && (
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>

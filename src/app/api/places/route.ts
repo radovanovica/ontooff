@@ -21,6 +21,7 @@ const placeSchema = z.object({
   mapWidth: z.number().int().positive().optional(),
   mapHeight: z.number().int().positive().optional(),
   organizationId: z.string().optional(),
+  isDemo: z.boolean().optional(),
 });
 
 // GET /api/places
@@ -36,8 +37,9 @@ export async function GET(req: NextRequest) {
   // Non-admins only see their own places
   if (!session || session.user.role !== UserRole.SUPER_ADMIN) {
     if (!session) {
-      // Public: only active places
+      // Public: only active, non-demo places
       where.isActive = true;
+      where.isDemo = false;
     } else {
       where.ownerId = session.user.id;
     }
@@ -120,6 +122,11 @@ export async function POST(req: NextRequest) {
     }
   }
   const slug = rest.slug || slugify(name);
+
+  // Only super-admins can create demo places
+  if (rest.isDemo && session.user.role !== UserRole.SUPER_ADMIN) {
+    (rest as Record<string, unknown>).isDemo = false;
+  }
 
   const exists = await prisma.place.findUnique({ where: { slug } });
   if (exists) {

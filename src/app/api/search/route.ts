@@ -149,6 +149,7 @@ async function runSearch({
 
   const where = {
     isActive: true,
+    isDemo: false,
     ...activityTypeFilter,
     ...locationFilter,
     ...bboxFilter,

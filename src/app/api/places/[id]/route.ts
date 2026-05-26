@@ -24,6 +24,7 @@ const updateSchema = z.object({
   linkedinUrl: z.string().url().optional().or(z.literal('')).nullable(),
   timezone: z.string().optional(),
   isActive: z.boolean().optional(),
+  isDemo: z.boolean().optional(),
   status: z.enum(['REGULAR', 'RECOMMENDED', 'PREMIUM']).optional(),
   logoUrl: z.string().optional(),
   coverUrl: z.string().optional(),
@@ -78,9 +79,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const data = result.data;
-  // Only super-admins can change the status field
+  // Only super-admins can change the status or isDemo fields
   if (data.status !== undefined && session.user.role !== UserRole.SUPER_ADMIN) {
     delete data.status;
+  }
+  if (data.isDemo !== undefined && session.user.role !== UserRole.SUPER_ADMIN) {
+    delete data.isDemo;
   }
   if (data.name && !data.slug) {
     data.slug = slugify(data.name);

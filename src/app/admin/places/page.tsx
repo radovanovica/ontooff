@@ -38,6 +38,7 @@ interface PlaceRow {
   city: string | null;
   country: string | null;
   isActive: boolean;
+  isDemo: boolean;
   status: PlaceStatus;
   createdAt: string;
   owner?: { name: string | null; email: string };
@@ -204,6 +205,9 @@ export default function AdminPlacesPage() {
                 <TableRow key={place.id} hover>
                   <TableCell>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>{place.name}</Typography>
+                    {place.isDemo && (
+                      <Chip label="DEMO" size="small" color="warning" variant="outlined" sx={{ fontWeight: 700, fontSize: '0.65rem', mt: 0.25 }} />
+                    )}
                   </TableCell>
                   <TableCell>
                     <Typography variant="caption">

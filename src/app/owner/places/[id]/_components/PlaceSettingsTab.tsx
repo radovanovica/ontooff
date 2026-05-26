@@ -1,11 +1,12 @@
 'use client';
 
-import { Box, Button, TextField, Grid, CircularProgress, Alert, Snackbar, Typography, Paper, IconButton, Tooltip, Avatar, Divider, Stack } from '@mui/material';
-import { CloudUpload, DeleteOutlined, Map as MapIcon, AccountCircle, Image as ImageIcon, Business, Share } from '@mui/icons-material';
+import { Box, Button, TextField, Grid, CircularProgress, Alert, Snackbar, Typography, Paper, IconButton, Tooltip, Avatar, Divider, Stack, FormControlLabel, Switch } from '@mui/material';
+import { CloudUpload, DeleteOutlined, Map as MapIcon, AccountCircle, Image as ImageIcon, Business, Share, Science } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useEffect, useRef, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/i18n/client';
 import { uploadFileToS3 } from '@/lib/upload';
 
@@ -32,6 +33,8 @@ type FormValues = z.infer<typeof schema>;
 
 export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
   const { t } = useTranslation('owner');
+  const { data: session } = useSession();
+  const isSuperAdmin = session?.user?.role === 'SUPER_ADMIN';
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -57,6 +60,12 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [coverUploading, setCoverUploading] = useState(false);
   const [coverError, setCoverError] = useState<string | null>(null);
+
+  // Demo state
+  const [isDemo, setIsDemo] = useState(false);
+  const [demoSaving, setDemoSaving] = useState(false);
+  const [demoSuccess, setDemoSuccess] = useState(false);
+  const [demoError, setDemoError] = useState<string | null>(null);
   const [coverSuccess, setCoverSuccess] = useState(false);
   const coverFileRef = useRef<HTMLInputElement>(null);
 
@@ -92,6 +101,7 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
         setMapHeight(p.mapHeight ?? 800);
         setProfileImageUrl(p.logoUrl ?? null);
         setCoverImageUrl(p.coverUrl ?? null);
+        setIsDemo(p.isDemo ?? false);
       })
       .finally(() => setLoading(false));
   }, [placeId, reset]);
@@ -205,6 +215,26 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
       setUploading(false);
     }
     e.target.value = '';
+  };
+
+  const handleDemoToggle = async () => {
+    const newValue = !isDemo;
+    setDemoSaving(true);
+    setDemoError(null);
+    try {
+      const res = await fetch(`/api/places/${placeId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isDemo: newValue }),
+      });
+      if (!res.ok) throw new Error('Failed to update demo status');
+      setIsDemo(newValue);
+      setDemoSuccess(true);
+    } catch (err) {
+      setDemoError(err instanceof Error ? err.message : t('common.error'));
+    } finally {
+      setDemoSaving(false);
+    }
   };
 
   const makeSaveHandler = (
@@ -521,6 +551,42 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
         </Box>
       </Paper>
 
+      {/* ── Section 4: Demo Mode (super admin only) ───────────────── */}
+      {isSuperAdmin && (
+        <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <Box sx={{ px: 3, py: 1.5, bgcolor: 'warning.50', borderBottom: '1px solid', borderColor: 'warning.200', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Science sx={{ fontSize: 20, color: 'warning.main' }} />
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'warning.dark' }}>Demo Mode</Typography>
+          </Box>
+          <Box sx={{ p: 3 }}>
+            {demoError && <Alert severity="error" sx={{ mb: 2 }}>{demoError}</Alert>}
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Demo places are hidden from public search and the explore page. Use them for showroom links and demonstrations.
+            </Typography>
+            <Tooltip title={isDemo ? 'Click to make this place visible in public search' : 'Click to hide this place from public search'}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isDemo}
+                    onChange={handleDemoToggle}
+                    disabled={demoSaving}
+                    color="warning"
+                  />
+                }
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Science sx={{ fontSize: 18, color: isDemo ? 'warning.main' : 'text.disabled' }} />
+                    <Typography variant="body2" sx={{ fontWeight: isDemo ? 700 : 400 }}>
+                      {isDemo ? 'Demo place (hidden from public search)' : 'Normal place (visible in public search)'}
+                    </Typography>
+                  </Box>
+                }
+              />
+            </Tooltip>
+          </Box>
+        </Paper>
+      )}
+
       {/* Hidden file inputs */}
       <input ref={profileFileRef} type="file" accept="image/*" style={{ display: 'none' }}
         onChange={makeFileHandler(setProfileImageUrl, setProfileUploading, setProfileError, 'images/profile')} />
@@ -533,6 +599,7 @@ export default function PlaceSettingsTab({ placeId }: { placeId: string }) {
       <Snackbar open={mapSuccess} autoHideDuration={3000} onClose={() => setMapSuccess(false)} message={t('places.mapSaved', 'Map image saved')} />
       <Snackbar open={profileSuccess} autoHideDuration={3000} onClose={() => setProfileSuccess(false)} message={t('places.profileImageSaved', 'Profile image saved')} />
       <Snackbar open={coverSuccess} autoHideDuration={3000} onClose={() => setCoverSuccess(false)} message={t('places.coverImageSaved', 'Cover image saved')} />
+      <Snackbar open={demoSuccess} autoHideDuration={3000} onClose={() => setDemoSuccess(false)} message={isDemo ? 'Place marked as demo' : 'Place restored to public'} />
 
     </Stack>
   );

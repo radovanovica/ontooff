@@ -213,6 +213,7 @@ model Place {
   mapWidth       Int?
   mapHeight      Int?
   isActive       Boolean     @default(true)
+  isDemo         Boolean     @default(false)
   status         PlaceStatus @default(REGULAR)
   timezone       String      @default("UTC")
   createdAt      DateTime    @default(now())
