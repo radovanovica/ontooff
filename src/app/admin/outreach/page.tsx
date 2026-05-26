@@ -28,6 +28,10 @@ import {
   Button,
   Pagination,
   Grid,
+  Checkbox,
+  ListItemText,
+  OutlinedInput,
+  FormHelperText,
 } from '@mui/material';
 import {
   Search,
@@ -93,6 +97,30 @@ const STATUSES: OutreachStatus[] = ['NEW', 'CONTACTED', 'INTERESTED', 'PROPOSAL_
 const PRIORITIES: OutreachPriority[] = ['LOW', 'MEDIUM', 'HIGH'];
 
 const PROPOSAL_LANGUAGES = ['English', 'Serbian', 'Croatian', 'Bosnian', 'Montenegrin', 'German', 'Spanish', 'French', 'Italian'];
+
+const ACTIVITY_OPTIONS = [
+  'Camping',
+  'Fishing',
+  'Kayaking',
+  'Canoeing',
+  'SUP / Paddleboarding',
+  'White-water Rafting',
+  'Hiking',
+  'Cycling',
+  'Mountain Biking',
+  'Rock Climbing',
+  'Horse Riding',
+  'ATV / Quad Biking',
+  'Zip-lining',
+  'Paragliding',
+  'Swimming',
+  'Diving / Snorkeling',
+  'Hunting',
+  'Bird Watching',
+  'Archery',
+  'Paintball',
+  'Adventure Park',
+];
 
 const EMPTY_FORM: Partial<OutreachRow> = {
   businessName: '',
@@ -630,14 +658,24 @@ export default function AdminOutreachPage() {
               />
             </Grid>
             <Grid size={{ xs: 12 }}>
-              <TextField
-                label={t('outreach.fields.activities', 'Activities Offered')}
-                fullWidth size="small"
-                value={form.activities ?? ''}
-                onChange={(e) => setField('activities', e.target.value)}
-                placeholder="e.g. camping, fishing, kayaking, hiking…"
-                helperText={t('outreach.fields.activitiesHelper', 'Used to personalise AI proposals')}
-              />
+              <FormControl fullWidth size="small">
+                <InputLabel>{t('outreach.fields.activities', 'Activities Offered')}</InputLabel>
+                <Select
+                  multiple
+                  value={(form.activities ?? '').split(',').map((s) => s.trim()).filter(Boolean)}
+                  onChange={(e) => setField('activities', (e.target.value as string[]).join(', '))}
+                  input={<OutlinedInput label={t('outreach.fields.activities', 'Activities Offered')} />}
+                  renderValue={(selected) => (selected as string[]).join(', ')}
+                >
+                  {ACTIVITY_OPTIONS.map((opt) => (
+                    <MenuItem key={opt} value={opt}>
+                      <Checkbox checked={(form.activities ?? '').split(',').map((s) => s.trim()).includes(opt)} />
+                      <ListItemText primary={opt} />
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FormHelperText>{t('outreach.fields.activitiesHelper', 'Used to personalise AI proposals')}</FormHelperText>
+              </FormControl>
             </Grid>
           </Grid>
         </DialogContent>

@@ -12,30 +12,36 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY ?? '';
 // This text is injected into every proposal generation as factual context.
 const ONTOOFF_GUIDANCE = `
 ABOUT ONTOOFF:
-ontooff is an online booking platform built specifically for outdoor nature-based businesses — camping sites, fishing spots, kayaking centres, hiking parks, adventure parks, and similar venues.
+ontooff is a booking platform that makes it easier for guests to reserve outdoor activities.
+Businesses get automated reservations — guests access the booking flow via a link placed on the business's website or Instagram profile.
+We are currently in a pilot phase and offering the first partners permanent free use of the platform and the partner panel.
 
-WHAT WE OFFER BUSINESSES (key selling points to mention):
-- Free, fast listing setup — a business can be live and accepting bookings within a day
-- Online booking engine: guests can browse, book, and pay 24/7 without the business needing to manage phone calls or emails
-- Smart pricing rules: support for per-person, per-day, per-activity, and age-group pricing
-- Spot / zone management: define specific tent pitches, kayak launch spots, fishing pegs, etc., with capacity and availability tracking
-- Built-in payment handling: card and cash options, with automatic confirmation emails to guests
-- Real-time availability calendar and map-based spot selection for guests
-- Multi-language support: guests can book in their own language
-- Events module: businesses can publish special events and sell tickets directly through the platform
-- Zero technical expertise required — the platform does the heavy lifting
-- Dedicated support to help with the onboarding and listing setup
-
-PRICING MODEL:
-- Listing is free; ontooff takes a small commission only when a booking is made — no upfront costs or monthly fees for the basic plan
+WHAT THE EMAIL MUST COMMUNICATE:
+1. Brief, friendly intro — who you are and that their profile caught your attention (mention their specific activity or venue type if known).
+2. One-sentence explanation of what ontooff does: automated activity reservations through a link on their website or Instagram.
+3. The pilot offer: permanent free access for early partners.
+4. The platform link: https://www.ontooff.app
+5. A low-pressure CTA: offer to send a demo account or organise a short presentation.
 
 PLATFORM URL: https://www.ontooff.app
 
+REFERENCE EMAIL (the style and structure to follow — use this as a template):
+---
+Hi! I'm Aleksandar, founder of BidTech. We're building a platform that makes it easier to book outdoor activities, and your profile caught our attention.
+
+Our goal is to let guests make automated activity reservations through our app — they access the booking flow via a link placed directly on your website or Instagram profile.
+
+We're currently in the pilot phase, and we're offering early partners permanent free access to the platform and the partner panel.
+
+You can see how it looks here: https://www.ontooff.app
+
+If it sounds interesting, we'd be happy to send you a demo account or set up a short presentation :)
+---
+
 TONE GUIDANCE:
-- Be warm and personal — this is an outreach email, not a cold form letter
-- Acknowledge what the business does (use their activities if provided)
-- Keep it concise: 150–250 words in the body
-- End with a clear, low-pressure call to action (e.g. "Would you be open to a quick 15-minute call this week?")
+- Match the warm, casual, yet professional tone of the reference email above
+- Personalise the opening by referencing the business name and their activities if provided
+- Keep it short and scannable — 4–5 short paragraphs, similar length to the reference
 - No HTML, no markdown, plain email text only
 - Write the entire email in the language specified
 `.trim();
