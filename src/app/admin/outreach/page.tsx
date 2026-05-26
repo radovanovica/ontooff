@@ -147,6 +147,7 @@ export default function AdminOutreachPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
+  const [activityFilter, setActivityFilter] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -179,6 +180,7 @@ export default function AdminOutreachPage() {
       if (search) params.set('search', search);
       if (statusFilter) params.set('status', statusFilter);
       if (priorityFilter) params.set('priority', priorityFilter);
+      if (activityFilter) params.set('activity', activityFilter);
       params.set('page', String(page));
       params.set('pageSize', String(PAGE_SIZE));
       const res = await fetch(`/api/admin/outreach?${params}`);
@@ -191,7 +193,7 @@ export default function AdminOutreachPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter, priorityFilter, page, t]);
+  }, [search, statusFilter, priorityFilter, activityFilter, page, t]);
 
   useEffect(() => {
     const timer = setTimeout(fetchContacts, 300);
@@ -389,6 +391,15 @@ export default function AdminOutreachPage() {
             ))}
           </Select>
         </FormControl>
+        <FormControl size="small" sx={{ minWidth: 160 }}>
+          <InputLabel>{t('outreach.activity', 'Activity')}</InputLabel>
+          <Select value={activityFilter} label={t('outreach.activity', 'Activity')} onChange={(e) => { setActivityFilter(e.target.value); setPage(1); }}>
+            <MenuItem value="">{t('common.all')}</MenuItem>
+            {ACTIVITY_OPTIONS.map((a) => (
+              <MenuItem key={a} value={a}>{a}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <Box sx={{ ml: 'auto' }}>
           <Button variant="contained" startIcon={<Add />} onClick={openCreate}>
             {t('outreach.addNew', 'Add Contact')}
@@ -442,6 +453,13 @@ export default function AdminOutreachPage() {
                           <Instagram sx={{ fontSize: 14 }} />
                         </IconButton>
                       </Tooltip>
+                    )}
+                    {row.activities && (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.4, mt: 0.5 }}>
+                        {row.activities.split(',').map((a) => a.trim()).filter(Boolean).map((a) => (
+                          <Chip key={a} label={a} size="small" variant="outlined" sx={{ fontSize: 10, height: 18 }} />
+                        ))}
+                      </Box>
                     )}
                   </TableCell>
                   <TableCell>

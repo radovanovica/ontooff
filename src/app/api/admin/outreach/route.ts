@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status') || '';
   const priority = searchParams.get('priority') || '';
+  const activity = searchParams.get('activity') || '';
   const search = searchParams.get('search') || '';
   const assignedToId = searchParams.get('assignedToId') || '';
   const page = Math.max(1, Number(searchParams.get('page') ?? 1));
@@ -22,6 +23,7 @@ export async function GET(req: NextRequest) {
     ...(status ? { status: status as 'NEW' | 'CONTACTED' | 'INTERESTED' | 'PROPOSAL_SENT' | 'CONVERTED' | 'DECLINED' | 'ARCHIVED' } : {}),
     ...(priority ? { priority } : {}),
     ...(assignedToId ? { assignedToId } : {}),
+    ...(activity ? { activities: { contains: activity, mode: 'insensitive' as const } } : {}),
     ...(search
       ? {
           OR: [
