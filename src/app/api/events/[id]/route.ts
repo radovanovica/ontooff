@@ -23,8 +23,8 @@ const updateSchema = z.object({
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const event = await prisma.placeEvent.findUnique({
-    where: { id },
+  const event = await prisma.placeEvent.findFirst({
+    where: { id, place: { isDemo: false } },
     include: {
       place: { select: { id: true, name: true, slug: true, city: true, country: true, coverUrl: true, logoUrl: true, phone: true, email: true } },
       pricingRule: { include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } } },

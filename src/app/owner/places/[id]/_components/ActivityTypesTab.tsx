@@ -61,6 +61,8 @@ interface PricingRule {
   id: string;
   name: string;
   pricingType: string;
+  paymentMethod: string;
+  requiresPayment: boolean;
   currency: string;
   pricingTiers: { id: string; ageGroup: string; label: string; pricePerUnit: number }[];
 }
@@ -101,6 +103,7 @@ export default function ActivityTypesTab({ placeId }: Props) {
 
   const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
   const [pricingTypeTarget, setPricingTypeTarget] = useState<ActivityType | null>(null);
+  const [editingPricingRule, setEditingPricingRule] = useState<PricingRule | null>(null);
   const [pricingSaving, setPricingSaving] = useState(false);
   const [pricingFormError, setPricingFormError] = useState<string | null>(null);
   const [ruleName, setRuleName] = useState('');
@@ -244,6 +247,7 @@ export default function ActivityTypesTab({ placeId }: Props) {
 
   const openPricingCreate = (at: ActivityType) => {
     setPricingTypeTarget(at);
+    setEditingPricingRule(null);
     setPricingDialogOpen(true);
     setPricingFormError(null);
     setRuleName('');
@@ -252,6 +256,25 @@ export default function ActivityTypesTab({ placeId }: Props) {
     setPaymentMethod('BOTH');
     setRequiresPayment(true);
     setPricingTiersDraft([{ ageGroup: 'ADULT', label: t('pricing.tiers.ageGroups.ADULT'), pricePerUnit: '0' }]);
+  };
+
+  const openPricingEdit = (at: ActivityType, rule: PricingRule) => {
+    setPricingTypeTarget(at);
+    setEditingPricingRule(rule);
+    setPricingDialogOpen(true);
+    setPricingFormError(null);
+    setRuleName(rule.name);
+    setPricingType(rule.pricingType);
+    setShowCurrencyPreview(false);
+    setPaymentMethod(rule.paymentMethod);
+    setRequiresPayment(rule.requiresPayment);
+    setPricingTiersDraft(
+      rule.pricingTiers.map((tier) => ({
+        ageGroup: tier.ageGroup,
+        label: tier.label,
+        pricePerUnit: String(tier.pricePerUnit),
+      }))
+    );
   };
 
   const addTierDraft = () => {
@@ -266,7 +289,7 @@ export default function ActivityTypesTab({ placeId }: Props) {
     setPricingTiersDraft((prev) => (prev.length <= 1 ? prev : prev.filter((_, idx) => idx !== index)));
   };
 
-  const handleCreatePricingRule = async () => {
+  const handleSavePricingRule = async () => {
     if (!pricingTypeTarget) return;
     if (!ruleName.trim()) {
       setPricingFormError(t('activityTypes.errors.ruleNameRequired'));
@@ -285,34 +308,57 @@ export default function ActivityTypesTab({ placeId }: Props) {
       return;
     }
 
-    const normalizedTiers = pricingTiersDraft.map((tier, idx) => {
-      const price = Number(tier.pricePerUnit);
+    let normalizedTiers;
+    try {
+      normalizedTiers = pricingTiersDraft.map((tier, idx) => {
+        const price = Number(tier.pricePerUnit);
         if (!tier.label.trim()) throw new Error(t('activityTypes.errors.tierLabelRequired', { n: idx + 1 }));
         if (Number.isNaN(price) || price < 0) throw new Error(t('activityTypes.errors.tierPriceInvalid', { n: idx + 1 }));
-      return {
-        ageGroup: tier.ageGroup,
-        label: tier.label.trim(),
-        pricePerUnit: price,
-        sortOrder: idx,
-      };
-    });
+        return {
+          ageGroup: tier.ageGroup,
+          label: tier.label.trim(),
+          pricePerUnit: price,
+          sortOrder: idx,
+        };
+      });
+    } catch (e) {
+      setPricingFormError(e instanceof Error ? e.message : t('activityTypes.errors.pricingCreateFailed'));
+      return;
+    }
 
     setPricingSaving(true);
     setPricingFormError(null);
     try {
-      const res = await fetch('/api/pricing', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          activityTypeId: pricingTypeTarget.id,
-          name: ruleName.trim(),
-          pricingType,
-          paymentMethod,
-          requiresPayment,
-          currency: currency.trim() || 'RSD',
-          pricingTiers: normalizedTiers,
-        }),
-      });
+      let res: Response;
+      if (editingPricingRule) {
+        res = await fetch('/api/pricing', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: editingPricingRule.id,
+            name: ruleName.trim(),
+            pricingType,
+            paymentMethod,
+            requiresPayment,
+            currency: currency.trim() || 'EUR',
+            pricingTiers: normalizedTiers,
+          }),
+        });
+      } else {
+        res = await fetch('/api/pricing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            activityTypeId: pricingTypeTarget.id,
+            name: ruleName.trim(),
+            pricingType,
+            paymentMethod,
+            requiresPayment,
+            currency: currency.trim() || 'EUR',
+            pricingTiers: normalizedTiers,
+          }),
+        });
+      }
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(json.error ?? t('activityTypes.errors.pricingCreateFailed'));
@@ -474,11 +520,18 @@ export default function ActivityTypesTab({ placeId }: Props) {
                           size="small"
                           label={`${rule.name} • ${rule.currency} • ${t('activityTypes.tiersCount', { count: rule.pricingTiers.length })}`}
                           variant="outlined"
-                          sx={{ maxWidth: '100%' }}
+                          sx={{ maxWidth: '100%', flexShrink: 1, minWidth: 0 }}
                         />
-                        <IconButton size="small" color="error" onClick={() => handleDeletePricingRule(at.id, rule.id)}>
-                          <Delete fontSize="small" />
-                        </IconButton>
+                        <Tooltip title={t('common.edit')}>
+                          <IconButton size="small" onClick={() => openPricingEdit(at, rule)}>
+                            <Edit fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t('common.delete')}>
+                          <IconButton size="small" color="error" onClick={() => handleDeletePricingRule(at.id, rule.id)}>
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                       </Box>
                     ))}
                   </Box>
@@ -598,7 +651,10 @@ export default function ActivityTypesTab({ placeId }: Props) {
 
       <Dialog open={pricingDialogOpen} onClose={() => setPricingDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {t('pricing.addNew')} {pricingTypeTarget ? `— ${pricingTypeTarget.name}` : ''}
+          {editingPricingRule
+            ? `${t('pricing.editRule', 'Edit Pricing Rule')} — ${editingPricingRule.name}`
+            : `${t('pricing.addNew')}${pricingTypeTarget ? ` — ${pricingTypeTarget.name}` : ''}`
+          }
         </DialogTitle>
         <DialogContent sx={{ pt: '12px !important' }}>
           {pricingFormError && <Alert severity="error" sx={{ mb: 2 }}>{pricingFormError}</Alert>}
@@ -735,7 +791,7 @@ export default function ActivityTypesTab({ placeId }: Props) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setPricingDialogOpen(false)}>{t('common.cancel')}</Button>
-          <Button variant="contained" onClick={handleCreatePricingRule} disabled={pricingSaving}>
+          <Button variant="contained" onClick={handleSavePricingRule} disabled={pricingSaving}>
             {pricingSaving ? t('common.saving') : t('common.save')}
           </Button>
         </DialogActions>

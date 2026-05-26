@@ -124,6 +124,58 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ success: true, data: rule }, { status: 201 });
 }
 
+export async function PATCH(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+
+  const body = await req.json();
+  const patchSchema = z.object({
+    id: z.string(),
+    name: z.string().min(1).optional(),
+    pricingType: z.nativeEnum(PricingType).optional(),
+    paymentMethod: z.nativeEnum(PaymentMethod).optional(),
+    requiresPayment: z.boolean().optional(),
+    currency: z.string().optional(),
+    pricingTiers: z.array(tierSchema).min(1).optional(),
+  });
+  const result = patchSchema.safeParse(body);
+  if (!result.success) {
+    return NextResponse.json({ success: false, error: 'Validation failed', details: result.error.flatten().fieldErrors }, { status: 422 });
+  }
+
+  const { id, pricingTiers, ...ruleData } = result.data;
+
+  const existing = await prisma.pricingRule.findUnique({
+    where: { id },
+    include: { activityType: { include: { place: { select: { ownerId: true } } } } },
+  });
+  if (!existing) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
+
+  if (!existing.activityTypeId) {
+    return NextResponse.json({ success: false, error: 'Invalid pricing rule scope' }, { status: 422 });
+  }
+
+  if (!(await canManagePricing(existing.activityTypeId, session.user.id, session.user.role))) {
+    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+  }
+
+  const rule = await prisma.$transaction(async (tx) => {
+    if (pricingTiers) {
+      await tx.pricingTier.deleteMany({ where: { pricingRuleId: id } });
+    }
+    return tx.pricingRule.update({
+      where: { id },
+      data: {
+        ...ruleData,
+        ...(pricingTiers ? { pricingTiers: { create: pricingTiers.map((t, idx) => ({ ...t, sortOrder: idx })) } } : {}),
+      },
+      include: { pricingTiers: { orderBy: { sortOrder: 'asc' } } },
+    });
+  });
+
+  return NextResponse.json({ success: true, data: rule });
+}
+
 export async function DELETE(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });

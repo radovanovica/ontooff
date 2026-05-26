@@ -47,11 +47,14 @@ export async function GET(req: NextRequest) {
 
     if (location) {
       where.place = {
+        isDemo: false,
         OR: [
           { city: { contains: location, mode: 'insensitive' } },
           { country: { contains: location, mode: 'insensitive' } },
         ],
       };
+    } else {
+      where.place = { isDemo: false };
     }
 
     const [events, total] = await Promise.all([
