@@ -231,7 +231,7 @@ export default async function AdminRegistrationDetailPage({ params }: Props) {
                 <>
                   {booking.paymentBreakdown.map((item) => (
                     <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
-                      <Typography variant="body2">{t(`bookings.details.${item.label}`, item.label)}</Typography>
+                      <Typography variant="body2">{t(`bookings.details.${item.label}`, { defaultValue: item.label })}</Typography>
                       <Typography variant="body2">
                         {currency} {Number(item.totalPrice).toFixed(2)}
                       </Typography>

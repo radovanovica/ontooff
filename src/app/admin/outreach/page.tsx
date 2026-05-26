@@ -36,6 +36,9 @@ import {
   DeleteForever,
   OpenInNew,
   Instagram,
+  AutoAwesome,
+  ContentCopy,
+  Check,
 } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
@@ -122,6 +125,13 @@ export default function AdminOutreachPage() {
   // Delete dialog
   const [deleteTarget, setDeleteTarget] = useState<OutreachRow | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Proposal dialog
+  const [proposalOpen, setProposalOpen] = useState(false);
+  const [proposalText, setProposalText] = useState('');
+  const [proposalLoading, setProposalLoading] = useState(false);
+  const [proposalContact, setProposalContact] = useState<OutreachRow | null>(null);
+  const [proposalCopied, setProposalCopied] = useState(false);
 
   const fetchContacts = useCallback(async () => {
     setLoading(true);
@@ -214,6 +224,55 @@ export default function AdminOutreachPage() {
 
   const setField = (key: keyof typeof EMPTY_FORM, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const generateProposal = async (row: OutreachRow) => {
+    setProposalContact(row);
+    setProposalText('');
+    setProposalCopied(false);
+    setProposalOpen(true);
+    setProposalLoading(true);
+    try {
+      const res = await fetch('/api/admin/outreach/proposal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessName: row.businessName,
+          contactPerson: row.contactPerson,
+          city: row.city,
+          country: row.country,
+          website: row.website,
+          instagramUrl: row.instagramUrl,
+          notes: row.notes,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to generate proposal.' }));
+        setProposalText(err.error ?? 'Failed to generate proposal.');
+        return;
+      }
+      const reader = res.body?.getReader();
+      if (!reader) { setProposalText('No response received.'); return; }
+      const decoder = new TextDecoder();
+      let accumulated = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        accumulated += decoder.decode(value, { stream: true });
+        setProposalText(accumulated);
+      }
+    } catch {
+      setProposalText('Failed to generate proposal. Please try again.');
+    } finally {
+      setProposalLoading(false);
+    }
+  };
+
+  const copyProposal = () => {
+    navigator.clipboard.writeText(proposalText).then(() => {
+      setProposalCopied(true);
+      setTimeout(() => setProposalCopied(false), 2000);
+    });
   };
 
   return (
@@ -365,6 +424,11 @@ export default function AdminOutreachPage() {
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Tooltip title={t('outreach.generateProposal', 'Generate Proposal')}>
+                        <IconButton size="small" color="primary" onClick={() => generateProposal(row)}>
+                          <AutoAwesome fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                       <Tooltip title={t('common.edit', 'Edit')}>
                         <IconButton size="small" onClick={() => openEdit(row)}>
                           <Edit fontSize="small" />
@@ -530,6 +594,47 @@ export default function AdminOutreachPage() {
           >
             {saving ? <CircularProgress size={16} color="inherit" /> : t('common.save')}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Proposal dialog */}
+      <Dialog open={proposalOpen} onClose={() => setProposalOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <AutoAwesome sx={{ color: 'primary.main', fontSize: 20 }} />
+          {t('outreach.proposalTitle', 'AI Proposal')} — {proposalContact?.businessName}
+        </DialogTitle>
+        <DialogContent>
+          {proposalLoading && proposalText === '' ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 2 }}>
+              <CircularProgress size={20} />
+              <Typography variant="body2" color="text.secondary">{t('outreach.generatingProposal', 'Generating proposal…')}</Typography>
+            </Box>
+          ) : (
+            <TextField
+              multiline
+              fullWidth
+              minRows={10}
+              value={proposalText}
+              onChange={(e) => setProposalText(e.target.value)}
+              variant="outlined"
+              size="small"
+              sx={{ mt: 0.5, fontFamily: 'monospace' }}
+              slotProps={{ input: { sx: { fontFamily: 'inherit', fontSize: '0.85rem', lineHeight: 1.6 } } }}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setProposalOpen(false)}>{t('common.close', 'Close')}</Button>
+          {proposalText && !proposalLoading && (
+            <Button
+              variant="outlined"
+              startIcon={proposalCopied ? <Check /> : <ContentCopy />}
+              onClick={copyProposal}
+              color={proposalCopied ? 'success' : 'primary'}
+            >
+              {proposalCopied ? t('common.copied', 'Copied!') : t('common.copy', 'Copy')}
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
 
