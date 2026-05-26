@@ -56,7 +56,11 @@
   "pricing": {
     "breakdown": "Price summary",
     "total": "Total",
-    "guests": "Guests"
+    "guests": "Guests",
+    "labels": {
+      "ACTIVITY_FEE": "Activity Fee",
+      "DAILY_FEE": "Daily Fee"
+    }
   },
   "gallery": {
     "more": "+{{count}} more"
@@ -78,7 +82,9 @@
     "selectLocation": "Select location…",
     "noLocations": "No locations available for this activity.",
     "maxCapacity": "Max capacity: {{count}} people",
-    "spotsAvailable": "{{count}} spot(s) available"
+    "spotsAvailable": "{{count}} spot(s) available",
+    "readMore": "Read more",
+    "showLess": "Show less"
   },
   "step2": {
     "heading": "Select Dates & Spot",

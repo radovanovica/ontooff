@@ -54,7 +54,11 @@
   "pricing": {
     "breakdown": "Preisübersicht",
     "total": "Gesamt",
-    "guests": "Gäste"
+    "guests": "Gäste",
+    "labels": {
+      "ACTIVITY_FEE": "Aktivitätsgebühr",
+      "DAILY_FEE": "Tagesgebühr"
+    }
   },
   "gallery": {
     "more": "+{{count}} weitere"
@@ -76,7 +80,9 @@
     "selectLocation": "Standort auswählen…",
     "noLocations": "Keine Standorte für diese Aktivität verfügbar.",
     "maxCapacity": "Maximale Kapazität: {{count}} Personen",
-    "spotsAvailable": "{{count}} Platz/Plätze verfügbar"
+    "spotsAvailable": "{{count}} Platz/Plätze verfügbar",
+    "readMore": "Mehr lesen",
+    "showLess": "Weniger anzeigen"
   },
   "step2": {
     "heading": "Datum & Platz auswählen",

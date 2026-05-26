@@ -146,7 +146,7 @@ export default function StepGuestsPayment({
           {livePricing.breakdown.map((item, i) => (
             <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
               <Box>
-                <Typography variant="body2">{item.label}</Typography>
+                <Typography variant="body2">{t(`pricing.labels.${item.label}`, { defaultValue: item.label })}</Typography>
                 <Typography variant="caption" color="text.secondary">
                   {item.quantity} × {livePricing.currency} {item.unitPrice.toFixed(2)}
                   {currency !== livePricing.currency && (

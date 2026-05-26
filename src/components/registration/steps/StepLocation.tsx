@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -156,6 +157,8 @@ export default function StepLocation({
   const { t } = useTranslation('registration');
   const { t: tc } = useTranslation('common');
 
+  const [expandedDescId, setExpandedDescId] = useState<string | null>(null);
+
   const hasVirtualMap = availableLocations.some((loc) => !!loc.svgMapData);
   const hasRealMap = availableLocations.some((loc) => loc.latitude != null && loc.longitude != null);
 
@@ -243,27 +246,53 @@ export default function StepLocation({
                       }}
                     >
                       <CardActionArea onClick={() => onLocationSelect(loc.id)}>
-                        <CardContent sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                        <CardContent sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, py: 1, px: 1.25, '&:last-child': { pb: 1 } }}>
                           <Box sx={{
-                            width: 36, height: 36, borderRadius: '50%', flexShrink: 0, mt: 0.25,
+                            width: 28, height: 28, borderRadius: '50%', flexShrink: 0, mt: 0.25,
                             bgcolor: selected ? '#2d5a27' : 'grey.100',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                           }}>
                             {selected
-                              ? <CheckCircle sx={{ fontSize: 18, color: 'white' }} />
-                              : <LocationOn sx={{ fontSize: 18, color: 'text.secondary' }} />}
+                              ? <CheckCircle sx={{ fontSize: 16, color: 'white' }} />
+                              : <LocationOn sx={{ fontSize: 16, color: 'text.secondary' }} />}
                           </Box>
                           <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.3, fontSize: '0.8rem' }}>
                               {displayActivityName} — {loc.name}
                             </Typography>
-                            {loc.description && (
-                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
-                                {loc.description}
-                              </Typography>
-                            )}
+                            {loc.description && (() => {
+                              const isExpanded = expandedDescId === loc.id;
+                              return (
+                                <Box>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{
+                                      display: '-webkit-box',
+                                      WebkitBoxOrient: 'vertical',
+                                      WebkitLineClamp: isExpanded ? undefined : 2,
+                                      overflow: isExpanded ? 'visible' : 'hidden',
+                                      mt: 0.25,
+                                      fontSize: '0.72rem',
+                                    }}
+                                  >
+                                    {loc.description}
+                                  </Typography>
+                                  {loc.description.length > 80 && (
+                                    <Typography
+                                      component="span"
+                                      variant="caption"
+                                      sx={{ color: 'primary.main', cursor: 'pointer', fontSize: '0.72rem' }}
+                                      onClick={(e) => { e.stopPropagation(); setExpandedDescId(isExpanded ? null : loc.id); }}
+                                    >
+                                      {isExpanded ? t('step1.showLess') : t('step1.readMore')}
+                                    </Typography>
+                                  )}
+                                </Box>
+                              );
+                            })()}
                             {loc.maxCapacity && (
-                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.72rem' }}>
                                 {t('step1.maxCapacity', { count: loc.maxCapacity })}
                               </Typography>
                             )}

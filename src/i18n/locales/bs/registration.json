@@ -54,7 +54,11 @@
   "pricing": {
     "breakdown": "Pregled cijene",
     "total": "Ukupno",
-    "guests": "Gosti"
+    "guests": "Gosti",
+    "labels": {
+      "ACTIVITY_FEE": "Naknada za aktivnost",
+      "DAILY_FEE": "Dnevna naknada"
+    }
   },
   "gallery": {
     "more": "+{{count}} više"
@@ -76,7 +80,9 @@
     "selectLocation": "Odaberite lokaciju…",
     "noLocations": "Nema dostupnih lokacija za ovu aktivnost.",
     "maxCapacity": "Maksimalni kapacitet: {{count}} osoba",
-    "spotsAvailable": "{{count}} dostupno mjesto(a)"
+    "spotsAvailable": "{{count}} dostupno mjesto(a)",
+    "readMore": "Pročitaj više",
+    "showLess": "Prikaži manje"
   },
   "step2": {
     "heading": "Odaberite datume i mjesto",

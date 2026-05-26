@@ -47,7 +47,7 @@ const step1Schema = z
     endDate: z.string().min(1, 'validation.endDateRequired'),
     spotIds: z.array(z.string()),
   })
-  .refine((d) => new Date(d.endDate) > new Date(d.startDate), {
+  .refine((d) => !d.startDate || !d.endDate || new Date(d.endDate) > new Date(d.startDate), {
     message: 'validation.endDateAfterStart',
     path: ['endDate'],
   });
@@ -208,8 +208,8 @@ export default function RegistrationStepper({
   } = useForm<Step1Values>({
     resolver: zodResolver(step1Schema),
     defaultValues: {
-      startDate: today,
-      endDate: tomorrow,
+      startDate: '',
+      endDate: '',
       spotIds: [],
     },
   });
@@ -946,7 +946,7 @@ useEffect(() => {
       ) : null}
 
       {/* Gallery */}
-      {selectedLocation?.gallery && (() => {
+      {activeStep === 0 && selectedLocation?.gallery && (() => {
         const galleryImages: string[] = (() => { try { return JSON.parse(selectedLocation.gallery!) as string[]; } catch { return []; } })();
         return galleryImages.length > 0 ? <GallerySection images={galleryImages} /> : null;
       })()}
