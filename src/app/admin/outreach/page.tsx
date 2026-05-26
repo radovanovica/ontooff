@@ -39,6 +39,8 @@ import {
   AutoAwesome,
   ContentCopy,
   Check,
+  Save,
+  Refresh,
 } from '@mui/icons-material';
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
@@ -66,6 +68,8 @@ interface OutreachRow {
   convertedAt: string | null;
   createdAt: string;
   assignedTo: { id: string; name: string | null; email: string } | null;
+  proposalText: string | null;
+  proposalLanguage: string | null;
 }
 
 const STATUS_COLORS: Record<OutreachStatus, 'default' | 'info' | 'warning' | 'success' | 'error' | 'primary' | 'secondary'> = {
@@ -86,6 +90,8 @@ const PRIORITY_COLORS: Record<OutreachPriority, 'default' | 'warning' | 'error'>
 
 const STATUSES: OutreachStatus[] = ['NEW', 'CONTACTED', 'INTERESTED', 'PROPOSAL_SENT', 'CONVERTED', 'DECLINED', 'ARCHIVED'];
 const PRIORITIES: OutreachPriority[] = ['LOW', 'MEDIUM', 'HIGH'];
+
+const PROPOSAL_LANGUAGES = ['English', 'Serbian', 'Croatian', 'Bosnian', 'Montenegrin', 'German', 'Spanish', 'French', 'Italian'];
 
 const EMPTY_FORM: Partial<OutreachRow> = {
   businessName: '',
@@ -129,9 +135,12 @@ export default function AdminOutreachPage() {
   // Proposal dialog
   const [proposalOpen, setProposalOpen] = useState(false);
   const [proposalText, setProposalText] = useState('');
+  const [proposalLanguage, setProposalLanguage] = useState('English');
   const [proposalLoading, setProposalLoading] = useState(false);
   const [proposalContact, setProposalContact] = useState<OutreachRow | null>(null);
   const [proposalCopied, setProposalCopied] = useState(false);
+  const [proposalSaving, setProposalSaving] = useState(false);
+  const [proposalSaved, setProposalSaved] = useState(false);
 
   const fetchContacts = useCallback(async () => {
     setLoading(true);
@@ -226,24 +235,34 @@ export default function AdminOutreachPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const generateProposal = async (row: OutreachRow) => {
+  const openProposalDialog = (row: OutreachRow) => {
     setProposalContact(row);
-    setProposalText('');
+    setProposalText(row.proposalText ?? '');
+    setProposalLanguage(row.proposalLanguage ?? 'English');
     setProposalCopied(false);
+    setProposalSaved(false);
+    setProposalLoading(false);
     setProposalOpen(true);
+  };
+
+  const runGeneration = async (contact: OutreachRow | null, language: string) => {
+    if (!contact) return;
+    setProposalText('');
+    setProposalSaved(false);
     setProposalLoading(true);
     try {
       const res = await fetch('/api/admin/outreach/proposal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          businessName: row.businessName,
-          contactPerson: row.contactPerson,
-          city: row.city,
-          country: row.country,
-          website: row.website,
-          instagramUrl: row.instagramUrl,
-          notes: row.notes,
+          businessName: contact.businessName,
+          contactPerson: contact.contactPerson,
+          city: contact.city,
+          country: contact.country,
+          website: contact.website,
+          instagramUrl: contact.instagramUrl,
+          notes: contact.notes,
+          language,
         }),
       });
       if (!res.ok) {
@@ -265,6 +284,29 @@ export default function AdminOutreachPage() {
       setProposalText('Failed to generate proposal. Please try again.');
     } finally {
       setProposalLoading(false);
+    }
+  };
+
+  const saveProposal = async () => {
+    if (!proposalContact || !proposalText.trim() || proposalSaving) return;
+    setProposalSaving(true);
+    try {
+      const res = await fetch('/api/admin/outreach/proposal', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: proposalContact.id, proposalText: proposalText.trim(), proposalLanguage }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      setProposalSaved(true);
+      setTimeout(() => setProposalSaved(false), 2500);
+      setContacts((prev) => prev.map((c) =>
+        c.id === proposalContact.id ? { ...c, proposalText: proposalText.trim(), proposalLanguage } : c
+      ));
+      setProposalContact((prev) => prev ? { ...prev, proposalText: proposalText.trim(), proposalLanguage } : prev);
+    } catch {
+      setError(t('outreach.errors.saveFailed', 'Failed to save proposal.'));
+    } finally {
+      setProposalSaving(false);
     }
   };
 
@@ -424,8 +466,8 @@ export default function AdminOutreachPage() {
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
-                      <Tooltip title={t('outreach.generateProposal', 'Generate Proposal')}>
-                        <IconButton size="small" color="primary" onClick={() => generateProposal(row)}>
+                      <Tooltip title={row.proposalText ? t('outreach.viewProposal', 'View / Edit Proposal') : t('outreach.generateProposal', 'Generate Proposal')}>
+                        <IconButton size="small" color={row.proposalText ? 'success' : 'primary'} onClick={() => openProposalDialog(row)}>
                           <AutoAwesome fontSize="small" />
                         </IconButton>
                       </Tooltip>
@@ -604,21 +646,54 @@ export default function AdminOutreachPage() {
           {t('outreach.proposalTitle', 'AI Proposal')} — {proposalContact?.businessName}
         </DialogTitle>
         <DialogContent>
-          {proposalLoading && proposalText === '' ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 2 }}>
-              <CircularProgress size={20} />
+          {/* Language + action row */}
+          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 2, mt: 0.5, flexWrap: 'wrap' }}>
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel>{t('outreach.proposalLanguage', 'Language')}</InputLabel>
+              <Select
+                value={proposalLanguage}
+                label={t('outreach.proposalLanguage', 'Language')}
+                onChange={(e) => setProposalLanguage(e.target.value)}
+                disabled={proposalLoading}
+              >
+                {PROPOSAL_LANGUAGES.map((lang) => (
+                  <MenuItem key={lang} value={lang}>{lang}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={proposalLoading
+                ? <CircularProgress size={14} color="inherit" />
+                : proposalText ? <Refresh /> : <AutoAwesome />}
+              onClick={() => runGeneration(proposalContact, proposalLanguage)}
+              disabled={proposalLoading}
+            >
+              {proposalText
+                ? t('outreach.regenerate', 'Regenerate')
+                : t('outreach.generate', 'Generate')}
+            </Button>
+          </Box>
+
+          {/* Spinner before first chunk */}
+          {proposalLoading && proposalText === '' && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
               <Typography variant="body2" color="text.secondary">{t('outreach.generatingProposal', 'Generating proposal…')}</Typography>
             </Box>
-          ) : (
+          )}
+
+          {/* Editable textarea */}
+          {proposalText !== '' && (
             <TextField
               multiline
               fullWidth
               minRows={10}
               value={proposalText}
-              onChange={(e) => setProposalText(e.target.value)}
+              onChange={(e) => { setProposalText(e.target.value); setProposalSaved(false); }}
               variant="outlined"
               size="small"
-              sx={{ mt: 0.5, fontFamily: 'monospace' }}
+              disabled={proposalLoading}
               slotProps={{ input: { sx: { fontFamily: 'inherit', fontSize: '0.85rem', lineHeight: 1.6 } } }}
             />
           )}
@@ -626,14 +701,29 @@ export default function AdminOutreachPage() {
         <DialogActions>
           <Button onClick={() => setProposalOpen(false)}>{t('common.close', 'Close')}</Button>
           {proposalText && !proposalLoading && (
-            <Button
-              variant="outlined"
-              startIcon={proposalCopied ? <Check /> : <ContentCopy />}
-              onClick={copyProposal}
-              color={proposalCopied ? 'success' : 'primary'}
-            >
-              {proposalCopied ? t('common.copied', 'Copied!') : t('common.copy', 'Copy')}
-            </Button>
+            <>
+              <Button
+                variant="outlined"
+                startIcon={proposalCopied ? <Check /> : <ContentCopy />}
+                onClick={copyProposal}
+                color={proposalCopied ? 'success' : 'primary'}
+              >
+                {proposalCopied ? t('common.copied', 'Copied!') : t('common.copy', 'Copy')}
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={proposalSaved ? <Check /> : proposalSaving ? undefined : <Save />}
+                onClick={saveProposal}
+                disabled={proposalSaving || proposalSaved}
+                color={proposalSaved ? 'success' : 'primary'}
+              >
+                {proposalSaving
+                  ? <CircularProgress size={16} color="inherit" />
+                  : proposalSaved
+                  ? t('common.saved', 'Saved!')
+                  : t('common.save')}
+              </Button>
+            </>
           )}
         </DialogActions>
       </Dialog>
