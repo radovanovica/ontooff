@@ -50,6 +50,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { useTranslation } from '@/i18n/client';
 import PageHeader from '@/components/ui/PageHeader';
+import { ACTIVITY_NAMES } from '@/config/activity-tags';
 
 type OutreachStatus = 'NEW' | 'CONTACTED' | 'INTERESTED' | 'PROPOSAL_SENT' | 'CONVERTED' | 'DECLINED' | 'ARCHIVED';
 type OutreachPriority = 'LOW' | 'MEDIUM' | 'HIGH';
@@ -98,29 +99,7 @@ const PRIORITIES: OutreachPriority[] = ['LOW', 'MEDIUM', 'HIGH'];
 
 const PROPOSAL_LANGUAGES = ['English', 'Serbian', 'Croatian', 'Bosnian', 'Montenegrin', 'German', 'Spanish', 'French', 'Italian'];
 
-const ACTIVITY_OPTIONS = [
-  'Camping',
-  'Fishing',
-  'Kayaking',
-  'Canoeing',
-  'SUP / Paddleboarding',
-  'White-water Rafting',
-  'Hiking',
-  'Cycling',
-  'Mountain Biking',
-  'Rock Climbing',
-  'Horse Riding',
-  'ATV / Quad Biking',
-  'Zip-lining',
-  'Paragliding',
-  'Swimming',
-  'Diving / Snorkeling',
-  'Hunting',
-  'Bird Watching',
-  'Archery',
-  'Paintball',
-  'Adventure Park',
-];
+const ACTIVITY_OPTIONS = ACTIVITY_NAMES;
 
 const EMPTY_FORM: Partial<OutreachRow> = {
   businessName: '',

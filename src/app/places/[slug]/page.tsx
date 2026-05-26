@@ -231,7 +231,7 @@ function PlaceContent() {
             ).map((tag) => (
               <Chip
                 key={tag.slug}
-                label={`${tag.icon ?? ''} ${tag.name}`}
+                label={`${tag.icon ?? ''} ${t(`tags.${tag.slug}`, tag.name)}`}
                 size="small"
                 sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 600 }}
               />

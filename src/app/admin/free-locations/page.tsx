@@ -105,6 +105,7 @@ function slugify(name: string) {
 
 export default function AdminFreeLocationsPage() {
   const { t } = useTranslation('admin');
+  const { t: tCommon } = useTranslation('common');
   const [locations, setLocations] = useState<FreeLocationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -385,7 +386,7 @@ export default function AdminFreeLocationsPage() {
                       {loc.tags.slice(0, 3).map(({ tag }) => (
                         <Chip
                           key={tag.slug}
-                          label={`${tag.icon ?? ''} ${tag.name}`}
+                          label={`${tag.icon ?? ''} ${tCommon(`tags.${tag.slug}`, tag.name)}`}
                           size="small"
                           sx={{ bgcolor: (tag.color ?? '#7b3f00') + '18', color: tag.color ?? '#7b3f00', fontSize: '0.65rem', height: 20 }}
                         />
@@ -701,7 +702,7 @@ export default function AdminFreeLocationsPage() {
                     return (
                       <Chip
                         key={tag.id}
-                        label={`${tag.icon ?? ''} ${tag.name}`}
+                        label={`${tag.icon ?? ''} ${tCommon(`tags.${tag.slug}`, tag.name)}`}
                         size="small"
                         onClick={() => toggleTag(tag.id)}
                         sx={{

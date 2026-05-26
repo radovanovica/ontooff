@@ -168,7 +168,7 @@ function LocationContent() {
             {location.tags.slice(0, 4).map(({ tag }) => (
               <Chip
                 key={tag.slug}
-                label={`${tag.icon ?? ''} ${tag.name}`}
+                label={`${tag.icon ?? ''} ${t(`tags.${tag.slug}`, tag.name)}`}
                 size="small"
                 sx={{ bgcolor: (tag.color ?? '#555') + 'cc', color: 'white', fontWeight: 600 }}
               />
@@ -221,7 +221,7 @@ function LocationContent() {
           <InstagramStoryShare
             title={location.name}
             excerpt={location.description}
-            category={location.tags[0]?.tag.name}
+            category={location.tags[0]?.tag ? t(`tags.${location.tags[0].tag.slug}`, location.tags[0].tag.name) : undefined}
             categoryColor={location.tags[0]?.tag.color}
             coverUrl={coverImage}
             slug={location.slug}
@@ -541,7 +541,7 @@ function LocationContent() {
                     {location.tags.map(({ tag }) => (
                       <Chip
                         key={tag.slug}
-                        label={`${tag.icon ?? ''} ${tag.name}`}
+                        label={`${tag.icon ?? ''} ${t(`tags.${tag.slug}`, tag.name)}`}
                         size="small"
                         sx={{
                           bgcolor: (tag.color ?? '#7b3f00') + '18',
